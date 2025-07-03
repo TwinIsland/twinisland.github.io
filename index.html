@@ -3,142 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Page - Under Construction</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <title>Tianyi Huang - CS Researcher</title>
+    <link rel="stylesheet" href="style.css">
 
-        body {
-            font-family: 'Georgia', serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f8f9fa;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #2c3e50;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            font-style: italic;
-            margin-bottom: 30px;
-            font-size: 1.1em;
-        }
-
-        .construction-notice {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
-            padding: 20px;
-            margin: 30px 0;
-            text-align: center;
-        }
-
-        .construction-notice h2 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .construction-notice p {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .placeholder-sections {
-            margin-top: 40px;
-        }
-
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            border-left: 4px solid #3498db;
-            background-color: #ecf0f1;
-        }
-
-        .section h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .section p {
-            color: #7f8c8d;
-            font-style: italic;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #bdc3c7;
-            color: #95a5a6;
-            font-size: 0.9em;
-        }
-
-        .emoji {
-            font-size: 1.2em;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Dr. [Your Name Here]</h1>
-        <p class="subtitle">Academic • Researcher • Definitely Very Serious Person</p>
-        
-        <div class="construction-notice">
-            <h2>🚧 Under Construction 🚧</h2>
-            <p>This page is currently being crafted with the utmost academic rigor.</p>
-            <p>Please check back soon for groundbreaking insights and possibly some coffee-fueled research updates.</p>
-        </div>
-
-        <div class="placeholder-sections">
-            <div class="section">
-                <h3>About Me</h3>
-                <p>Soon to contain a thoroughly professional biography (with just a hint of personality)...</p>
+        <!-- Header -->
+        <div class="header">
+            <div class="ascii-name">
+                Tianyi Huang (黄天毅)
             </div>
-
-            <div class="section">
-                <h3>Research Interests</h3>
-                <p>Fascinating research areas will appear here, complete with impressive-sounding terminology...</p>
-            </div>
-
-            <div class="section">
-                <h3>Publications</h3>
-                <p>A meticulously curated list of academic contributions is coming soon...</p>
-            </div>
-
-            <div class="section">
-                <h3>Projects</h3>
-                <p>Current and past projects will be showcased here with appropriate scholarly gravitas...</p>
-            </div>
-
-            <div class="section">
-                <h3>Contact</h3>
-                <p>Professional contact information will be provided here for serious academic inquiries...</p>
+            <div class="terminal-prompt">tianyih@my_bio:~$ <span class="cursor"></span></div>
+            <div class="subtitle">
+                PhD student, Computer Science, National University of Singapore<br>
+                <a href="mailto:tianyih@u.nus.edu">tianyih@u.nus.edu</a> | 
+                <a href="https://github.com/TwinIsland" target="_blank">GitHub</a> | 
+                <a href="Resume_V3.pdf" target="_blank">Resume</a> |
+                <a href="https://cirno.me/" target="_blank">Blog</a>
             </div>
         </div>
 
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="nav-item active" onclick="showContent('about')">./about.sh</button>
+            <button class="nav-item" onclick="showContent('misc')">misc/</button>
+        </div>
+
+        <!-- About Content -->
+        <div class="content active" id="about">
+            <div class="section">
+                <h2>> ./about.sh</h2>
+                <div class="about-content">
+                    <div class="photo-placeholder">
+                        <img src="me.jpg" alt="my picture">
+                    </div>
+                    <div class="intro-text">
+                    <p>I recently graduated with a B.S. in Computer Science from the University of Illinois at Urbana-Champaign.</p>
+                    <p>This August, I'll be starting my PhD journey at the National University of Singapore.</p>
+                    <p>Currently, I'm working (remotely) as a visiting researcher with <a href="https://wenxiwang.github.io/" target="_blank" style="color: #497d44;">Prof. Wenxi Wang</a> at the University of Virginia, exploring how machine learning can make SAT solvers smarter and more efficient.</p>
+                    <p><strong>Research Interests:</strong> I'm passionate about compilers, formal verification, logic systems, and computational audio – basically anything that involves making computers understand and process complex structures, whether it's code or sound.</p>
+                    <p style="color: rgb(191,0,23);"><strong>I'm always looking for opportunities to collaborate and work on anything cool – whether it's research projects, open-source contributions, 
+                        or just interesting technical challenges. Feel free to reach out!</strong></p>
+                </div>
+                </div>
+            </div>
+            <div class="section">
+                <h2>> cat experiences.txt</h2>
+                <div class="experience-item">
+                    <div class="exp-left">
+                        <div class="exp-date">Aug 2024 – Present</div>
+                    </div>
+                    <div class="exp-right">
+                        <div class="exp-header">Visiting Researcher</div>
+                                <div class="exp-place">University of Virginia</div>
+
+                        <div class="exp-description">
+                            Conducting research on leveraging machine learning to enhance SAT-solving algorithms with Prof. Wenxi Wang. Reviewing literature, designing algorithms, and performing experimental evaluations.
+                        </div>
+                    </div>
+                </div>
+                <div class="experience-item">
+                    <div class="exp-left">
+                        <div class="exp-date">Aug 2022 – Dec 2022</div>
+                    </div>
+                    <div class="exp-right">
+                        <div class="exp-header">Course Assistant</div>
+                                <div class="exp-place">University of Illinois--Urbana-Champaign</div>
+
+                        <div class="exp-description">
+                            Course Assistant for MATH 257: Linear Algebra with Computational Applications. Conducted weekly office hours and lab sessions.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="section">
+                <h2>> cat projects/</h2>
+                <div style="margin-bottom: 20px; color: #9d9a8f;">
+                </div>
+                
+                <div class="projects-grid">
+                    <div class="project">
+                        <h3>Octave</h3>
+                        <p><strong>Music Programming Language</strong></p>
+                        <p>Octave is a Turing-complete language specifically designed for programmatic music composition. Write music using syntax similar to traditional notation, but with the power of variables, functions, conditionals, and loops. Compile your musical algorithms directly into MIDI files for seamless integration with digital audio workstations.</p>
+                        <div class="project-links">
+                            <a href="https://github.com/Burnham310/Octave" target="_blank">GitHub</a>
+                            <a href="https://burnham310.github.io/Octave/" target="_blank">Live Demo</a>
+                        </div>
+                    </div>
+
+                    <div class="project">
+                        <h3>QSynth</h3>
+                        <p><strong>Real-time Audio Synthesis Engine</strong></p>
+                        <p>A high-performance multi-layered audio synthesizer built in C for real-time audio processing. Features advanced instrument design capabilities with customizable effect pedals and signal chains. Optimized for low-latency performance, making it perfect for live performances and studio production workflows.</p>
+                        <div class="project-links">
+                            <a href="https://github.com/TwinIsland/QSynth" target="_blank">GitHub</a>
+                        </div>
+                    </div>
+
+                    <div class="project">
+                        <h3>Canfig</h3>
+                        <p><strong>Strongly Validated Configuration Language</strong></p>
+                        <p>Canfig brings type safety and validation to application settings through SQL-like syntax and custom data types. Define precise validation rules with trigger-based error recovery to catch configuration errors before they reach production. Perfect for teams tired of deployment failures caused by configuration bugs.</p>
+                        <div class="project-links">
+                            <a href="https://github.com/TwinIsland/Canfig" target="_blank">GitHub</a>
+                        </div>
+                    </div>
+
+                    <div class="project">
+                        <h3>FeatherBase</h3>
+                        <p><strong>Professional Bird Recording App</strong></p>
+                        <p>Developed in collaboration with 成都猛禽研究 (Chengdu Raptor Research). Features comprehensive bird attribute logging, location mapping, and photo integration with seamless local/cloud synchronization. One-click eBird data export and an intelligent search engine with 10,000+ species entries, including AI-powered image identification capabilities.</p>
+                        <div class="project-links">
+                            <a onclick="openFeatherBaseModal()">Demo</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- FeatherBase Modal -->
+        <div id="featherbaseModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeFeatherBaseModal()">&times;</span>
+                <h3>FeatherBase - Screenshots</h3>
+                <div class="modal-gallery">
+                    <img src="featherbase_demo/featherbase_demo_mainpage.jpg" alt="Main interface" onclick="openFullImage(this)">
+                    <img src="featherbase_demo/featherbase_demo_recordpage.jpg" alt="Bird recording" onclick="openFullImage(this)">
+                    <img src="featherbase_demo/featherbase_demo_quickrecord.jpg" alt="Bird recording" onclick="openFullImage(this)">
+                    <img src="featherbase_demo/featherbase_demo_search.jpg" alt="Search function" onclick="openFullImage(this)">
+                </div>
+            </div>
+        </div>
+        <!-- Misc Content -->
+        <div class="content" id="misc">
+            <div class="section">
+                <h2>> ls misc/</h2>
+                
+            <div class="hobby-section">
+                <h3>📸 Bird Photography</h3>
+                <p>Capturing our feathered friends in their natural habitat. Patience + long lens + early mornings = magic.</p>
+                
+                <div class="gallery-slider">
+                    <div class="slider-container">
+                        <div class="slider-track" id="sliderTrack">
+                            <div class="slide">
+                                <img src="birds/1.jpg" alt="Bird Photo 1">
+                            </div>
+                            <div class="slide">
+                                <img src="birds/2.jpg" alt="Bird Photo 2">
+                            </div>
+                            <div class="slide">
+                                <img src="birds/3.jpg" alt="Bird Photo 3">
+                            </div>
+                            <div class="slide">
+                                <img src="birds/4.jpg" alt="Bird Photo 4">
+                            </div>
+                            <div class="slide">
+                                <img src="birds/5.jpg" alt="Bird Photo 5">
+                            </div>
+                            <div class="slide">
+                                <img src="birds/6.jpg" alt="Bird Photo 6">
+                            </div>
+                            <div class="slide">
+                                <img src="birds/7.jpg" alt="Bird Photo 7">
+                            </div>
+                            <div class="slide">
+                                <img src="birds/8.jpg" alt="Bird Photo 8">
+                            </div>
+                            <div class="slide">
+                                <img src="birds/9.jpg" alt="Bird Photo 9">
+                            </div>
+                        </div>
+                        
+                        <button class="slider-nav prev" onclick="changeSlide(-1)">❮</button>
+                        <button class="slider-nav next" onclick="changeSlide(1)">❯</button>
+                    </div>
+                    
+                    <div class="slider-dots">
+                        <span class="dot active" onclick="currentSlide(1)"></span>
+                        <span class="dot" onclick="currentSlide(2)"></span>
+                        <span class="dot" onclick="currentSlide(3)"></span>
+                        <span class="dot" onclick="currentSlide(4)"></span>
+                        <span class="dot" onclick="currentSlide(5)"></span>
+                        <span class="dot" onclick="currentSlide(6)"></span>
+                        <span class="dot" onclick="currentSlide(7)"></span>
+                        <span class="dot" onclick="currentSlide(8)"></span>
+                        <span class="dot" onclick="currentSlide(9)"></span>
+                    </div>
+                </div>
+            </div>
+
+
+                <div class="hobby-section">
+                    <h3>🎸 Music</h3>
+                    <p>Bass player and rock music lover, currently exploring how music theory bridges into computational audio research. I'm also an audiophile who appreciates clean sound reproduction and a rhythm game enthusiast always chasing that perfect score.</p>                    <div style="text-align: center;margin: 20px;">
+                        <iframe width="700" height="315" src="https://www.youtube.com/embed/hT4ijQZ1ziQ" title="Finger - Elephant gym bass cover (practice)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
         <div class="footer">
-            <p><span class="emoji">📚</span> Last updated: Never (but soon!) <span class="emoji">📚</span></p>
-            <p>hello world</p>
+            <p>Last commit: July 2025 | Built with ❤️</p>
         </div>
     </div>
+
+
+    <script>
+        let currentSlideIndex = 0;
+        const totalSlides = 9;
+
+        function changeSlide(direction) {
+            currentSlideIndex += direction;
+            
+            if (currentSlideIndex >= totalSlides) {
+                currentSlideIndex = 0;
+            } else if (currentSlideIndex < 0) {
+                currentSlideIndex = totalSlides - 1;
+            }
+            
+            updateSlider();
+        }
+
+        function currentSlide(n) {
+            currentSlideIndex = n - 1;
+            updateSlider();
+        }
+
+        function updateSlider() {
+            const track = document.getElementById('sliderTrack');
+            const dots = document.querySelectorAll('.dot');
+            
+            track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlideIndex);
+            });
+        }
+    </script>
+    
+    <script>
+        function showContent(contentId) {
+            // Hide all content
+            const contents = document.querySelectorAll('.content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all nav items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            // Show selected content
+            document.getElementById(contentId).classList.add('active');
+            
+            // Add active class to clicked nav item
+            event.target.classList.add('active');
+        }
+
+        function openFeatherBaseModal() {
+            document.getElementById('featherbaseModal').style.display = 'block';
+        }
+
+        function closeFeatherBaseModal() {
+            document.getElementById('featherbaseModal').style.display = 'none';
+        }
+
+        function openFullImage(img) {
+            // Optional: Open image in full screen
+            window.open(img.src, '_blank');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('featherbaseModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
