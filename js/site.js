@@ -269,9 +269,6 @@ function renderProjects(projects) {
                     </div>
                 </div>
                 <div class="project-actions">
-                    <div class="link-row">
-                        <a class="cta-button secondary" href="${project.github}" target="_blank" rel="noopener">GitHub</a>
-                    </div>
                     <button class="run-button" data-project-index="${index}">Run Project</button>
                 </div>
             </article>

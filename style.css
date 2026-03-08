@@ -570,11 +570,13 @@ body.maintenance-mode {
 }
 
 .project-actions {
-  min-width: calc(170px * var(--ui-scale));
+  min-width: calc(220px * var(--ui-scale));
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  align-items: stretch;
+  gap: 0.8rem;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
 }
 
 .project-title {
@@ -603,26 +605,60 @@ body.maintenance-mode {
 }
 
 .run-button {
-  display: grid;
+  display: inline-grid;
   place-items: center;
-  width: 100%;
-  min-height: 48px;
-  border-radius: 10px;
-  border: 1px solid rgba(113, 47, 62, 0.35);
+  width: min(100%, 230px);
+  min-height: 60px;
+  margin-inline: auto;
+  padding: 0.45rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(113, 47, 62, 0.4);
   background: #ffffff;
   color: var(--cp-ink);
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   cursor: pointer;
+  box-shadow: 0 8px 22px rgba(113, 47, 62, 0.12);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   transition:
     transform 0.2s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.run-button::before {
+  content: "";
+  position: absolute;
+  top: -140%;
+  left: -35%;
+  width: 28%;
+  height: 380%;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.68) 45%,
+    transparent 100%
+  );
+  transform: rotate(18deg) translateX(-260%);
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .run-button:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   border-color: var(--cp-ink);
+  background: rgba(136, 212, 204, 0.2);
+  box-shadow: 0 12px 30px rgba(113, 47, 62, 0.2);
+}
+
+.run-button:hover::before {
+  transform: rotate(18deg) translateX(420%);
 }
 
 .misc-summary {
@@ -817,14 +853,17 @@ body.maintenance-mode {
 
   .project-actions {
     width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    min-width: 0;
+    align-self: stretch;
   }
 
   .run-button {
-    min-height: 44px;
-    min-width: 120px;
+    width: 100%;
+    min-height: 52px;
+    max-width: 100%;
   }
 
   .publication-row {
