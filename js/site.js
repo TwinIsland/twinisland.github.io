@@ -493,8 +493,8 @@ function renderSimpleTab(tabId, payload) {
     }
 
     panel.innerHTML = `
-        <section class="simple-card card">
-            <h2>${renderConfigText(payload.title)}</h2>
+        <section class="section-card card">
+            <h2 class="section-title">${renderConfigText(payload.title)}</h2>
             <p>${renderConfigText(payload.description)}</p>
             <div class="link-row">
                 <a class="cta-button primary" href="${payload.url}" target="_blank" rel="noopener">Open ${escapeHtml(payload.title)}</a>
@@ -510,8 +510,8 @@ function renderCvTab(payload) {
     }
 
     panel.innerHTML = `
-        <section class="simple-card card">
-            <h2>${renderConfigText(payload.title)}</h2>
+        <section class="section-card card">
+            <h2 class="section-title">${renderConfigText(payload.title)}</h2>
             <p>${renderConfigText(payload.description)}</p>
             <div class="cv-embed-wrap">
                 <iframe
@@ -666,8 +666,8 @@ function openProjectModal(projectIndex) {
 
 function showLoadError(message) {
     const errorHtml = `
-        <section class="simple-card card">
-            <h2>Load Error</h2>
+        <section class="section-card card">
+            <h2 class="section-title">Load Error</h2>
             <p>${escapeHtml(message)}</p>
             <p>Check <code>data/site-content.json</code> and refresh.</p>
         </section>
