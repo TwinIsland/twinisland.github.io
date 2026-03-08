@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QSynth | TwinIsland</title>
+    <meta name="description" content="QSynth: high-performance multi-layered audio synthesizer built with C and WebAssembly.">
+    <script src="./coi-serviceworker.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap');
+
+        :root {
+            --cp-alpha: #E1DBD1;
+            --cp-legend: #EAECF0;
+            --cp-ink: #712F3E;
+            --cp-accent: #88D4CC;
+            --shadow-soft: rgba(113, 47, 62, 0.14);
+            --shadow-strong: rgba(113, 47, 62, 0.24);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: radial-gradient(circle at 18% 18%, #f7f4ee 0%, #ffffff 45%, #fbfaf8 100%);
+            color: var(--cp-ink);
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .app {
+            height: 100%;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 0.8rem;
+            padding: 0.8rem;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(113, 47, 62, 0.18);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 24px var(--shadow-soft);
+            padding: 0.7rem 0.85rem;
+            gap: 0.8rem;
+        }
+
+        .title-wrap {
+            min-width: 0;
+        }
+
+        .eyebrow {
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.68rem;
+            font-weight: 800;
+            opacity: 0.62;
+        }
+
+        h1 {
+            margin: 0.08rem 0;
+            font-family: 'Newsreader', serif;
+            font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            margin: 0;
+            font-size: 0.83rem;
+            font-weight: 600;
+            opacity: 0.78;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .chip {
+            border: 1px solid rgba(113, 47, 62, 0.2);
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            background: var(--cp-legend);
+            color: var(--cp-ink);
+            padding: 0.25rem 0.55rem;
+        }
+
+        button,
+        a.btn {
+            border: 1px solid rgba(113, 47, 62, 0.25);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--cp-ink);
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.35rem 0.65rem;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        button:hover,
+        a.btn:hover {
+            border-color: var(--cp-ink);
+            transform: translateY(-1px);
+        }
+
+        .stage {
+            min-height: 0;
+            display: grid;
+            grid-template-rows: 1fr auto;
+            gap: 0.7rem;
+        }
+
+        .canvas-wrap {
+            position: relative;
+            min-height: 0;
+            border: 1px solid rgba(113, 47, 62, 0.18);
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 12px 28px var(--shadow-soft);
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+        }
+
+        canvas#canvas {
+            width: min(100%, 1200px);
+            height: min(100%, 760px);
+            display: block;
+            background: #000;
+            border: 0;
+            outline: none;
+        }
+
+        .loading {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(3px);
+            z-index: 5;
+            transition: opacity 220ms ease;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-card {
+            border: 1px solid rgba(113, 47, 62, 0.2);
+            border-radius: 12px;
+            padding: 0.7rem 0.9rem;
+            background: #fff;
+            box-shadow: 0 8px 20px var(--shadow-soft);
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        #output {
+            width: 100%;
+            min-height: 88px;
+            max-height: 130px;
+            border: 1px solid rgba(113, 47, 62, 0.2);
+            border-radius: 12px;
+            background: #fff;
+            color: var(--cp-ink);
+            padding: 0.6rem 0.7rem;
+            font: 500 0.73rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            resize: none;
+            overflow: auto;
+        }
+
+        @media (max-width: 760px) {
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"></script>
+    <script>
+        function saveFileFromMEMFSToDisk(memoryFSname, localFSname) {
+            const data = FS.readFile(memoryFSname);
+            const blob = new Blob([data.buffer], { type: 'application/octet-binary' });
+            saveAs(blob, localFSname);
+        }
+    </script>
+</head>
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div class="title-wrap">
+                <p class="eyebrow">Project Demo</p>
+                <h1>QSynth</h1>
+                <p class="subtitle">Multi-layered real-time audio synthesizer (WebAssembly)</p>
+            </div>
+            <div class="actions">
+                <span class="chip" id="runtime-state">Loading</span>
+                <button id="fs-canvas" type="button">Fullscreen</button>
+                <a class="btn" href="https://github.com/TwinIsland/QSynth" target="_blank" rel="noopener">GitHub</a>
+            </div>
+        </header>
+
+        <main class="stage">
+            <section class="canvas-wrap" aria-label="QSynth canvas">
+                <div class="loading" id="loading-layer">
+                    <div class="loading-card">Initializing QSynth runtime...</div>
+                </div>
+                <canvas class="emscripten" id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
+            </section>
+            <textarea id="output" readonly aria-label="Runtime logs"></textarea>
+        </main>
+    </div>
+
+    <script>
+        const loadingLayer = document.getElementById('loading-layer');
+        const statusChip = document.getElementById('runtime-state');
+        const outputEl = document.getElementById('output');
+        const canvasEl = document.getElementById('canvas');
+
+        function setStatus(text) {
+            statusChip.textContent = text;
+        }
+
+        var Module = {
+            canvas: canvasEl,
+            print: (...args) => {
+                const line = args.join(' ');
+                console.log(line);
+                outputEl.value += `${line}\n`;
+                outputEl.scrollTop = outputEl.scrollHeight;
+            },
+            printErr: (...args) => {
+                const line = args.join(' ');
+                console.error(line);
+                outputEl.value += `[err] ${line}\n`;
+                outputEl.scrollTop = outputEl.scrollHeight;
+            },
+            onRuntimeInitialized: () => {
+                setStatus('Active');
+                loadingLayer.classList.add('hidden');
+                canvasEl.focus();
+            },
+            onAbort: () => {
+                setStatus('Error');
+                loadingLayer.classList.remove('hidden');
+                loadingLayer.querySelector('.loading-card').textContent = 'Runtime aborted. Please refresh.';
+            }
+        };
+
+        document.getElementById('fs-canvas').addEventListener('click', async () => {
+            if (!document.fullscreenElement) {
+                await canvasEl.requestFullscreen?.();
+            } else {
+                await document.exitFullscreen?.();
+            }
+        });
+
+        window.addEventListener('error', () => {
+            setStatus('Error');
+            loadingLayer.classList.remove('hidden');
+            loadingLayer.querySelector('.loading-card').textContent = 'Failed to initialize. Please refresh.';
+        });
+    </script>
+    <script src="QSynth.js" async></script>
+</body>
+</html>

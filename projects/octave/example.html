@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Sequences</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        pre {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        code {
+            color: #007acc;
+            font-weight: bold;
+        }
+
+	.copy-btn {
+	  width: 20px;
+	  height: 20px;
+	  border-radius: 50%;
+	  background-color: #f0f0f0;
+	  border: none;
+	  cursor: pointer;
+	  display: inline-block;
+	  align-items: center;
+	  justify-content: center;
+	  transition: all 0.3s ease;
+	  position: relative;
+	  margin-right: 10px;
+	}
+	
+	.copy-btn:hover {
+	  background-color: #e0e0e0;
+	  transform: scale(1.05);
+	}
+	
+	.copy-btn::before {
+	  content: "📋";
+	  font-size: 16px;
+	}
+	
+	.copy-btn.copied::before {
+	  content: "✓";
+	  color: #28a745;
+	}   
+    </style>
+    <script type="module">
+	import Module from "./octc.mjs";
+
+	function copyToClipBoard(id) {
+	    const code_el = document.getElementById(id);
+	    navigator.clipboard.writeText(code_el.innerHTML);
+	}
+
+	async function compileOctave(id) {
+	    let octc = await Module({noInitialRun: true});
+	    const code_el = document.getElementById(id);
+	    const code = code_el.innerText;
+            const inputFile = 'tmp.oct';  // Virtual input file
+
+            octc.FS.writeFile(inputFile, code);
+
+            try {
+                octc.callMain([inputFile]);
+            } catch {
+                return false
+            }
+
+            return true;
+        }
+
+	const list = document.getElementById("list");
+	const manifest = (await import("./manifest.json", { with: { type: "json" } })).default.sort();
+	const contents = manifest.map(name => fetch(`./${name}`).then(resp => resp.text()));
+	for (let i = 0; i < manifest.length; ++i) {
+	    const name = manifest[i];
+	    const content = await contents[i];
+	    const title = document.createElement("h2");
+	    title.innerHTML = name;
+	    const copy_btn = document.createElement("button");
+	    copy_btn.classList.add("copy-btn");
+	    copy_btn.addEventListener("click", () => copyToClipBoard(name));
+	    const pre = document.createElement("pre");
+	    pre.innerHTML = `<code id="${name}">${content}</code>`;
+	    const play_btn = document.createElement("button");
+	    play_btn.innerHTML = "play";
+	    play_btn.addEventListener("click", () => compileOctave(name));
+
+	    list.appendChild(title);
+	    list.appendChild(copy_btn);
+	    list.appendChild(play_btn);
+	    list.appendChild(pre);
+	}
+    </script>
+</head>
+
+<body id="list">
+    <a href="/">
+	<h1>Home</h1>
+    </a>
+</body>
+
+</html>

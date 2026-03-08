@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octave | TwinIsland</title>
+    <meta name="description" content="Octave music programming playground.">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.29.1/min/vs/loader.min.js"></script>
+    <style>
+        :root {
+            --cp-alpha: #E1DBD1;
+            --cp-legend: #EAECF0;
+            --cp-ink: #712F3E;
+            --cp-accent: #88D4CC;
+            --shadow-soft: rgba(113, 47, 62, 0.14);
+            --shadow-strong: rgba(113, 47, 62, 0.24);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Manrope', sans-serif;
+            color: var(--cp-ink);
+            background: radial-gradient(circle at 15% 10%, #f7f4ee 0%, #ffffff 46%, #fbfaf8 100%);
+        }
+
+        .app {
+            height: 100%;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 0.8rem;
+            padding: 0.8rem;
+        }
+
+        .topbar {
+            border: 1px solid rgba(113, 47, 62, 0.18);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 10px 22px var(--shadow-soft);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            padding: 0.7rem 0.85rem;
+        }
+
+        .eyebrow {
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            font-size: 0.68rem;
+            font-weight: 800;
+            opacity: 0.62;
+        }
+
+        h1 {
+            margin: 0.05rem 0 0.04rem;
+            font-family: 'Newsreader', serif;
+            font-size: clamp(1.15rem, 2.3vw, 1.7rem);
+        }
+
+        .subtitle {
+            margin: 0;
+            font-size: 0.83rem;
+            font-weight: 600;
+            opacity: 0.78;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .chip,
+        select,
+        button,
+        a.btn {
+            border: 1px solid rgba(113, 47, 62, 0.22);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--cp-ink);
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.35rem 0.65rem;
+            text-decoration: none;
+        }
+
+        select,
+        button {
+            cursor: pointer;
+        }
+
+        button:hover,
+        a.btn:hover,
+        select:hover {
+            border-color: var(--cp-ink);
+        }
+
+        .chip {
+            background: var(--cp-legend);
+            border-radius: 999px;
+            font-size: 0.74rem;
+        }
+
+        .workspace {
+            min-height: 0;
+            display: grid;
+            grid-template-columns: 1.55fr 0.95fr;
+            gap: 0.75rem;
+        }
+
+        .panel {
+            min-height: 0;
+            border: 1px solid rgba(113, 47, 62, 0.18);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 10px 24px var(--shadow-soft);
+            overflow: hidden;
+        }
+
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 1px solid rgba(113, 47, 62, 0.12);
+            padding: 0.55rem 0.65rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        #editor-container {
+            height: calc(100% - 42px);
+            width: 100%;
+        }
+
+        .side {
+            min-height: 0;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 0.7rem;
+            padding: 0.65rem;
+        }
+
+        .hint {
+            margin: 0;
+            font-size: 0.78rem;
+            line-height: 1.45;
+            opacity: 0.85;
+        }
+
+        #out {
+            margin: 0;
+            min-height: 0;
+            border: 1px solid rgba(113, 47, 62, 0.14);
+            border-radius: 10px;
+            background: #fff;
+            padding: 0.55rem 0.6rem;
+            overflow: auto;
+            font: 500 0.74rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .out-line {
+            margin: 0;
+        }
+
+        .out-line.err {
+            color: #9f1e3b;
+            font-weight: 700;
+        }
+
+        @media (max-width: 900px) {
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .workspace {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr minmax(220px, 35%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Project Demo</p>
+                <h1>Octave Music Language</h1>
+                <p class="subtitle">Compile notation-like code into MIDI-ready output</p>
+            </div>
+            <div class="actions">
+                <span class="chip" id="engine-state">Initializing</span>
+                <select id="example-select" aria-label="Load example">
+                    <option value="">Load Example...</option>
+                    <option value="00_twinkle.oct">00 Twinkle</option>
+                    <option value="01_triplet.oct">01 Triplet</option>
+                    <option value="02_config.oct">02 Config</option>
+                    <option value="03_arithmetic.oct">03 Arithmetic</option>
+                    <option value="10_chord.oct">10 Chord</option>
+                    <option value="11_qualifier.oct">11 Qualifier</option>
+                    <option value="12_variable.oct">12 Variable</option>
+                    <option value="13_drum_set.oct">13 Drum Set</option>
+                    <option value="20_two_sections.oct">20 Two Sections</option>
+                    <option value="30_sequence.oct">30 Sequence</option>
+                    <option value="31_if.oct">31 If</option>
+                    <option value="40_for_loop.oct">40 For Loop</option>
+                    <option value="41_for_loop_capture.oct">41 For Loop Capture</option>
+                </select>
+                <button id="compile-btn" type="button">Compile (Ctrl+Enter)</button>
+                <a class="btn" href="https://github.com/Burnham310/Octave" target="_blank" rel="noopener">GitHub</a>
+                <a class="btn" href="./example.html" target="_blank" rel="noopener">Legacy Demo</a>
+            </div>
+        </header>
+
+        <main class="workspace">
+            <section class="panel">
+                <div class="panel-head">
+                    <span>Editor</span>
+                    <span id="doc-state">Unsaved</span>
+                </div>
+                <div id="editor-container"></div>
+            </section>
+
+            <aside class="panel side">
+                <p class="hint">Use <strong>Ctrl+Enter</strong> to compile quickly. Source is auto-saved to local storage.</p>
+                <div id="out" aria-live="polite">
+                    <p class="out-line">Runtime log will appear here.</p>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script type="module">
+        import ModuleFactory from './octc.mjs';
+
+        const defaultCode = 'main = {;; 1 1 5 5 6 6 5\'/2 4 4 3 3 2 2 1\'/2}';
+        const outEl = document.getElementById('out');
+        const compileBtn = document.getElementById('compile-btn');
+        const docState = document.getElementById('doc-state');
+        const engineState = document.getElementById('engine-state');
+        const exampleSelect = document.getElementById('example-select');
+
+        let editor = null;
+        let compilerPromise = null;
+
+        function setEngineState(text) {
+            engineState.textContent = text;
+        }
+
+        function appendOut(line, isErr = false) {
+            const p = document.createElement('p');
+            p.className = `out-line${isErr ? ' err' : ''}`;
+            p.textContent = String(line);
+            outEl.appendChild(p);
+            outEl.scrollTop = outEl.scrollHeight;
+        }
+
+        function clearOut() {
+            outEl.innerHTML = '';
+        }
+
+        async function getCompiler() {
+            if (!compilerPromise) {
+                setEngineState('Compiling Core');
+                compilerPromise = ModuleFactory({
+                    noInitialRun: true,
+                    print: (msg) => appendOut(msg, false),
+                    printErr: (msg) => appendOut(msg, true)
+                });
+            }
+            const compiler = await compilerPromise;
+            setEngineState('Ready');
+            return compiler;
+        }
+
+        function isSuccessfulExit(error) {
+            return typeof error?.status === 'number' && error.status === 0;
+        }
+
+        function saveEditor() {
+            if (!editor) return;
+            localStorage.setItem('octaveCode', editor.getValue());
+            docState.textContent = 'Saved';
+        }
+
+        async function compileCurrentCode() {
+            if (!editor) return;
+            clearOut();
+            compileBtn.disabled = true;
+            compileBtn.textContent = 'Compiling...';
+
+            try {
+                const compiler = await getCompiler();
+                const source = editor.getValue();
+                const inputFile = 'tmp.oct';
+
+                compiler.FS.writeFile(inputFile, source);
+                compiler.callMain([inputFile]);
+
+                appendOut('Compile succeeded.');
+                compileBtn.textContent = 'Compiled';
+                saveEditor();
+            } catch (error) {
+                if (isSuccessfulExit(error)) {
+                    appendOut('Compile succeeded.');
+                    compileBtn.textContent = 'Compiled';
+                    saveEditor();
+                } else {
+                    appendOut(`Compile failed: ${error?.message || error}`, true);
+                    compileBtn.textContent = 'Compile Failed';
+                }
+            } finally {
+                // Octave compiler runtime is single-shot; recreate it next compile.
+                compilerPromise = null;
+                setTimeout(() => {
+                    compileBtn.disabled = false;
+                    compileBtn.textContent = 'Compile (Ctrl+Enter)';
+                }, 700);
+            }
+        }
+
+        async function loadExample(fileName) {
+            if (!fileName || !editor) return;
+            try {
+                const response = await fetch(fileName, { cache: 'no-store' });
+                if (!response.ok) throw new Error(`Cannot load ${fileName}`);
+                editor.setValue(await response.text());
+                docState.textContent = `Loaded ${fileName}`;
+            } catch (error) {
+                appendOut(`Example load error: ${error.message}`, true);
+            }
+        }
+
+        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.29.1/min/vs' } });
+        require(['vs/editor/editor.main'], async function () {
+            monaco.languages.register({ id: 'octave' });
+            monaco.languages.setMonarchTokensProvider('octave', {
+                tokenizer: {
+                    root: [
+                        [/\b(volume|bpm|instrument|mode|tonic|octave)\b/, 'keyword'],
+                        [/\b(linear|zoom)\b/, 'keyword'],
+                        [/\/\/.*$/, 'comment'],
+                        [/"([^"\\]|\\.)*"/, 'string'],
+                        [/\b[a-zA-Z_][a-zA-Z0-9_]*\b/, 'identifier'],
+                        [/\d+/, 'number']
+                    ]
+                }
+            });
+
+            monaco.editor.defineTheme('octave-theme', {
+                base: 'vs',
+                inherit: true,
+                rules: [
+                    { token: 'keyword', foreground: '712F3E', fontStyle: 'bold' },
+                    { token: 'comment', foreground: '9A7D85', fontStyle: 'italic' },
+                    { token: 'number', foreground: '2F6A67' },
+                    { token: 'string', foreground: '4A5E8A' }
+                ],
+                colors: {
+                    'editor.background': '#FFFDFC',
+                    'editor.lineHighlightBackground': '#F5EFE8',
+                    'editorCursor.foreground': '#712F3E',
+                    'editor.selectionBackground': '#EADFD4'
+                }
+            });
+
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: localStorage.getItem('octaveCode') || defaultCode,
+                language: 'octave',
+                theme: 'octave-theme',
+                automaticLayout: true,
+                fontSize: 14,
+                minimap: { enabled: false },
+                lineNumbersMinChars: 3,
+                tabSize: 2,
+                insertSpaces: true,
+                smoothScrolling: true,
+                roundedSelection: true
+            });
+
+            editor.onDidChangeModelContent(() => {
+                docState.textContent = 'Unsaved';
+            });
+
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+                compileCurrentCode();
+            });
+
+            await getCompiler();
+        });
+
+        compileBtn.addEventListener('click', compileCurrentCode);
+
+        exampleSelect.addEventListener('change', async () => {
+            await loadExample(exampleSelect.value);
+            exampleSelect.value = '';
+        });
+
+        window.addEventListener('beforeunload', saveEditor);
+    </script>
+</body>
+</html>
