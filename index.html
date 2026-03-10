@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tianyi Huang</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+    <script src="js/markdown-it-katex-bridge.js" defer></script>
     <script src="js/site.js" defer></script>
 </head>
+
 <body>
     <div class="page-shell">
         <header class="site-header" role="banner">
@@ -21,6 +27,7 @@
                 <button class="tab-button" type="button" data-tab="publications">Publications</button>
                 <button class="tab-button" type="button" data-tab="projects">Projects</button>
                 <button class="tab-button" type="button" data-tab="misc">Misc</button>
+                <button class="tab-button" type="button" data-tab="blog">Blog</button>
                 <button class="tab-button" type="button" data-tab="cv">CV</button>
             </nav>
         </header>
@@ -30,6 +37,7 @@
             <section id="tab-publications" class="tab-panel" aria-label="Publications"></section>
             <section id="tab-projects" class="tab-panel" aria-label="Projects"></section>
             <section id="tab-misc" class="tab-panel" aria-label="Misc"></section>
+            <section id="tab-blog" class="tab-panel" aria-label="Blog"></section>
             <section id="tab-cv" class="tab-panel" aria-label="CV"></section>
         </main>
 
@@ -39,4 +47,5 @@
     </div>
 
 </body>
+
 </html>

@@ -2,10 +2,13 @@ const state = {
     data: null,
     travelMapRoot: null,
     amChartsLoadPromise: null,
-    birdLightbox: null
+    birdLightbox: null,
+    blogLightbox: null,
+    blogViewingPost: false
 };
 
 const tabs = ['about', 'publications', 'projects', 'misc', 'blog', 'cv'];
+const markdownRenderer = createMarkdownRenderer();
 
 const AMCHARTS_SCRIPTS = [
     'https://cdn.amcharts.com/lib/5/index.js',
@@ -18,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bindTabEvents();
     syncHeaderOffset();
     window.addEventListener('resize', syncHeaderOffset);
+    window.addEventListener('scroll', updateBlogScrollTopButtonVisibility, { passive: true });
     if (document.fonts?.ready) {
         document.fonts.ready.then(syncHeaderOffset).catch(() => { });
     }
@@ -98,6 +102,11 @@ function activateTab(tabId) {
     });
 
     history.replaceState(null, '', `#${tabId}`);
+
+    if (tabId === 'blog' && state.blogViewingPost) {
+        renderBlog(state.data?.blog || {});
+    }
+    updateBlogScrollTopButtonVisibility();
 }
 
 function renderAll(data) {
@@ -106,7 +115,7 @@ function renderAll(data) {
     renderPublications(data.publications);
     renderProjects(data.projects);
     renderMisc(data.misc);
-    renderSimpleTab('blog', data.links.blog);
+    renderBlog(data.blog);
     renderCvTab(data.links.cv);
 }
 
@@ -486,23 +495,6 @@ function ensureScript(url) {
     });
 }
 
-function renderSimpleTab(tabId, payload) {
-    const panel = document.getElementById(`tab-${tabId}`);
-    if (!panel) {
-        return;
-    }
-
-    panel.innerHTML = `
-        <section class="section-card card">
-            <h2 class="section-title">${renderConfigText(payload.title)}</h2>
-            <p>${renderConfigText(payload.description)}</p>
-            <div class="link-row">
-                <a class="cta-button primary" href="${payload.url}" target="_blank" rel="noopener">Open ${escapeHtml(payload.title)}</a>
-            </div>
-        </section>
-    `;
-}
-
 function renderCvTab(payload) {
     const panel = document.getElementById('tab-cv');
     if (!panel) {
@@ -526,6 +518,254 @@ function renderCvTab(payload) {
             </div>
         </section>
     `;
+}
+
+function renderBlog(blog = {}) {
+    const panel = document.getElementById('tab-blog');
+    if (!panel) {
+        return;
+    }
+    state.blogViewingPost = false;
+
+    const posts = Array.isArray(blog.posts) ? blog.posts : [];
+    const listHtml = posts.length > 0
+        ? posts.map((post, index) => `
+            <article class="blog-list-item card">
+                <div class="blog-cover-link">
+                    <img class="blog-cover" src="${escapeHtml(post.cover || '')}" alt="${escapeHtml(post.title || 'Blog cover')}" loading="lazy">
+                </div>
+                <div class="blog-item-content">
+                    <h3 class="blog-item-title">${renderConfigText(post.title || `Post ${index + 1}`)}</h3>
+                    <p class="blog-item-intro">${renderConfigText(post.intro || '')}</p>
+                    <button class="cta-button secondary blog-open-button" type="button" data-post-index="${index}">Read Article</button>
+                </div>
+            </article>
+        `).join('')
+        : '<p>No blog posts configured yet.</p>';
+
+    panel.innerHTML = `
+        <section class="section-card card">
+            <h2 class="section-title">${renderConfigText(blog.title || 'Blog')}</h2>
+            <p>${renderConfigText(blog.description || 'Configure posts in data/site-content.json.')}</p>
+            <div class="blog-list">${listHtml}</div>
+        </section>
+    `;
+
+    panel.querySelectorAll('.blog-open-button').forEach((button) => {
+        button.addEventListener('click', () => {
+            const index = Number(button.dataset.postIndex);
+            openBlogPost(index);
+        });
+    });
+    if (state.blogLightbox) {
+        state.blogLightbox.destroy();
+        state.blogLightbox = null;
+    }
+    updateBlogScrollTopButtonVisibility();
+}
+
+async function openBlogPost(postIndex) {
+    const panel = document.getElementById('tab-blog');
+    const blogData = state.data?.blog || {};
+    const posts = Array.isArray(blogData.posts) ? blogData.posts : [];
+    const post = posts[postIndex];
+
+    if (!panel || !post) {
+        return;
+    }
+
+    const title = String(post.title || 'Untitled Post');
+    const intro = String(post.intro || '');
+    const markdownPath = String(post.markdown || '').trim();
+    state.blogViewingPost = true;
+    if (!markdownPath) {
+        panel.innerHTML = `
+            <section class="section-card card">
+                <h2 class="section-title">${escapeHtml(title)}</h2>
+                <p>Missing markdown path in blog post config.</p>
+                <button class="cta-button secondary blog-back-button" type="button">Back to Blog List</button>
+            </section>
+        `;
+        panel.querySelector('.blog-back-button')?.addEventListener('click', () => renderBlog(blogData));
+        return;
+    }
+
+    panel.innerHTML = `
+        <section class="section-card card blog-article-shell">
+            <button class="cta-button secondary blog-back-button" type="button">Back to Blog List</button>
+            <h2 class="section-title">${escapeHtml(title)}</h2>
+            <p class="blog-item-intro">${renderConfigText(intro)}</p>
+            <div class="blog-article-loading">Loading article...</div>        
+            <button class="blog-scroll-top" type="button" aria-label="Back to top">Top</button>
+        </section>
+    `;
+
+    panel.querySelector('.blog-back-button')?.addEventListener('click', () => renderBlog(blogData));
+    panel.querySelector('.blog-scroll-top')?.addEventListener('click', scrollToTop);
+    updateBlogScrollTopButtonVisibility();
+
+    try {
+        const response = await fetch(markdownPath, { cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error(`Failed to load markdown: ${response.status}`);
+        }
+
+        if (!markdownRenderer) {
+            throw new Error('Markdown renderer is not available.');
+        }
+
+        const markdown = await response.text();
+        const rawHtml = markdownRenderer.render(markdown);
+        const hydratedHtml = hydrateBlogHtml(rawHtml, markdownPath, title);
+        const coverMarkup = post.cover
+            ? `
+                <figure class="blog-article-cover-wrap">
+                    <a class="blog-article-cover-link glightbox" href="${escapeHtml(post.cover)}" data-gallery="blog-article-cover" data-title="${escapeHtml(title)}">
+                        <img class="blog-article-cover" src="${escapeHtml(post.cover)}" alt="${escapeHtml(title)} cover" loading="lazy">
+                    </a>
+                </figure>
+            `
+            : '';
+
+        panel.innerHTML = `
+            <section class="section-card card blog-article-shell">
+                <button class="cta-button secondary blog-back-button" type="button">Back to Blog List</button>
+                <h2 class="section-title">${escapeHtml(title)}</h2>
+                <p class="blog-item-intro">${renderConfigText(intro)}</p>
+                <article class="blog-article markdown-body">
+                    ${coverMarkup}
+                    ${hydratedHtml}
+                </article>
+                <button class="blog-scroll-top" type="button" aria-label="Back to top">Top</button>
+            </section>
+        `;
+
+        panel.querySelector('.blog-back-button')?.addEventListener('click', () => renderBlog(blogData));
+        panel.querySelector('.blog-scroll-top')?.addEventListener('click', scrollToTop);
+        initBlogLightbox('#tab-blog .glightbox');
+        updateBlogScrollTopButtonVisibility();
+    } catch (error) {
+        panel.innerHTML = `
+            <section class="section-card card blog-article-shell">
+                <button class="cta-button secondary blog-back-button" type="button">Back to Blog List</button>
+                <h2 class="section-title">${escapeHtml(title)}</h2>
+                <p>Failed to load this post: ${escapeHtml(error.message)}</p>
+                <button class="blog-scroll-top" type="button" aria-label="Back to top">Top</button>
+            </section>
+        `;
+        panel.querySelector('.blog-back-button')?.addEventListener('click', () => renderBlog(blogData));
+        panel.querySelector('.blog-scroll-top')?.addEventListener('click', scrollToTop);
+        updateBlogScrollTopButtonVisibility();
+    }
+}
+
+function hydrateBlogHtml(html, markdownPath, title) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    const base = new URL(markdownPath, window.location.href);
+
+    template.content.querySelectorAll('img').forEach((image) => {
+        const src = image.getAttribute('src') || '';
+        if (!src) {
+            return;
+        }
+
+        const resolvedSrc = new URL(src, base).href;
+        image.setAttribute('src', resolvedSrc);
+        image.setAttribute('loading', 'lazy');
+
+        const parentAnchor = image.closest('a');
+        if (parentAnchor) {
+            const href = parentAnchor.getAttribute('href') || resolvedSrc;
+            parentAnchor.setAttribute('href', new URL(href, base).href);
+            parentAnchor.classList.add('glightbox');
+            parentAnchor.setAttribute('data-gallery', 'blog-article-images');
+            parentAnchor.setAttribute('data-title', title);
+            return;
+        }
+
+        const link = document.createElement('a');
+        link.href = resolvedSrc;
+        link.className = 'glightbox';
+        link.setAttribute('data-gallery', 'blog-article-images');
+        link.setAttribute('data-title', title);
+        image.replaceWith(link);
+        link.appendChild(image);
+    });
+
+    template.content.querySelectorAll('a[href]').forEach((anchor) => {
+        if (anchor.classList.contains('glightbox')) {
+            return;
+        }
+
+        const href = anchor.getAttribute('href') || '';
+        if (!href || href.startsWith('#')) {
+            return;
+        }
+
+        try {
+            const parsed = new URL(href, base);
+            anchor.setAttribute('href', parsed.href);
+            if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                anchor.setAttribute('target', '_blank');
+                anchor.setAttribute('rel', 'noopener');
+            }
+        } catch {
+            // Keep original href when URL parsing fails.
+        }
+    });
+
+    return template.innerHTML;
+}
+
+function initBlogLightbox(selector) {
+    if (!window.GLightbox) {
+        return;
+    }
+    if (state.blogLightbox) {
+        state.blogLightbox.destroy();
+    }
+    state.blogLightbox = window.GLightbox({
+        selector,
+        touchNavigation: true,
+        loop: true
+    });
+}
+
+function createMarkdownRenderer() {
+    if (!window.markdownit) {
+        return;
+    }
+
+    const md = window.markdownit({
+        html: false,
+        linkify: true,
+        breaks: false
+    });
+
+    if (typeof window.markdownitKatexBridge === 'function') {
+        md.use(window.markdownitKatexBridge);
+    }
+
+    return md;
+}
+
+function updateBlogScrollTopButtonVisibility() {
+    const button = document.querySelector('#tab-blog .blog-scroll-top');
+    if (!button) {
+        return;
+    }
+    const blogPanel = document.getElementById('tab-blog');
+    const isBlogActive = Boolean(blogPanel?.classList.contains('active'));
+    const shouldShow = isBlogActive && state.blogViewingPost && window.scrollY > 260;
+    button.classList.toggle('is-visible', shouldShow);
+}
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
 }
 
 function initProfileMiniGame(profile = {}) {

@@ -299,6 +299,18 @@
       ]
     }
   },
+  "blog": {
+    "title": "Blog",
+    "description": "This is just a mini technical blog. You can find more content on <a href=\"https://cirno.me/\" target=\"_blank\" rel=\"noopener\">my personal blog</a>.",
+    "posts": [
+      {
+        "title": "Introducing Isotropic Level",
+        "cover": "posts/introducing isotropic level/cover.jpg",
+        "intro": "A practical metric for measuring anisotropy distance of elasticity tensors, with derivation and C++ implementation notes.",
+        "markdown": "posts/introducing isotropic level/Introducing Isotropic Level.md"
+      }
+    ]
+  },
   "links": {
     "cv": {
       "title": "CV",
