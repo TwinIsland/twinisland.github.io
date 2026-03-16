@@ -122,7 +122,6 @@ function renderAll(data) {
 function renderHeader(site) {
     document.getElementById('site-name').textContent = site?.name || 'Personal Website';
     document.getElementById('site-subtitle').textContent = site?.subtitle || '';
-    document.title = site?.name || 'Personal Website';
 }
 
 function renderAbout(data) {
