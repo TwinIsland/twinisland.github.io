@@ -244,6 +244,7 @@ function renderPublications(publications) {
                         <h3 class="publication-title">${renderConfigText(pub.title)}</h3>
                         <p class="publication-authors">${renderConfigText(pub.authors)}</p>
                         <p class="publication-conf">${renderConfigText(pub.conference)}</p>
+                        ${pub.abstract ? `<p class="publication-abstract">${renderConfigText(pub.abstract)}</p>` : ''}
                         <div class="link-row">
                             ${actionButtons}
                         </div>

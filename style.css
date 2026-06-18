@@ -508,6 +508,13 @@ body.maintenance-mode {
   opacity: 0.9;
 }
 
+.publication-abstract {
+  margin: 0.7rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  opacity: 0.92;
+}
+
 .link-row {
   margin-top: 0.85rem;
   display: flex;
