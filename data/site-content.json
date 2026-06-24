@@ -70,10 +70,13 @@
   "publications": [
     {
       "title": "Shellular Metamaterial Design via Compact Electric Potential Parametrization",
-      "authors": "Tianyi Huang, Chang Liu, Bohan Wang",
+      "authors": "<b>Tianyi Huang</b>, Chang Liu, Bohan Wang",
       "conference": "SIGGRAPH 2026",
       "teaser": "publications/Shellular Metamaterial teaser.png",
-      "abstract": "A compact yet highly expressive design space for shellular metamaterials that support both interactive exploration and inverse design."
+      "abstract": "A compact yet highly expressive design space for shellular metamaterials that support both interactive exploration and inverse design.",
+      "links": {
+        "arXiv": "https://arxiv.org/pdf/2511.04025"
+      }
     }
   ],
   "projects": [
@@ -321,7 +324,7 @@
     "description": "This is just a mini technical blog. You can find more content on <a href=\"https://cirno.me/\" target=\"_blank\" rel=\"noopener\">my personal blog</a>.",
     "posts": [
       {
-        "title": "Introducing Isotropic Level",
+        "title": "How to measure Isotropic",
         "cover": "posts/introducing isotropic level/cover.jpg",
         "intro": "A practical metric for measuring anisotropy distance of elasticity tensors, with derivation and C++ implementation notes.",
         "markdown": "posts/introducing isotropic level/Introducing Isotropic Level.md"
@@ -331,8 +334,8 @@
   "links": {
     "cv": {
       "title": "CV",
-      "description": "Too busy now, haven't updated yet.",
-      "url": "404_component.html"
+      "description": "Content might not be up to date.",
+      "url": "data\\Resume_V4.pdf"
     }
   }
 }

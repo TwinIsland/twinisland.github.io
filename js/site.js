@@ -786,7 +786,7 @@ function initProfileMiniGame(profile = {}) {
     const maxHp = Math.max(1, Number(profile.hp_max) || 100);
     const damagePerClick = Math.max(1, Number(profile.hp_damage) || 8);
     const wastedPhoto = String(profile.wasted_photo || 'me_wasted.jpg');
-    const requiredClicksToStart = 5;
+    const requiredClicksToStart = 1;
 
     let hp = maxHp;
     let defeated = false;
