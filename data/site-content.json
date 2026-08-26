@@ -1,4 +1,5 @@
 {
+  "$schema": "./site-content.schema.json",
   "maintenance": false,
   "site": {
     "name": "Tianyi Huang",
@@ -28,301 +29,363 @@
     ]
   },
   "about": {
-    "intro": [
+    "title": "About",
+    "description": [
       "I am a first year PhD student in Computer Science at the National University of Singapore, fortunate to be advised by <a href=\"https://bohanwang123.com/\" target=\"_blank\" rel=\"noopener\">Bohan Wang</a>. My work is in computer graphics, with a focus on 3D shape design and generation.",
-      "I like building systems that are both mathematically clean and actually useful. My recent interests span graphics, geometric modeling, and generative methods for controllable 3D content.",
-      "Before NUS, I completed my bachelor's degree in Computer Science at the University of Illinois Urbana-Champaign. I still have a soft spot for compilers, computer system, and audio programming, so side quests happen a lot."
-    ]
-  },
-  "education": [
-    {
-      "degree": "PhD in Computer Science",
-      "school": "National University of Singapore",
-      "date": "2025 - Present",
-      "details": "Working on computer graphics, especially 3D shape design and generation.",
-      "logo": "assets/nus_logo.png"
-    },
-    {
-      "degree": "B.S. in Computer Science",
-      "school": "University of Illinois Urbana-Champaign",
-      "date": "2021 - 2025",
-      "details": "Highest Distinction, Dean's List, James Scholar, GPA: 3.97/4.00.",
-      "logo": "assets/uiuc_logo.png"
-    }
-  ],
-  "experience": [
-    {
-      "role": "Visiting Scholar",
-      "org": "University of Virginia",
-      "date": "Oct 2024 - Oct 2025",
-      "meta": "Remote | Advisor: <a href=\"https://wenxiwang.github.io/\" target=\"_blank\" rel=\"noopener\">Wenxi Wang</a>",
-      "description": "Research on improving CDCL-based SAT solving performance, including advanced SAT solving strategies with graph neural network guidance."
-    },
-    {
-      "role": "Course Assistant",
-      "org": "University of Illinois Urbana-Champaign",
-      "date": "Aug 2022 - Dec 2022",
-      "meta": "Part-time | United States",
-      "description": "Served as course assistant for MATH 257: Linear Algebra with Computational Applications, hosted weekly office hours, and led weekly lab sessions supporting 100+ students."
-
-    }
-  ],
-  "publications": [
-    {
-      "title": "Shellular Metamaterial Design via Compact Electric Potential Parametrization",
-      "authors": "<b>Tianyi Huang</b>, Chang Liu, Bohan Wang",
-      "conference": "SIGGRAPH 2026",
-      "teaser": "publications/Shellular Metamaterial teaser.png",
-      "abstract": "A compact yet highly expressive design space for shellular metamaterials that support both interactive exploration and inverse design.",
-      "links": {
-        "arXiv": "https://arxiv.org/pdf/2511.04025"
+      "I like building systems that are both mathematically clean and actually useful. My recent interests span graphics, geometric modeling, and generative methods for controllable 3D content. Before NUS, I completed my bachelor's degree in Computer Science at the University of Illinois Urbana-Champaign."
+    ],
+    "content": {
+      "experience": {
+        "title": "Experience",
+        "items": [
+          {
+            "role": "Visiting Scholar",
+            "org": "University of Virginia",
+            "date": "Oct 2024 - Oct 2025",
+            "meta": "Remote | Advisor: <a href=\"https://wenxiwang.github.io/\" target=\"_blank\" rel=\"noopener\">Wenxi Wang</a>",
+            "description": "Research on improving CDCL-based SAT solving performance, including advanced SAT solving strategies with graph neural network guidance."
+          },
+          {
+            "role": "Course Assistant",
+            "org": "University of Illinois Urbana-Champaign",
+            "date": "Aug 2022 - Dec 2022",
+            "meta": "Part-time | United States",
+            "description": "Served as course assistant for MATH 257: Linear Algebra with Computational Applications, hosted weekly office hours, and led weekly lab sessions supporting 100+ students."
+          }
+        ]
+      },
+      "education": {
+        "title": "Education",
+        "items": [
+          {
+            "degree": "PhD in Computer Science",
+            "school": "National University of Singapore",
+            "date": "2025 - Present",
+            "details": "Working on computer graphics, especially 3D shape design and generation.",
+            "logo": "assets/nus_logo.png"
+          },
+          {
+            "degree": "B.S. in Computer Science",
+            "school": "University of Illinois Urbana-Champaign",
+            "date": "2021 - 2025",
+            "details": "Highest Distinction, Dean's List, James Scholar, GPA: 3.97/4.00.",
+            "logo": "assets/uiuc_logo.png"
+          }
+        ]
       }
     }
-  ],
-  "projects": [
-    {
-      "title": "QSynth: High-performance Multi-layered Audio Synthesizer",
-      "date": "Jan 2025 - Mar 2025",
-      "description": "QSynth is a high-performance multi-layered audio synthesizer written in C, featuring real-time audio processing with advanced instrument design capabilities.",
-      "tags": [
-        "C",
-        "Real-time Audio",
-        "WebAssembly"
-      ],
-      "github": "https://github.com/TwinIsland/QSynth",
-      "run_url": "projects/qsynth/index.html",
-      "how_to_play": [
-        "Wait a few seconds for the WebAssembly runtime to finish loading.",
-        "Use your keyboard and controls inside the app to trigger instruments and layers.",
-        "Use headphones if possible because dynamic range is pretty wide.",
-        "If audio does not start, click once inside the frame to activate browser audio context."
-      ]
-    },
-    {
-      "title": "Octave: Music Programming Language",
-      "date": "May 2024 - Jan 2025",
-      "description": "Designed a language for programmatic music composition with notation-like syntax, variables, and functions, compiled into MIDI files.",
-      "tags": [
-        "Programming Language Design",
-        "C",
-        "MIDI"
-      ],
-      "github": "https://github.com/Burnham310/Octave",
-      "run_url": "projects/octave/index.html",
-      "how_to_play": [
-        "Write or paste an Octave program in the editor.",
-        "Click Compile to generate and validate output.",
-        "Open example programs from the built-in links if you want quick starts.",
-        "Keep your favorite snippets in local storage for iterative experiments."
-      ]
-    }
-  ],
-  "misc": {
-    "summary": "I like bird photography, playing bass, hifi, anime and traveling.",
-    "bird_caption": "Photos taken with a Canon R8 (RF100-400, RF600).",
-    "birds": [
-      "birds/1.jpg",
-      "birds/2.jpg",
-      "birds/3.jpg",
-      "birds/4.jpg",
-      "birds/5.jpg",
-      "birds/6.jpg",
-      "birds/7.jpg",
-      "birds/8.jpg"
-    ],
-    "bass_text": "I play bass. Below is my performance of 'Finger' by Elephant Gym, they are the GOAT.",
-    "youtube": "https://www.youtube.com/embed/hT4ijQZ1ziQ",
-    "travel": {
-      "title": "Traveling",
-      "text": "I enjoy traveling, drinking beer and whisky, and reading while sitting on the streets of different cities.",
-      "places": [
-        {
-          "name": "Vancouver, Canada",
-          "lat": 49.2827,
-          "lon": -123.1207
-        },
-        {
-          "name": "Toronto, Canada",
-          "lat": 43.651,
-          "lon": -79.347
-        },
-        {
-          "name": "Chicago, USA",
-          "lat": 41.8781,
-          "lon": -87.6298
-        },
-        {
-          "name": "Los Angeles (LAX), USA",
-          "lat": 34.0522,
-          "lon": -118.2437
-        },
-        {
-          "name": "New York, USA",
-          "lat": 40.7128,
-          "lon": -74.006
-        },
-        {
-          "name": "Washington, DC, USA",
-          "lat": 38.9072,
-          "lon": -77.0369
-        },
-        {
-          "name": "Norway",
-          "lat": 59.9139,
-          "lon": 10.7522
-        },
-        {
-          "name": "Lofoten, Norway",
-          "lat": 68.1469,
-          "lon": 13.6113
-        },
-        {
-          "name": "Tromso, Norway",
-          "lat": 69.6492,
-          "lon": 18.9553
-        },
-        {
-          "name": "Turkey",
-          "lat": 41.0082,
-          "lon": 28.9784
-        },
-        {
-          "name": "China",
-          "lat": 31.2304,
-          "lon": 121.4737
-        },
-        {
-          "name": "Sichuan, China",
-          "lat": 30.5728,
-          "lon": 104.0668
-        },
-        {
-          "name": "Beijing, China",
-          "lat": 39.9042,
-          "lon": 116.4074
-        },
-        {
-          "name": "Guangdong, China",
-          "lat": 23.1291,
-          "lon": 113.2644
-        },
-        {
-          "name": "Shenzhen, China",
-          "lat": 22.5431,
-          "lon": 114.0579
-        },
-        {
-          "name": "Hangzhou, China",
-          "lat": 30.2741,
-          "lon": 120.1551
-        },
-        {
-          "name": "Chongqing, China",
-          "lat": 29.5630,
-          "lon": 106.5516
-        },
-        {
-          "name": "Yunnan, China",
-          "lat": 25.0389,
-          "lon": 102.7183
-        },
-        {
-          "name": "Hainan, China",
-          "lat": 20.0440,
-          "lon": 110.1999
-        },
-        {
-          "name": "Hong Kong, China",
-          "lat": 22.3193,
-          "lon": 114.1694
-        },
-        {
-          "name": "Jiangsu, China",
-          "lat": 32.0603,
-          "lon": 118.7969
-        },
-        {
-          "name": "Guizhou, China",
-          "lat": 26.6470,
-          "lon": 106.6302
-        },
-        {
-          "name": "Qinghai, China",
-          "lat": 36.6171,
-          "lon": 101.7782
-        },
-        {
-          "name": "Inner Mongolia, China",
-          "lat": 40.8426,
-          "lon": 111.7492
-        },
-        {
-          "name": "Guangxi, China",
-          "lat": 22.8170,
-          "lon": 108.3669
-        },
-        {
-          "name": "Xinjiang, China",
-          "lat": 43.8256,
-          "lon": 87.6168
-        },
-        {
-          "name": "Henan, China",
-          "lat": 34.7473,
-          "lon": 113.6249
-        },
-        {
-          "name": "Singapore",
-          "lat": 1.3521,
-          "lon": 103.8198
-        },
-        {
-          "name": "Bangkok, Thailand",
-          "lat": 13.7563,
-          "lon": 100.5018
-        },
-        {
-          "name": "Pattaya, Thailand",
-          "lat": 12.9236,
-          "lon": 100.8825
-        },
-        {
-          "name": "Malaysia",
-          "lat": 3.139,
-          "lon": 101.6869
-        },
-        {
-          "name": "Ho Chi Minh City, Vietnam",
-          "lat": 10.8231,
-          "lon": 106.6297
-        },
-        {
-          "name": "Nha Trang, Vietnam",
-          "lat": 12.2388,
-          "lon": 109.1967
-        },
-        {
-          "name": "Cambodia",
-          "lat": 11.5564,
-          "lon": 104.9282
-        },
-        {
-          "name": "Melbourne, Australia",
-          "lat": -37.8136,
-          "lon": 144.9631
-        },
-        {
-          "name": "Tasmania, Australia",
-          "lat": -42.0409,
-          "lon": 146.8087
+  },
+  "publications": {
+    "title": "Publications",
+    "description": "Feel free to reach out if you are interested in or have questions about any of my publications.",
+    "content": [
+      {
+        "title": "Shellular Metamaterial Design via Compact Electric Potential Parametrization",
+        "authors": "<b>Tianyi Huang</b>, Chang Liu, Bohan Wang",
+        "conference": "SIGGRAPH 2026",
+        "teaser": "publications/Shellular Metamaterial teaser.png",
+        "poster": "publications/sig26_poster.jpg",
+        "abstract": "A compact yet highly expressive design space for shellular metamaterials that support both interactive exploration and inverse design.",
+        "links": {
+          "Web": "https://dl.acm.org/doi/10.1145/3799902.3811075",
+          "arXiv": "https://arxiv.org/pdf/2511.04025",
+          "Code": "https://github.com/TwinIsland/shell-homogenization"
         }
-      ]
-    }
+      }
+    ]
+  },
+  "projects": {
+    "title": "Projects",
+    "description": "Some of my side projects.",
+    "content": [
+      {
+        "title": "QSynth: High-performance Multi-layered Audio Synthesizer",
+        "date": "Jan 2025 - Mar 2025",
+        "description": "QSynth is a high-performance multi-layered audio synthesizer written in C, featuring real-time audio processing with advanced instrument design capabilities.",
+        "tags": [
+          "C",
+          "Real-time Audio",
+          "WebAssembly"
+        ],
+        "run_url": "projects/qsynth/index.html"
+      },
+      {
+        "title": "Octave: Music Programming Language",
+        "date": "May 2024 - Jan 2025",
+        "description": "Designed a language for programmatic music composition with notation-like syntax, variables, and functions, compiled into MIDI files.",
+        "tags": [
+          "C",
+          "Zig",
+          "MIDI"
+        ],
+        "run_url": "projects/octave/index.html"
+      }
+    ]
+  },
+  "misc": {
+    "title": "Misc",
+    "description": "I like bird photography, playing bass, whisky, reading, hifi, anime.",
+    "content": [
+      {
+        "title": "Bird Photography",
+        "description": "Photos taken with a Canon R8 (RF100-400, RF600, RF200-800). If you also like birding and based in Singapore, feel free to contact me for birding together😎.",
+        "module": {
+          "type": "gallery",
+          "items": [
+            {
+              "src": "birds/1.jpg",
+              "alt": "缩脖白鹭"
+            },
+            {
+              "src": "birds/2.jpg",
+              "alt": "帅帅帅"
+            },
+            {
+              "src": "birds/3.jpg",
+              "alt": "万物神鸟🙌"
+            },
+            {
+              "src": "birds/4.jpg",
+              "alt": "🦅"
+            },
+            {
+              "src": "birds/5.jpg",
+              "alt": "超大QQ😍"
+            },
+            {
+              "src": "birds/6.jpg",
+              "alt": "鹎鹎😎"
+            },
+            {
+              "src": "birds/7.jpg",
+              "alt": "嘎啦嘎啦"
+            },
+            {
+              "src": "birds/8.jpg",
+              "alt": "咕咕咕的好盆友"
+            },
+            {
+              "src": "birds/9.jpg",
+              "alt": "植物园学猫叫的炫鹩哥"
+            },
+            {
+              "src": "birds/10.jpg",
+              "alt": "柠檬"
+            },
+            {
+              "src": "birds/11.jpg",
+              "alt": "苦恶苦恶"
+            },
+            {
+              "src": "birds/12.jpg",
+              "alt": "猫猫😾"
+            }
+          ]
+        }
+      },
+      {
+        "title": "Bass",
+        "description": "I play bass. Below is my performance of 'Finger' by Elephant Gym, they are the GOAT.",
+        "module": {
+          "type": "youtube",
+          "url": "https://www.youtube.com/embed/hT4ijQZ1ziQ"
+        }
+      },
+      {
+        "title": "Traveling",
+        "description": "I enjoy traveling, drinking local beer, and reading while sitting on the streets of different cities.",
+        "module": {
+          "type": "map",
+          "places": [
+            {
+              "name": "Vancouver, Canada",
+              "lat": 49.2827,
+              "lon": -123.1207
+            },
+            {
+              "name": "Toronto, Canada",
+              "lat": 43.651,
+              "lon": -79.347
+            },
+            {
+              "name": "Chicago, USA",
+              "lat": 41.8781,
+              "lon": -87.6298
+            },
+            {
+              "name": "Los Angeles (LAX), USA",
+              "lat": 34.0522,
+              "lon": -118.2437
+            },
+            {
+              "name": "New York, USA",
+              "lat": 40.7128,
+              "lon": -74.006
+            },
+            {
+              "name": "Washington, DC, USA",
+              "lat": 38.9072,
+              "lon": -77.0369
+            },
+            {
+              "name": "Norway",
+              "lat": 59.9139,
+              "lon": 10.7522
+            },
+            {
+              "name": "Lofoten, Norway",
+              "lat": 68.1469,
+              "lon": 13.6113
+            },
+            {
+              "name": "Tromso, Norway",
+              "lat": 69.6492,
+              "lon": 18.9553
+            },
+            {
+              "name": "Turkey",
+              "lat": 41.0082,
+              "lon": 28.9784
+            },
+            {
+              "name": "China",
+              "lat": 31.2304,
+              "lon": 121.4737
+            },
+            {
+              "name": "Sichuan, China",
+              "lat": 30.5728,
+              "lon": 104.0668
+            },
+            {
+              "name": "Beijing, China",
+              "lat": 39.9042,
+              "lon": 116.4074
+            },
+            {
+              "name": "Guangdong, China",
+              "lat": 23.1291,
+              "lon": 113.2644
+            },
+            {
+              "name": "Shenzhen, China",
+              "lat": 22.5431,
+              "lon": 114.0579
+            },
+            {
+              "name": "Hangzhou, China",
+              "lat": 30.2741,
+              "lon": 120.1551
+            },
+            {
+              "name": "Chongqing, China",
+              "lat": 29.5630,
+              "lon": 106.5516
+            },
+            {
+              "name": "Yunnan, China",
+              "lat": 25.0389,
+              "lon": 102.7183
+            },
+            {
+              "name": "Hainan, China",
+              "lat": 20.0440,
+              "lon": 110.1999
+            },
+            {
+              "name": "Hong Kong, China",
+              "lat": 22.3193,
+              "lon": 114.1694
+            },
+            {
+              "name": "Jiangsu, China",
+              "lat": 32.0603,
+              "lon": 118.7969
+            },
+            {
+              "name": "Guizhou, China",
+              "lat": 26.6470,
+              "lon": 106.6302
+            },
+            {
+              "name": "Qinghai, China",
+              "lat": 36.6171,
+              "lon": 101.7782
+            },
+            {
+              "name": "Inner Mongolia, China",
+              "lat": 40.8426,
+              "lon": 111.7492
+            },
+            {
+              "name": "Guangxi, China",
+              "lat": 22.8170,
+              "lon": 108.3669
+            },
+            {
+              "name": "Xinjiang, China",
+              "lat": 43.8256,
+              "lon": 87.6168
+            },
+            {
+              "name": "Henan, China",
+              "lat": 34.7473,
+              "lon": 113.6249
+            },
+            {
+              "name": "Singapore",
+              "lat": 1.3521,
+              "lon": 103.8198
+            },
+            {
+              "name": "Bangkok, Thailand",
+              "lat": 13.7563,
+              "lon": 100.5018
+            },
+            {
+              "name": "Pattaya, Thailand",
+              "lat": 12.9236,
+              "lon": 100.8825
+            },
+            {
+              "name": "Malaysia",
+              "lat": 3.139,
+              "lon": 101.6869
+            },
+            {
+              "name": "Ho Chi Minh City, Vietnam",
+              "lat": 10.8231,
+              "lon": 106.6297
+            },
+            {
+              "name": "Nha Trang, Vietnam",
+              "lat": 12.2388,
+              "lon": 109.1967
+            },
+            {
+              "name": "Cambodia",
+              "lat": 11.5564,
+              "lon": 104.9282
+            },
+            {
+              "name": "Melbourne, Australia",
+              "lat": -37.8136,
+              "lon": 144.9631
+            },
+            {
+              "name": "Tasmania, Australia",
+              "lat": -42.0409,
+              "lon": 146.8087
+            }
+          ]
+        }
+      }
+    ]
   },
   "blog": {
     "title": "Blog",
     "description": "This is just a mini technical blog. You can find more content on <a href=\"https://cirno.me/\" target=\"_blank\" rel=\"noopener\">my personal blog</a>.",
-    "posts": [
+    "content": [
       {
         "title": "How to measure Isotropic",
         "cover": "posts/introducing isotropic level/cover.jpg",
@@ -331,11 +394,11 @@
       }
     ]
   },
-  "links": {
-    "cv": {
-      "title": "CV",
-      "description": "Content might not be up to date.",
-      "url": "data\\Resume_V4.pdf"
+  "cv": {
+    "title": "CV",
+    "description": "Content might not be up to date.",
+    "content": {
+      "url": "data/Resume_V4.pdf"
     }
   }
 }

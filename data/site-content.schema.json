@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tianyihuang.com/data/site-content.schema.json",
+  "title": "Personal site content",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "maintenance",
+    "site",
+    "profile",
+    "about",
+    "publications",
+    "projects",
+    "misc",
+    "blog",
+    "cv"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "maintenance": {
+      "type": "boolean"
+    },
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "subtitle"],
+      "properties": {
+        "name": { "type": "string" },
+        "subtitle": { "type": "string" }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["photo", "wasted_photo", "hp_max", "hp_damage", "name", "role", "school", "links"],
+      "properties": {
+        "photo": { "type": "string" },
+        "wasted_photo": { "type": "string" },
+        "hp_max": { "type": "number", "exclusiveMinimum": 0 },
+        "hp_damage": { "type": "number", "exclusiveMinimum": 0 },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "school": { "type": "string" },
+        "links": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/link" }
+        }
+      }
+    },
+    "about": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "content"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "$ref": "#/$defs/sectionDescription" },
+        "content": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["experience", "education"],
+          "properties": {
+            "experience": { "$ref": "#/$defs/experienceSection" },
+            "education": { "$ref": "#/$defs/educationSection" }
+          }
+        }
+      }
+    },
+    "publications": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "content"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "$ref": "#/$defs/sectionDescription" },
+        "content": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publication" }
+        }
+      }
+    },
+    "projects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "content"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "$ref": "#/$defs/sectionDescription" },
+        "content": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/project" }
+        }
+      }
+    },
+    "misc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "content"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "$ref": "#/$defs/sectionDescription" },
+        "content": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/miscItem" }
+        }
+      }
+    },
+    "blog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "content"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "$ref": "#/$defs/sectionDescription" },
+        "content": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/blogPost" }
+        }
+      }
+    },
+    "cv": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "content"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "$ref": "#/$defs/sectionDescription" },
+        "content": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url"],
+          "properties": {
+            "url": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sectionDescription": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      ]
+    },
+    "experienceSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "items"],
+      "properties": {
+        "title": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/experience" }
+        }
+      }
+    },
+    "educationSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "items"],
+      "properties": {
+        "title": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/education" }
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "url"],
+      "properties": {
+        "label": { "type": "string" },
+        "url": { "type": "string" }
+      }
+    },
+    "education": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["degree", "school", "date", "details", "logo"],
+      "properties": {
+        "degree": { "type": "string" },
+        "school": { "type": "string" },
+        "date": { "type": "string" },
+        "details": { "type": "string" },
+        "logo": { "type": "string" }
+      }
+    },
+    "experience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "org", "date", "meta", "description"],
+      "properties": {
+        "role": { "type": "string" },
+        "org": { "type": "string" },
+        "date": { "type": "string" },
+        "meta": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "publication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "authors", "conference", "teaser", "abstract", "links"],
+      "properties": {
+        "title": { "type": "string" },
+        "authors": { "type": "string" },
+        "conference": { "type": "string" },
+        "teaser": { "type": "string" },
+        "poster": { "type": "string" },
+        "abstract": { "type": "string" },
+        "links": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "date", "description", "tags", "run_url"],
+      "properties": {
+        "title": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "run_url": { "type": "string" }
+      }
+    },
+    "miscItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "module"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "module": {
+          "oneOf": [
+            { "$ref": "#/$defs/galleryModule" },
+            { "$ref": "#/$defs/youtubeModule" },
+            { "$ref": "#/$defs/mapModule" }
+          ]
+        }
+      }
+    },
+    "galleryModule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "items"],
+      "properties": {
+        "type": { "const": "gallery" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["src", "alt"],
+            "properties": {
+              "src": { "type": "string" },
+              "alt": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "youtubeModule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "url"],
+      "properties": {
+        "type": { "const": "youtube" },
+        "url": { "type": "string" }
+      }
+    },
+    "mapModule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "places"],
+      "properties": {
+        "type": { "const": "map" },
+        "places": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "lat", "lon"],
+            "properties": {
+              "name": { "type": "string" },
+              "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+              "lon": { "type": "number", "minimum": -180, "maximum": 180 }
+            }
+          }
+        }
+      }
+    },
+    "blogPost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "cover", "intro", "markdown"],
+      "properties": {
+        "title": { "type": "string" },
+        "cover": { "type": "string" },
+        "intro": { "type": "string" },
+        "markdown": { "type": "string" }
+      }
+    }
+  }
+}

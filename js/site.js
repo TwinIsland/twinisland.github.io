@@ -1,13 +1,24 @@
 const state = {
     data: null,
-    travelMapRoot: null,
+    miscMapRoots: [],
     amChartsLoadPromise: null,
-    birdLightbox: null,
+    miscGalleryLightbox: null,
+    publicationPosterLightbox: null,
     blogLightbox: null,
-    blogViewingPost: false
+    blogViewingPost: false,
+    lazyMediaObserver: null,
+    lazyMediaMutationObserver: null
 };
 
 const tabs = ['about', 'publications', 'projects', 'misc', 'blog', 'cv'];
+const tabRenderers = {
+    about: (section, data) => renderAbout(section, data.profile),
+    publications: (section) => renderPublications(section),
+    projects: (section) => renderProjects(section),
+    misc: (section) => renderMisc(section),
+    blog: (section) => renderBlog(section),
+    cv: (section) => renderCvTab(section)
+};
 const markdownRenderer = createMarkdownRenderer();
 
 const AMCHARTS_SCRIPTS = [
@@ -17,7 +28,11 @@ const AMCHARTS_SCRIPTS = [
     'https://cdn.amcharts.com/lib/5/themes/Animated.js'
 ];
 
+const PAGE_REVEAL_TIMEOUT_MS = 1500;
+const CONTENT_LOAD_TIMEOUT_MS = 5000;
+
 document.addEventListener('DOMContentLoaded', () => {
+    initLazyMedia();
     bindTabEvents();
     syncHeaderOffset();
     window.addEventListener('resize', syncHeaderOffset);
@@ -29,8 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initPage() {
+    const contentController = new AbortController();
+    const contentTimeoutId = setTimeout(() => contentController.abort(), CONTENT_LOAD_TIMEOUT_MS);
+
     try {
-        const response = await fetch('data/site-content.json', { cache: 'no-store' });
+        const response = await fetch('data/site-content.json', {
+            cache: 'no-store',
+            signal: contentController.signal
+        });
         if (!response.ok) {
             throw new Error(`Failed to load content: ${response.status}`);
         }
@@ -38,6 +59,7 @@ async function initPage() {
 
         if (state.data?.maitnaiance === true || state.data?.maintenance === true) {
             renderMaintenancePage();
+            await revealSiteWhenReady(document.querySelector('.maintenance-gif'));
             return;
         }
 
@@ -50,10 +72,46 @@ async function initPage() {
         } else {
             activateTab('about');
         }
+
+        await revealSiteWhenReady(document.querySelector('.profile-photo'));
     } catch (error) {
-        showLoadError(error.message);
+        const message = error.name === 'AbortError'
+            ? 'The site content took too long to load. Please refresh and try again.'
+            : error.message;
+        showLoadError(message);
         syncHeaderOffset();
+        revealSite();
+    } finally {
+        clearTimeout(contentTimeoutId);
     }
+}
+
+async function revealSiteWhenReady(criticalImage) {
+    const fontPromise = document.fonts
+        ? Promise.all([
+            document.fonts.load('400 1rem Poppins'),
+            document.fonts.load('700 1rem Poppins')
+        ])
+        : Promise.resolve();
+
+    const imagePromise = criticalImage?.decode
+        ? criticalImage.decode().catch(() => { })
+        : Promise.resolve();
+
+    await Promise.race([
+        Promise.allSettled([fontPromise, imagePromise]),
+        new Promise((resolve) => setTimeout(resolve, PAGE_REVEAL_TIMEOUT_MS))
+    ]);
+
+    syncHeaderOffset();
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    revealSite();
+}
+
+function revealSite() {
+    document.body.classList.remove('site-loading');
+    document.querySelector('.page-shell')?.setAttribute('aria-busy', 'false');
+    document.getElementById('site-loader')?.setAttribute('aria-hidden', 'true');
 }
 
 function renderMaintenancePage() {
@@ -65,7 +123,7 @@ function renderMaintenancePage() {
     document.body.classList.add('maintenance-mode');
     pageShell.innerHTML = `
         <section class="maintenance-shell">
-            <img class="maintenance-gif" src="assets/suica_chara.gif" alt="Maintenance character">
+            <img class="maintenance-gif" data-src="assets/suica_chara.gif" alt="Maintenance character" width="110" height="110" loading="lazy" decoding="async">
             <h1 class="maintenance-title">Under Maintenance</h1>
             <p class="maintenance-text">The site will be available on April 1st.</p>
         </section>
@@ -92,6 +150,7 @@ function activateTab(tabId) {
     if (!tabs.includes(tabId)) {
         return;
     }
+    const activePanel = document.getElementById(`tab-${tabId}`);
 
     document.querySelectorAll('.tab-button').forEach((button) => {
         button.classList.toggle('active', button.dataset.tab === tabId);
@@ -106,17 +165,45 @@ function activateTab(tabId) {
     if (tabId === 'blog' && state.blogViewingPost) {
         renderBlog(state.data?.blog || {});
     }
+    requestAnimationFrame(() => {
+        if (activePanel?.classList.contains('active')) {
+            replayTabMediaReveal(activePanel);
+        }
+    });
     updateBlogScrollTopButtonVisibility();
+}
+
+function replayTabMediaReveal(panel) {
+    panel.querySelectorAll('img[src], iframe[src]').forEach((element) => {
+        if (element.classList.contains('media-lazy')) {
+            return;
+        }
+        if (element instanceof HTMLImageElement && !element.complete) {
+            return;
+        }
+
+        element.classList.remove('tab-media-revealed');
+        void element.offsetWidth;
+        element.classList.add('tab-media-revealed');
+    });
 }
 
 function renderAll(data) {
     renderHeader(data.site);
-    renderAbout(data);
-    renderPublications(data.publications);
-    renderProjects(data.projects);
-    renderMisc(data.misc);
-    renderBlog(data.blog);
-    renderCvTab(data.links.cv);
+    tabs.forEach((tabId) => {
+        const section = data[tabId] || {};
+        const label = String(section.title || tabId);
+        const button = document.querySelector(`[data-tab="${tabId}"]`);
+        const panel = document.getElementById(`tab-${tabId}`);
+
+        if (button) {
+            button.textContent = label;
+        }
+        if (panel) {
+            panel.setAttribute('aria-label', label);
+        }
+        tabRenderers[tabId]?.(section, data);
+    });
 }
 
 function renderHeader(site) {
@@ -124,20 +211,36 @@ function renderHeader(site) {
     document.getElementById('site-subtitle').textContent = site?.subtitle || '';
 }
 
-function renderAbout(data) {
-    const profile = data.profile || {};
-    const about = data.about || {};
+function renderSectionDescription(description) {
+    const paragraphs = Array.isArray(description) ? description : [description];
+    return paragraphs
+        .filter((paragraph) => String(paragraph ?? '').trim())
+        .map((paragraph) => `<p>${renderConfigText(paragraph)}</p>`)
+        .join('');
+}
+
+function renderSectionShell(section = {}, contentHtml = '', extraClass = '') {
+    const className = ['section-card', 'card', extraClass].filter(Boolean).join(' ');
+    return `
+        <section class="${className}">
+            <h2 class="section-title">${renderConfigText(section.title || '')}</h2>
+            ${renderSectionDescription(section.description)}
+            ${contentHtml}
+        </section>
+    `;
+}
+
+function renderAbout(about = {}, profile = {}) {
     const aboutPanel = document.getElementById('tab-about');
+    const aboutContent = about.content || {};
+    const experience = aboutContent.experience || {};
+    const education = aboutContent.education || {};
 
     const profileLinks = (profile.links || [])
         .map((link) => `<a href="${link.url}" target="_blank" rel="noopener">${escapeHtml(link.label)}</a>`)
         .join('');
 
-    const introHtml = (about.intro || [])
-        .map((line) => `<p>${line}</p>`)
-        .join('');
-
-    const experienceHtml = (data.experience || [])
+    const experienceHtml = (experience.items || [])
         .map((item) => `
             <article class="timeline-item">
                 <div class="timeline-header">
@@ -151,11 +254,11 @@ function renderAbout(data) {
         `)
         .join('');
 
-    const educationHtml = (data.education || [])
+    const educationHtml = (education.items || [])
         .map((item) => `
             <article class="education-item">
                 <div class="education-logo-wrap">
-                    <img class="education-logo" src="${escapeHtml(item.logo || '')}" alt="${escapeHtml(item.school || 'School')} logo" loading="lazy">
+                    <img class="education-logo" data-src="${escapeHtml(item.logo || '')}" alt="${escapeHtml(item.school || 'School')} logo" loading="lazy" decoding="async">
                 </div>
                 <div class="education-content">
                     <div class="timeline-header">
@@ -174,7 +277,7 @@ function renderAbout(data) {
             <aside class="profile-card card">
                 <div class="profile-photo-game">
                     <button class="profile-photo-hitbox" type="button" aria-label="Attack profile mini game">
-                        <img class="profile-photo" src="${profile.photo || 'me.jpg'}" alt="Profile photo">
+                        <img class="profile-photo" data-src="${escapeHtml(profile.photo || 'me.jpg')}" alt="Profile photo" width="16" height="9" loading="lazy" decoding="async">
                     </button>
                     <div class="profile-hud">
                         <div class="profile-hp-track" aria-hidden="true">
@@ -190,20 +293,9 @@ function renderAbout(data) {
             </aside>
 
             <div class="about-main">
-                <section class="section-card card">
-                    <h2 class="section-title">About</h2>
-                    ${introHtml}
-                </section>
-
-                <section class="section-card card">
-                    <h2 class="section-title">Experience</h2>
-                    <div class="experience-list">${experienceHtml}</div>
-                </section>
-
-                <section class="section-card card">
-                    <h2 class="section-title">Education</h2>
-                    <div class="education-list">${educationHtml}</div>
-                </section>
+                ${renderSectionShell(about)}
+                ${renderSectionShell(experience, `<div class="experience-list">${experienceHtml}</div>`)}
+                ${renderSectionShell(education, `<div class="education-list">${educationHtml}</div>`)}
             </div>
         </div>
     `;
@@ -211,10 +303,10 @@ function renderAbout(data) {
     initProfileMiniGame(profile);
 }
 
-function renderPublications(publications) {
+function renderPublications(publications = {}) {
     const panel = document.getElementById('tab-publications');
-    const rows = (publications || [])
-        .map((pub) => {
+    const rows = (publications.content || [])
+        .map((pub, index) => {
             const linkMap = (pub.links && typeof pub.links === 'object') ? pub.links : {};
             const normalizedLinks = Object.entries(linkMap)
                 .filter(([name, url]) => String(name).trim() && String(url).trim())
@@ -229,16 +321,25 @@ function renderPublications(publications) {
                 }
             }
 
-            const actionButtons = normalizedLinks.length > 0
-                ? normalizedLinks
-                    .map((item) => `<a class="cta-button secondary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a>`)
-                    .join('')
-                : '<span class="cta-button secondary disabled">Links TBD</span>';
+            const posterUrl = String(pub.poster || '').trim();
+            const linkButtons = normalizedLinks
+                .map((item) => `<a class="cta-button secondary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a>`);
+            if (posterUrl) {
+                linkButtons.push(`
+                    <a class="cta-button secondary publication-poster-link glightbox"
+                        href="${escapeHtml(posterUrl)}"
+                        data-gallery="publication-poster-${index}"
+                        data-title="${escapeHtml(pub.title || 'Publication')} — Poster"
+                        target="_blank"
+                        rel="noopener">Poster</a>
+                `);
+            }
+            const actionButtons = linkButtons.join('') || '<span class="cta-button secondary disabled">Links TBD</span>';
 
             return `
                 <article class="publication-row card">
                     <div class="publication-teaser-wrap">
-                        <img class="publication-teaser" src="${pub.teaser}" alt="Publication teaser">
+                        <img class="publication-teaser" data-src="${escapeHtml(pub.teaser || '')}" alt="Publication teaser" width="16" height="9" loading="lazy" decoding="async">
                     </div>
                     <div class="publication-content">
                         <h3 class="publication-title">${renderConfigText(pub.title)}</h3>
@@ -254,19 +355,32 @@ function renderPublications(publications) {
         })
         .join('');
 
-    panel.innerHTML = `
-        <section class="section-card card">
-            <h2 class="section-title">Publications</h2>
-            <p>Feel free to reach out if you are interested in or have questions about any of my publications.</p>
-            <div class="publication-list">${rows}</div>
-        </section>
-    `;
+    panel.innerHTML = renderSectionShell(
+        publications,
+        `<div class="publication-list">${rows}</div>`
+    );
+
+    initPublicationPosterLightbox();
 }
 
-function renderProjects(projects) {
+function initPublicationPosterLightbox() {
+    if (!window.GLightbox) {
+        return;
+    }
+    if (state.publicationPosterLightbox) {
+        state.publicationPosterLightbox.destroy();
+    }
+    state.publicationPosterLightbox = window.GLightbox({
+        selector: '#tab-publications .publication-poster-link',
+        touchNavigation: true,
+        loop: false
+    });
+}
+
+function renderProjects(projects = {}) {
     const panel = document.getElementById('tab-projects');
 
-    const projectCards = (projects || [])
+    const projectCards = (projects.content || [])
         .map((project, index) => `
             <article class="project-item card">
                 <div class="project-main">
@@ -284,13 +398,10 @@ function renderProjects(projects) {
         `)
         .join('');
 
-    panel.innerHTML = `
-        <section class="section-card card">
-            <h2 class="section-title">Projects</h2>
-            <p>Click RUN to open each project in a dedicated popup window.</p>
-            <div class="project-list">${projectCards}</div>
-        </section>
-    `;
+    panel.innerHTML = renderSectionShell(
+        projects,
+        `<div class="project-list">${projectCards}</div>`
+    );
 
     panel.querySelectorAll('.run-button').forEach((button) => {
         button.addEventListener('click', () => {
@@ -302,92 +413,125 @@ function renderProjects(projects) {
 
 function renderMisc(misc = {}) {
     const panel = document.getElementById('tab-misc');
-    const birds = misc.birds || [];
-    const travelPlaces = misc.travel?.places || [];
+    if (!panel) {
+        return;
+    }
 
-    panel.innerHTML = `
-        <section class="section-card card">
-            <h2 class="section-title">Misc</h2>
-            <p>${renderConfigText(misc.summary || '')}</p>
+    disposeMiscModules();
+
+    const items = Array.isArray(misc.content) ? misc.content : [];
+    const itemHtml = items
+        .map((item, index) => `
             <section class="misc-block card">
-                <h2>Bird Photography</h2>
-                <p class="misc-caption">${renderConfigText(misc.bird_caption || 'Click any photo to open larger view.')}</p>
-                <div class="bird-strip">
-                    ${birds.map((path, index) => `
-                        <a class="bird-shot glightbox" href="${path}" data-gallery="bird-gallery" data-title="🦢🦆🦜🐦">
-                            <img src="${path}" alt="Bird photo ${index + 1}" loading="lazy">
-                        </a>
-                    `).join('')}
-                </div>
+                <h2>${renderConfigText(item.title || `Misc item ${index + 1}`)}</h2>
+                ${item.description ? `<p class="misc-caption">${renderConfigText(item.description)}</p>` : ''}
+                ${renderMiscModule(item.module, index, item.title)}
             </section>
+        `)
+        .join('');
 
-            <section class="misc-block card">
-                <h2>Bass</h2>
-                <p class="misc-caption">${renderConfigText(misc.bass_text || 'I play bass when free and keep exploring new grooves.')}</p>
-                <div class="embed-wrap">
-                    <iframe src="${misc.youtube || ''}" title="Bass performance" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                </div>
-            </section>
+    panel.innerHTML = renderSectionShell(
+        misc,
+        itemHtml || '<p>No miscellaneous items configured yet.</p>'
+    );
 
-            <section class="misc-block card">
-                <h2>${renderConfigText(misc.travel?.title || 'I LIKE TRAVELING')}</h2>
-                <p class="misc-caption">${renderConfigText(misc.travel?.text || 'Travel places shown below are configurable in JSON.')}</p>
-                <div id="travel-map" class="travel-map">
-                    <p class="map-status">Loading travel map...</p>
-                </div>
-                <div class="travel-chip-list">
-                    ${travelPlaces.map((place) => `<span class="chip">${escapeHtml(place.name)}</span>`).join('')}
-                </div>
-            </section>
-        </section>
-    `;
-
-    initBirdLightbox();
-    renderTravelMap(misc.travel || {});
+    initMiscGalleryLightbox();
+    items.forEach((item, index) => {
+        if (item.module?.type === 'map') {
+            renderMiscMap(item.module, `misc-map-${index}`);
+        }
+    });
 }
 
-function initBirdLightbox() {
+function renderMiscModule(module = {}, index, itemTitle = '') {
+    if (!module || typeof module !== 'object') {
+        return '<p class="misc-caption">No module configured.</p>';
+    }
+
+    if (module.type === 'gallery') {
+        const images = Array.isArray(module.items) ? module.items : [];
+        return `
+            <div class="gallery-grid">
+                ${images.map((image, imageIndex) => {
+                    const src = String(image?.src || '');
+                    const alt = String(image?.alt || `Gallery image ${imageIndex + 1}`);
+                    return `
+                        <a class="gallery-item glightbox" href="${escapeHtml(src)}" data-gallery="misc-gallery-${index}" data-title="${escapeHtml(alt)}">
+                            <img data-src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" width="4" height="3" loading="lazy" decoding="async">
+                        </a>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    if (module.type === 'youtube') {
+        return `
+            <div class="embed-wrap">
+                <iframe data-src="${escapeHtml(module.url || '')}" title="YouTube video: ${escapeHtml(itemTitle || `misc item ${index + 1}`)}" width="16" height="9" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+        `;
+    }
+
+    if (module.type === 'map') {
+        const places = Array.isArray(module.places) ? module.places : [];
+        return `
+            <div id="misc-map-${index}" class="misc-map">
+                <p class="map-status">Loading map...</p>
+            </div>
+            <div class="map-place-list">
+                ${places.map((place) => `<span class="chip">${escapeHtml(place.name || '')}</span>`).join('')}
+            </div>
+        `;
+    }
+
+    return `<p class="misc-caption">Unsupported module type: ${escapeHtml(module.type || 'unknown')}.</p>`;
+}
+
+function disposeMiscModules() {
+    state.miscMapRoots.forEach((root) => root.dispose());
+    state.miscMapRoots = [];
+
+    if (state.miscGalleryLightbox) {
+        state.miscGalleryLightbox.destroy();
+        state.miscGalleryLightbox = null;
+    }
+}
+
+function initMiscGalleryLightbox() {
     if (!window.GLightbox) {
         return;
     }
-    if (state.birdLightbox) {
-        state.birdLightbox.destroy();
-    }
-    state.birdLightbox = window.GLightbox({
+    state.miscGalleryLightbox = window.GLightbox({
         selector: '#tab-misc .glightbox',
         touchNavigation: true,
         loop: true
     });
 }
 
-async function renderTravelMap(travel) {
-    const mapContainer = document.getElementById('travel-map');
+async function renderMiscMap(module, containerId) {
+    const mapContainer = document.getElementById(containerId);
     if (!mapContainer) {
         return;
     }
 
-    const places = (travel.places || [])
-        .filter((place) => Number.isFinite(place.lat) && Number.isFinite(place.lon));
+    const places = (module.places || [])
+        .filter((place) => Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lon)));
 
     if (places.length === 0) {
-        mapContainer.innerHTML = '<p class="map-status">No travel locations configured yet.</p>';
+        mapContainer.innerHTML = '<p class="map-status">No map locations configured yet.</p>';
         return;
     }
 
-    mapContainer.innerHTML = '<p class="map-status">Loading travel map...</p>';
+    mapContainer.innerHTML = '<p class="map-status">Loading map...</p>';
 
     try {
         await ensureAmChartsReady();
 
-        if (state.travelMapRoot) {
-            state.travelMapRoot.dispose();
-            state.travelMapRoot = null;
-        }
-
         mapContainer.innerHTML = '';
 
-        const root = window.am5.Root.new('travel-map');
-        state.travelMapRoot = root;
+        const root = window.am5.Root.new(containerId);
+        state.miscMapRoots.push(root);
 
         root.setThemes([window.am5themes_Animated.new(root)]);
 
@@ -432,7 +576,7 @@ async function renderTravelMap(travel) {
                 title: place.name,
                 geometry: {
                     type: 'Point',
-                    coordinates: [place.lon, place.lat]
+                    coordinates: [Number(place.lon), Number(place.lat)]
                 }
             }))
         );
@@ -500,24 +644,24 @@ function renderCvTab(payload) {
     if (!panel) {
         return;
     }
+    const url = String(payload?.content?.url || '').trim();
 
-    panel.innerHTML = `
-        <section class="section-card card">
-            <h2 class="section-title">${renderConfigText(payload.title)}</h2>
-            <p>${renderConfigText(payload.description)}</p>
+    panel.innerHTML = renderSectionShell(
+        payload,
+        `
             <div class="cv-embed-wrap">
                 <iframe
                     class="cv-embed-frame"
-                    src="${payload.url}#view=FitH"
+                    src="${escapeHtml(url)}#view=FitH"
                     title="Embedded CV PDF"
                     loading="lazy">
                 </iframe>
             </div>
             <div class="link-row">
-                <a class="cta-button primary" href="${payload.url}" target="_blank" rel="noopener">Open Full PDF</a>
+                <a class="cta-button primary" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open Full PDF</a>
             </div>
-        </section>
-    `;
+        `
+    );
 }
 
 function renderBlog(blog = {}) {
@@ -527,12 +671,12 @@ function renderBlog(blog = {}) {
     }
     state.blogViewingPost = false;
 
-    const posts = Array.isArray(blog.posts) ? blog.posts : [];
+    const posts = Array.isArray(blog.content) ? blog.content : [];
     const listHtml = posts.length > 0
         ? posts.map((post, index) => `
             <article class="blog-list-item card">
                 <div class="blog-cover-link">
-                    <img class="blog-cover" src="${escapeHtml(post.cover || '')}" alt="${escapeHtml(post.title || 'Blog cover')}" loading="lazy">
+                    <img class="blog-cover" data-src="${escapeHtml(post.cover || '')}" alt="${escapeHtml(post.title || 'Blog cover')}" width="16" height="9" loading="lazy" decoding="async">
                 </div>
                 <div class="blog-item-content">
                     <h3 class="blog-item-title">${renderConfigText(post.title || `Post ${index + 1}`)}</h3>
@@ -543,13 +687,10 @@ function renderBlog(blog = {}) {
         `).join('')
         : '<p>No blog posts configured yet.</p>';
 
-    panel.innerHTML = `
-        <section class="section-card card">
-            <h2 class="section-title">${renderConfigText(blog.title || 'Blog')}</h2>
-            <p>${renderConfigText(blog.description || 'Configure posts in data/site-content.json.')}</p>
-            <div class="blog-list">${listHtml}</div>
-        </section>
-    `;
+    panel.innerHTML = renderSectionShell(
+        blog,
+        `<div class="blog-list">${listHtml}</div>`
+    );
 
     panel.querySelectorAll('.blog-open-button').forEach((button) => {
         button.addEventListener('click', () => {
@@ -567,7 +708,7 @@ function renderBlog(blog = {}) {
 async function openBlogPost(postIndex) {
     const panel = document.getElementById('tab-blog');
     const blogData = state.data?.blog || {};
-    const posts = Array.isArray(blogData.posts) ? blogData.posts : [];
+    const posts = Array.isArray(blogData.content) ? blogData.content : [];
     const post = posts[postIndex];
 
     if (!panel || !post) {
@@ -621,7 +762,7 @@ async function openBlogPost(postIndex) {
             ? `
                 <figure class="blog-article-cover-wrap">
                     <a class="blog-article-cover-link glightbox" href="${escapeHtml(post.cover)}" data-gallery="blog-article-cover" data-title="${escapeHtml(title)}">
-                        <img class="blog-article-cover" src="${escapeHtml(post.cover)}" alt="${escapeHtml(title)} cover" loading="lazy">
+                        <img class="blog-article-cover" data-src="${escapeHtml(post.cover)}" alt="${escapeHtml(title)} cover" width="2" height="1" loading="lazy" decoding="async">
                     </a>
                 </figure>
             `
@@ -671,8 +812,10 @@ function hydrateBlogHtml(html, markdownPath, title) {
         }
 
         const resolvedSrc = new URL(src, base).href;
-        image.setAttribute('src', resolvedSrc);
+        image.removeAttribute('src');
+        image.setAttribute('data-src', resolvedSrc);
         image.setAttribute('loading', 'lazy');
+        image.setAttribute('decoding', 'async');
 
         const parentAnchor = image.closest('a');
         if (parentAnchor) {
@@ -866,7 +1009,7 @@ function initProfileMiniGame(profile = {}) {
         if (hp <= 0) {
             defeated = true;
             hp = 0;
-            photo.src = wastedPhoto;
+            revealImageSource(photo, wastedPhoto);
             photo.alt = 'Wasted profile photo';
         }
 
@@ -874,8 +1017,109 @@ function initProfileMiniGame(profile = {}) {
     });
 }
 
+function initLazyMedia() {
+    const mediaSelector = 'img[data-src], iframe[data-src]';
+
+    const loadMedia = (element) => {
+        const source = element.dataset.src;
+        if (!source) {
+            markMediaRevealed(element);
+            return;
+        }
+
+        element.addEventListener('load', () => markMediaRevealed(element), { once: true });
+        element.addEventListener('error', () => markMediaRevealed(element), { once: true });
+        delete element.dataset.src;
+        element.src = source;
+
+        if (element instanceof HTMLImageElement && element.complete) {
+            markMediaRevealed(element);
+        }
+    };
+
+    const observeMedia = (element) => {
+        if (!element.dataset.src || element.classList.contains('media-lazy') || element.classList.contains('media-revealed')) {
+            return;
+        }
+
+        element.classList.add('media-lazy');
+        if (state.lazyMediaObserver) {
+            state.lazyMediaObserver.observe(element);
+        } else {
+            loadMedia(element);
+        }
+    };
+
+    if ('IntersectionObserver' in window) {
+        state.lazyMediaObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+
+                loadMedia(entry.target);
+                state.lazyMediaObserver.unobserve(entry.target);
+            });
+        }, {
+            rootMargin: '200px 0px',
+            threshold: 0.1
+        });
+    }
+
+    document.querySelectorAll(mediaSelector).forEach(observeMedia);
+    state.lazyMediaMutationObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (!(node instanceof Element)) {
+                    return;
+                }
+
+                if (node.matches(mediaSelector)) {
+                    observeMedia(node);
+                    return;
+                }
+
+                node.querySelectorAll(mediaSelector).forEach(observeMedia);
+            });
+        });
+    });
+    state.lazyMediaMutationObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+function markMediaRevealed(element) {
+    element.classList.remove('media-lazy');
+    if (element.classList.contains('media-revealed')) {
+        return;
+    }
+    element.classList.add('media-revealed');
+
+    let cleanedUp = false;
+    const finishReveal = () => {
+        if (cleanedUp) {
+            return;
+        }
+        cleanedUp = true;
+        element.classList.remove('media-revealed');
+    };
+
+    element.addEventListener('animationend', finishReveal, { once: true });
+    setTimeout(finishReveal, 900);
+}
+
+function revealImageSource(image, source) {
+    image.classList.remove('media-revealed');
+    image.classList.add('media-lazy');
+    const reveal = () => markMediaRevealed(image);
+    image.addEventListener('load', reveal, { once: true });
+    image.addEventListener('error', reveal, { once: true });
+    image.src = source;
+    if (image.complete) {
+        reveal();
+    }
+}
+
 function openProjectModal(projectIndex) {
-    const project = state.data?.projects?.[projectIndex];
+    const project = state.data?.projects?.content?.[projectIndex];
     if (!project) {
         return;
     }

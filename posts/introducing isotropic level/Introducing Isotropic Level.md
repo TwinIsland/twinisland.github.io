@@ -124,7 +124,7 @@ C_{\mathrm{iso}} = 3\kappa\,\mathbf{J} + 2\mu\,\mathbf{L}
 $$
 is the orthogonal projection of $C$ onto the space of isotropic elasticity tensors, and thus the closest isotropic tensor to $C$ under the Kelvin/Frobenius inner product.
 
-**Isotropic Level Metric: **
+**Isotropic Level Metric:**
 
 We define the isotropic level:
 $$
