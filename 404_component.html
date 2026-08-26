@@ -8,85 +8,9 @@
     <meta name="robots" content="noindex">
     <meta name="description" content="The page you requested could not be found.">
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            background:
-                radial-gradient(circle at top left, rgba(136, 212, 204, 0.2), transparent 32%),
-                radial-gradient(circle at bottom right, rgba(113, 47, 62, 0.12), transparent 28%),
-                #fcfaf6;
-        }
-
-        .not-found-shell {
-            min-height: calc(100vh - var(--header-height) - 3rem);
-            display: grid;
-            place-items: center;
-        }
-
-        .not-found-card {
-            max-width: 36rem;
-            padding: 2rem 0;
-        }
-
-        .not-found-code {
-            margin: 0;
-            font-size: clamp(4rem, 12vw, 7rem);
-            line-height: 0.95;
-            font-weight: 800;
-            letter-spacing: -0.06em;
-            color: var(--cp-ink);
-        }
-
-        .not-found-title {
-            margin: 0.7rem 0 0;
-            font-family: "Newsreader", serif;
-            font-size: clamp(1.7rem, 4vw, 2.5rem);
-            line-height: 1.1;
-        }
-
-        .not-found-copy {
-            margin: 0.9rem 0 0;
-            max-width: 32rem;
-            font-size: 0.95rem;
-            line-height: 1.7;
-            opacity: 0.88;
-        }
-
-        .not-found-actions {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            margin-top: 1.25rem;
-        }
-
-        .not-found-actions .cta-button {
-            background: #ffffffcc;
-        }
-
-        .cta-button.primary {
-            background: var(--cp-ink);
-            color: #fffdf8;
-            border-color: var(--cp-ink);
-        }
-
-        .cta-button.primary:hover,
-        .cta-button.secondary:hover {
-            transform: translateY(-1px);
-        }
-
-        @media (max-width: 720px) {
-            .page-shell {
-                padding-top: calc(var(--header-height) + 1.25rem);
-            }
-
-            .not-found-shell {
-                min-height: calc(100vh - var(--header-height) - 5rem);
-                align-items: start;
-            }
-        }
-    </style>
 </head>
 
-<body>
+<body class="not-found-page">
     <div class="page-shell">
 
         <main class="not-found-shell" id="main-content">
