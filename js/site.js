@@ -275,7 +275,13 @@ function renderAbout(about = {}, profile = {}) {
     const education = aboutContent.education || {};
 
     const profileLinks = (profile.links || [])
-        .map((link) => `<a href="${link.url}" target="_blank" rel="noopener">${escapeHtml(link.label)}</a>`)
+        .map((link) => {
+            const icon = String(link.icon || '').trim();
+            const iconMarkup = icon
+                ? `<img class="profile-link-icon" src="assets/icons/${escapeHtml(icon)}.svg" alt="" width="16" height="16" loading="lazy" decoding="async" onerror="this.remove()">`
+                : '';
+            return `<a href="${link.url}" target="_blank" rel="noopener">${iconMarkup}${escapeHtml(link.label)}</a>`;
+        })
         .join('');
 
     const experienceHtml = (experience.items || [])

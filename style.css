@@ -490,6 +490,9 @@ body.not-found-page {
 }
 
 .profile-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
   text-decoration: none;
   border: 1px solid var(--border-emphasis);
   color: var(--cp-ink);
@@ -498,6 +501,12 @@ body.not-found-page {
   font-weight: 700;
   font-size: 0.84rem;
   transition: background var(--motion-fast);
+}
+
+.profile-link-icon {
+  width: 1.1em;
+  height: 1.1em;
+  flex: none;
 }
 
 .profile-links a:hover {

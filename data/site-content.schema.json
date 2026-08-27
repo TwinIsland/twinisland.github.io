@@ -177,7 +177,8 @@
       "required": ["label", "url"],
       "properties": {
         "label": { "type": "string" },
-        "url": { "type": "string" }
+        "url": { "type": "string" },
+        "icon": { "type": "string", "description": "Optional icon key rendered from assets/icons/<key>.svg (built-in keys: mail, github, orcid)." }
       }
     },
     "education": {

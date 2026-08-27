@@ -16,15 +16,18 @@
     "links": [
       {
         "label": "Email",
+        "icon": "mail",
         "url": "mailto:tianyih@u.nus.edu"
       },
       {
         "label": "GitHub",
+        "icon": "github",
         "url": "https://github.com/TwinIsland"
       },
       {
-        "label": "Blog",
-        "url": "https://cirno.me/"
+        "label": "ORCID",
+        "icon": "orcid",
+        "url": "https://orcid.org/0009-0007-9773-1174"
       }
     ]
   },
