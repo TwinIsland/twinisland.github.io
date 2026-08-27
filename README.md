@@ -55,4 +55,4 @@ or with Python: `python -m http.server`. Then open `http://localhost:<port>`.
 
 ## Deploy to GitHub Pages
 
-Push this folder to a repository named `<username>.github.io` (or enable Pages for any repo) and it is live. To use a custom domain, put it in `CNAME`; to serve the 404 page, copy `404_component.html` to `404.html`.
+Push this folder to a repository named `<username>.github.io` (or enable Pages for any repo) and it is live. To use a custom domain, put it in `CNAME`.
