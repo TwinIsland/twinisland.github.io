@@ -6,8 +6,8 @@
     "subtitle": "PhD Student, National University of Singapore"
   },
   "profile": {
-    "photo": "me.jpg",
-    "wasted_photo": "me_wasted.jpg",
+    "photo": "data/images/profile/me.jpg",
+    "wasted_photo": "data/images/profile/me_wasted.jpg",
     "hp_max": 100,
     "hp_damage": 8,
     "name": "Tianyi Huang",
@@ -62,14 +62,14 @@
             "school": "National University of Singapore",
             "date": "2025 - Present",
             "details": "Working on computer graphics, especially 3D shape design and generation.",
-            "logo": "assets/nus_logo.png"
+            "logo": "data/images/logos/nus_logo.png"
           },
           {
             "degree": "B.S. in Computer Science",
             "school": "University of Illinois Urbana-Champaign",
             "date": "2021 - 2025",
             "details": "Highest Distinction, Dean's List, James Scholar, GPA: 3.97/4.00.",
-            "logo": "assets/uiuc_logo.png"
+            "logo": "data/images/logos/uiuc_logo.png"
           }
         ]
       }
@@ -83,8 +83,8 @@
         "title": "Shellular Metamaterial Design via Compact Electric Potential Parametrization",
         "authors": "<b>Tianyi Huang</b>, Chang Liu, Bohan Wang",
         "conference": "SIGGRAPH 2026",
-        "teaser": "publications/Shellular Metamaterial teaser.png",
-        "poster": "publications/sig26_poster.jpg",
+        "teaser": "data/images/publications/Shellular Metamaterial teaser.png",
+        "poster": "data/images/publications/sig26_poster.jpg",
         "abstract": "A compact yet highly expressive design space for shellular metamaterials that support both interactive exploration and inverse design.",
         "links": {
           "Web": "https://dl.acm.org/doi/10.1145/3799902.3811075",
@@ -133,51 +133,51 @@
           "type": "gallery",
           "items": [
             {
-              "src": "birds/1.jpg",
+              "src": "data/images/birds/1.jpg",
               "alt": "缩脖白鹭"
             },
             {
-              "src": "birds/2.jpg",
+              "src": "data/images/birds/2.jpg",
               "alt": "帅帅帅"
             },
             {
-              "src": "birds/3.jpg",
+              "src": "data/images/birds/3.jpg",
               "alt": "万物神鸟🙌"
             },
             {
-              "src": "birds/4.jpg",
+              "src": "data/images/birds/4.jpg",
               "alt": "🦅"
             },
             {
-              "src": "birds/5.jpg",
+              "src": "data/images/birds/5.jpg",
               "alt": "超大QQ😍"
             },
             {
-              "src": "birds/6.jpg",
+              "src": "data/images/birds/6.jpg",
               "alt": "鹎鹎😎"
             },
             {
-              "src": "birds/7.jpg",
+              "src": "data/images/birds/7.jpg",
               "alt": "嘎啦嘎啦"
             },
             {
-              "src": "birds/8.jpg",
+              "src": "data/images/birds/8.jpg",
               "alt": "咕咕咕的好盆友"
             },
             {
-              "src": "birds/9.jpg",
+              "src": "data/images/birds/9.jpg",
               "alt": "植物园学猫叫的炫鹩哥"
             },
             {
-              "src": "birds/10.jpg",
+              "src": "data/images/birds/10.jpg",
               "alt": "柠檬"
             },
             {
-              "src": "birds/11.jpg",
+              "src": "data/images/birds/11.jpg",
               "alt": "苦恶苦恶"
             },
             {
-              "src": "birds/12.jpg",
+              "src": "data/images/birds/12.jpg",
               "alt": "猫猫😾"
             }
           ]
@@ -398,7 +398,7 @@
     "title": "CV",
     "description": "Content might not be up to date.",
     "content": {
-      "url": "data/Resume_V4.pdf"
+      "url": "data/resume/Resume_V4.pdf"
     }
   }
 }

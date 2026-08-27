@@ -35,10 +35,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initLazyMedia();
     bindTabEvents();
     syncHeaderOffset();
+    syncTabIndicator();
     window.addEventListener('resize', syncHeaderOffset);
+    window.addEventListener('resize', syncTabIndicator);
     window.addEventListener('scroll', updateBlogScrollTopButtonVisibility, { passive: true });
     if (document.fonts?.ready) {
-        document.fonts.ready.then(syncHeaderOffset).catch(() => { });
+        document.fonts.ready.then(() => {
+            syncHeaderOffset();
+            syncTabIndicator();
+        }).catch(() => { });
     }
     initPage();
 });
@@ -146,6 +151,31 @@ function syncHeaderOffset() {
     document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
 }
 
+function syncTabIndicator() {
+    const nav = document.querySelector('.tab-nav');
+    const indicator = nav?.querySelector('.tab-indicator');
+    if (!nav || !indicator) {
+        return;
+    }
+
+    const buttons = [...nav.querySelectorAll('.tab-button')];
+    if (buttons.length === 0) {
+        return;
+    }
+
+    // The shared pill only makes sense on a single row; fall back to a plain
+    // active background when the tabs wrap (class handled in CSS).
+    const singleRow = buttons.every((button) => button.offsetTop === buttons[0].offsetTop);
+    nav.classList.toggle('is-wrapped', !singleRow);
+    if (!singleRow) {
+        return;
+    }
+
+    const activeButton = nav.querySelector('.tab-button.active') || buttons[0];
+    indicator.style.transform = `translateX(${activeButton.offsetLeft}px)`;
+    indicator.style.width = `${activeButton.offsetWidth}px`;
+}
+
 function activateTab(tabId) {
     if (!tabs.includes(tabId)) {
         return;
@@ -161,6 +191,7 @@ function activateTab(tabId) {
     });
 
     history.replaceState(null, '', `#${tabId}`);
+    syncTabIndicator();
 
     if (tabId === 'blog' && state.blogViewingPost) {
         renderBlog(state.data?.blog || {});
@@ -176,6 +207,9 @@ function activateTab(tabId) {
 function replayTabMediaReveal(panel) {
     panel.querySelectorAll('img[src], iframe[src]').forEach((element) => {
         if (element.classList.contains('media-lazy')) {
+            return;
+        }
+        if (element.closest('.profile-photo-game')) {
             return;
         }
         if (element instanceof HTMLImageElement && !element.complete) {
@@ -211,20 +245,24 @@ function renderHeader(site) {
     document.getElementById('site-subtitle').textContent = site?.subtitle || '';
 }
 
-function renderSectionDescription(description) {
+function renderSectionDescription(description, plain = false) {
     const paragraphs = Array.isArray(description) ? description : [description];
-    return paragraphs
+    const content = paragraphs
         .filter((paragraph) => String(paragraph ?? '').trim())
         .map((paragraph) => `<p>${renderConfigText(paragraph)}</p>`)
         .join('');
+    if (!content) {
+        return '';
+    }
+    return plain ? content : `<div class="section-description">${content}</div>`;
 }
 
-function renderSectionShell(section = {}, contentHtml = '', extraClass = '') {
+function renderSectionShell(section = {}, contentHtml = '', extraClass = '', plainDescription = false) {
     const className = ['section-card', 'card', extraClass].filter(Boolean).join(' ');
     return `
         <section class="${className}">
             <h2 class="section-title">${renderConfigText(section.title || '')}</h2>
-            ${renderSectionDescription(section.description)}
+            ${renderSectionDescription(section.description, plainDescription)}
             ${contentHtml}
         </section>
     `;
@@ -277,7 +315,7 @@ function renderAbout(about = {}, profile = {}) {
             <aside class="profile-card card">
                 <div class="profile-photo-game">
                     <button class="profile-photo-hitbox" type="button" aria-label="Attack profile mini game">
-                        <img class="profile-photo" data-src="${escapeHtml(profile.photo || 'me.jpg')}" alt="Profile photo" width="16" height="9" loading="lazy" decoding="async">
+                        <img class="profile-photo" data-src="${escapeHtml(profile.photo || 'data/images/profile/me.jpg')}" alt="Profile photo" width="16" height="9" loading="lazy" decoding="async">
                     </button>
                     <div class="profile-hud">
                         <div class="profile-hp-track" aria-hidden="true">
@@ -293,7 +331,7 @@ function renderAbout(about = {}, profile = {}) {
             </aside>
 
             <div class="about-main">
-                ${renderSectionShell(about)}
+                ${renderSectionShell(about, '', '', true)}
                 ${renderSectionShell(experience, `<div class="experience-list">${experienceHtml}</div>`)}
                 ${renderSectionShell(education, `<div class="education-list">${educationHtml}</div>`)}
             </div>
@@ -928,7 +966,26 @@ function initProfileMiniGame(profile = {}) {
 
     const maxHp = Math.max(1, Number(profile.hp_max) || 100);
     const damagePerClick = Math.max(1, Number(profile.hp_damage) || 8);
-    const wastedPhoto = String(profile.wasted_photo || 'me_wasted.jpg');
+    const wastedPhoto = String(profile.wasted_photo || 'data/images/profile/me_wasted.jpg');
+
+    const wastedPreload = new Image();
+    wastedPreload.decoding = 'async';
+    wastedPreload.src = wastedPhoto;
+    wastedPreload.decode?.().catch(() => { });
+
+    const clearPhotoFadeState = () => {
+        photo.classList.remove('media-lazy', 'media-revealed', 'tab-media-revealed');
+    };
+
+    const swapToWastedPhoto = async () => {
+        try {
+            await wastedPreload.decode();
+        } catch {
+            // Preload failed; swap anyway and let the browser paint when ready.
+        }
+        clearPhotoFadeState();
+        photo.src = wastedPhoto;
+    };
     const requiredClicksToStart = 1;
 
     let hp = maxHp;
@@ -957,6 +1014,7 @@ function initProfileMiniGame(profile = {}) {
     };
 
     const triggerHitEffect = () => {
+        clearPhotoFadeState();
         gameRoot.classList.remove('is-hit');
         void gameRoot.offsetWidth;
         gameRoot.classList.add('is-hit');
@@ -1009,7 +1067,7 @@ function initProfileMiniGame(profile = {}) {
         if (hp <= 0) {
             defeated = true;
             hp = 0;
-            revealImageSource(photo, wastedPhoto);
+            swapToWastedPhoto();
             photo.alt = 'Wasted profile photo';
         }
 
@@ -1104,18 +1162,6 @@ function markMediaRevealed(element) {
 
     element.addEventListener('animationend', finishReveal, { once: true });
     setTimeout(finishReveal, 900);
-}
-
-function revealImageSource(image, source) {
-    image.classList.remove('media-revealed');
-    image.classList.add('media-lazy');
-    const reveal = () => markMediaRevealed(image);
-    image.addEventListener('load', reveal, { once: true });
-    image.addEventListener('error', reveal, { once: true });
-    image.src = source;
-    if (image.complete) {
-        reveal();
-    }
 }
 
 function openProjectModal(projectIndex) {

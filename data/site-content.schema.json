@@ -36,8 +36,8 @@
       "additionalProperties": false,
       "required": ["photo", "wasted_photo", "hp_max", "hp_damage", "name", "role", "school", "links"],
       "properties": {
-        "photo": { "type": "string" },
-        "wasted_photo": { "type": "string" },
+        "photo": { "type": "string", "description": "Site-relative path to the profile photo (e.g. data/images/profile/me.jpg)." },
+        "wasted_photo": { "type": "string", "description": "Site-relative path to the 'wasted' game-over photo." },
         "hp_max": { "type": "number", "exclusiveMinimum": 0 },
         "hp_damage": { "type": "number", "exclusiveMinimum": 0 },
         "name": { "type": "string" },
@@ -131,7 +131,7 @@
           "additionalProperties": false,
           "required": ["url"],
           "properties": {
-            "url": { "type": "string" }
+            "url": { "type": "string", "description": "Site-relative path (or full URL) to the CV PDF (e.g. data/resume/Resume_V4.pdf)." }
           }
         }
       }
@@ -189,7 +189,7 @@
         "school": { "type": "string" },
         "date": { "type": "string" },
         "details": { "type": "string" },
-        "logo": { "type": "string" }
+        "logo": { "type": "string", "description": "Site-relative path to the school logo image (e.g. data/images/logos/nus_logo.png)." }
       }
     },
     "experience": {
@@ -212,8 +212,8 @@
         "title": { "type": "string" },
         "authors": { "type": "string" },
         "conference": { "type": "string" },
-        "teaser": { "type": "string" },
-        "poster": { "type": "string" },
+        "teaser": { "type": "string", "description": "Site-relative path to the publication teaser image." },
+        "poster": { "type": "string", "description": "Site-relative path to the publication poster image (optional)." },
         "abstract": { "type": "string" },
         "links": {
           "type": "object",
@@ -233,7 +233,7 @@
           "type": "array",
           "items": { "type": "string" }
         },
-        "run_url": { "type": "string" }
+        "run_url": { "type": "string", "description": "Site-relative path (or full URL) to a runnable demo page (e.g. projects/qsynth/index.html)." }
       }
     },
     "miscItem": {
@@ -265,7 +265,7 @@
             "additionalProperties": false,
             "required": ["src", "alt"],
             "properties": {
-              "src": { "type": "string" },
+              "src": { "type": "string", "description": "Site-relative path to the gallery image." },
               "alt": { "type": "string" }
             }
           }
@@ -308,9 +308,9 @@
       "required": ["title", "cover", "intro", "markdown"],
       "properties": {
         "title": { "type": "string" },
-        "cover": { "type": "string" },
+        "cover": { "type": "string", "description": "Site-relative path to the post cover image (e.g. posts/my-post/cover.jpg)." },
         "intro": { "type": "string" },
-        "markdown": { "type": "string" }
+        "markdown": { "type": "string", "description": "Site-relative path to the post markdown file." }
       }
     }
   }
