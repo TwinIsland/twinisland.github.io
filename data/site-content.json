@@ -387,7 +387,7 @@
   },
   "blog": {
     "title": "Blog",
-    "description": "This is just a mini technical blog. You can find more content on <a href=\"https://cirno.me/\" target=\"_blank\" rel=\"noopener\">my personal blog</a>.",
+    "description": "Just a mini technical blog.",
     "content": [
       {
         "title": "How to measure Isotropic",
