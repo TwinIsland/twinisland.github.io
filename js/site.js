@@ -91,7 +91,7 @@ async function initPage() {
             return;
         }
 
-        renderAll(state.data);
+        const badgeReady = renderAll(state.data);
         syncHeaderOffset();
 
         const initialTab = location.hash.replace('#', '');
@@ -101,7 +101,7 @@ async function initPage() {
             activateTab('about');
         }
 
-        await revealSiteWhenReady(document.querySelector('.profile-photo'));
+        await revealSiteWhenReady(document.querySelector('.profile-photo'), badgeReady);
     } catch (error) {
         const message = error.name === 'AbortError'
             ? 'The site content took too long to load. Please refresh and try again.'
@@ -114,7 +114,7 @@ async function initPage() {
     }
 }
 
-async function revealSiteWhenReady(criticalImage) {
+async function revealSiteWhenReady(criticalImage, badgeReady) {
     const fontPromise = document.fonts
         ? Promise.all([
             document.fonts.load('400 1rem Poppins'),
@@ -127,7 +127,7 @@ async function revealSiteWhenReady(criticalImage) {
         : Promise.resolve();
 
     await Promise.race([
-        Promise.allSettled([fontPromise, imagePromise]),
+        Promise.allSettled([fontPromise, imagePromise, badgeReady]),
         new Promise((resolve) => setTimeout(resolve, PAGE_REVEAL_TIMEOUT_MS))
     ]);
 
@@ -253,7 +253,7 @@ function replayTabMediaReveal(panel) {
 }
 
 function renderAll(data) {
-    renderHeader(data.site, data.profile?.badge);
+    const badgeReady = renderHeader(data.site, data.profile?.badge);
     tabs.forEach((tabId) => {
         const section = data[tabId] || {};
         const label = String(section.title || tabId);
@@ -268,6 +268,7 @@ function renderAll(data) {
         }
         tabRenderers[tabId]?.(section, data);
     });
+    return badgeReady;
 }
 
 function renderHeader(site, badgeConfig) {
@@ -317,6 +318,7 @@ function renderHeader(site, badgeConfig) {
             current = index;
             button.hidden = paths.length < 2;
             syncHeaderOffset();
+            return release?.ready;
         } catch (error) {
             console.warn('Header badge could not load:', error);
         } finally {
@@ -337,7 +339,7 @@ function renderHeader(site, badgeConfig) {
         }
         showBadge((current + 1) % paths.length);
     });
-    showBadge(current);
+    return showBadge(current);
 }
 
 function renderSectionDescription(description, plain = false) {

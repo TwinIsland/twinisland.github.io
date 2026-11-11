@@ -1402,6 +1402,10 @@ body.not-found-page {
   padding: 0.7rem;
 }
 
+:where(.is-mobile-layout) .about-grid {
+  gap: 1rem;
+}
+
 :where(.is-mobile-layout) .gallery-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }

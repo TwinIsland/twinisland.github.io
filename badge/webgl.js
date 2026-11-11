@@ -69,6 +69,8 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel,
     let pressX = 0;
     let pressY = 0;
     let resetTimer;
+    let finishFirstFrame;
+    const ready = new Promise((resolve) => { finishFirstFrame = resolve; });
 
     function draw(now) {
         if (lastFrame !== null) {
@@ -96,6 +98,8 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel,
             gl.uniform3f(press, pressX, pressY - travel, strength);
         }
         gl.drawArrays(gl.TRIANGLES, 0, 3);
+        finishFirstFrame?.();
+        finishFirstFrame = undefined;
         frame = reducedMotion.matches ? 0 : requestAnimationFrame(draw);
     }
 
@@ -141,6 +145,7 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel,
             return;
         }
         cancelAnimationFrame(frame);
+        finishFirstFrame?.();
         clearTimeout(resetTimer);
         resizeObserver.disconnect();
         events.abort();
@@ -158,5 +163,6 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel,
     }
     canvas.addEventListener('webglcontextlost', dispose, { once: true, signal: events.signal });
     refresh();
+    dispose.ready = ready;
     return dispose;
 }
