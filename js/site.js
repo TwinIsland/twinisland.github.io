@@ -44,8 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
         const scrollY = Math.max(0, Math.min(window.scrollY, maxScroll));
         const delta = scrollY - lastScrollY;
-        if (scrollY <= 8 || Math.abs(delta) >= 8) {
-            const compact = scrollY > 8 && delta > 0;
+        const threshold = 22;
+        if (scrollY <= 8 || Math.abs(delta) >= threshold) {
+            const compact = scrollY > threshold && delta > 0;
             if (root.classList.contains('is-badge-compact') !== compact) {
                 const animate = badgeSwitch && !badgeSwitch.hidden
                     && !root.classList.contains('is-mobile-layout') && !reducedMotion.matches;
