@@ -41,7 +41,7 @@ A single-page personal website template (About / Publications / Projects / Misc 
 3. **Write posts in `posts/<post-slug>/`.** Add a `cover.jpg` and a Markdown file, then register the post in the `blog` section of `site-content.json` (its `markdown` path). Images referenced inside the Markdown are resolved relative to the Markdown file itself.
 4. **Add projects under `projects/<project>/`.** Each folder is a self-contained static app; point `run_url` in `site-content.json` at its `index.html`.
 5. **Maintenance mode:** set `"maintenance": true` in `site-content.json` to show the under-maintenance page.
-6. **Search/replace the site identity:** site name/subtitle live in `site-content.json`; the SEO/social tags (og:image etc.) live in `index.html`.
+6. **Search/replace the site identity:** the site name lives in `site-content.json`; the SEO/social tags (og:image etc.) live in `index.html`. Set `profile.badge.module` to a site-relative module such as `badge/gyroid/index.js` that exports `mount(canvas)`. Set `profile.badge.width` to a positive number in CSS pixels for the side length of the square badge. A module path on its own still works. Omit `profile.badge` to hide the badge.
 
 ## Local Preview
 

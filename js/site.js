@@ -147,8 +147,21 @@ function syncHeaderOffset() {
         return;
     }
 
+    const root = document.documentElement;
+    const mobileWidth = window.matchMedia('(max-width: 864px)').matches;
+    let mobileLayout = mobileWidth;
+    if (!mobileWidth) {
+        // Measure the desktop header so the layout can switch back as space returns.
+        root.classList.remove('is-mobile-layout');
+        const brand = header.querySelector('.brand-wrap');
+        const nav = header.querySelector('.tab-nav');
+        mobileLayout = nav.getBoundingClientRect().top >= brand.getBoundingClientRect().bottom;
+    }
+
+    root.classList.toggle('is-mobile-layout', mobileLayout);
+    root.classList.toggle('is-compact-layout', mobileLayout || window.matchMedia('(max-width: 980px)').matches);
     const headerHeight = Math.ceil(header.getBoundingClientRect().height);
-    document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
+    root.style.setProperty('--header-height', `${headerHeight}px`);
 }
 
 function syncTabIndicator() {
@@ -223,7 +236,7 @@ function replayTabMediaReveal(panel) {
 }
 
 function renderAll(data) {
-    renderHeader(data.site);
+    renderHeader(data.site, data.profile?.badge);
     tabs.forEach((tabId) => {
         const section = data[tabId] || {};
         const label = String(section.title || tabId);
@@ -240,9 +253,29 @@ function renderAll(data) {
     });
 }
 
-function renderHeader(site) {
-    document.getElementById('site-name').textContent = site?.name || 'Personal Website';
-    document.getElementById('site-subtitle').textContent = site?.subtitle || '';
+function renderHeader(site, badgeConfig) {
+    const name = document.getElementById('site-name');
+    name.querySelector('.site-name-en').textContent = site?.name || 'Personal Website';
+    const chineseName = name.querySelector('.site-name-zh');
+    chineseName.textContent = site?.name_zh || '';
+    chineseName.hidden = !site?.name_zh;
+    const badgePath = typeof badgeConfig === 'string' ? badgeConfig : badgeConfig?.module;
+    if (typeof badgePath !== 'string' || !badgePath.trim()) {
+        return;
+    }
+
+    const badge = document.createElement('canvas');
+    badge.className = 'brand-badge';
+    const width = badgeConfig?.width;
+    if (Number.isFinite(width) && width > 0) {
+        badge.style.setProperty('--badge-width', `${width}px`);
+    }
+    badge.setAttribute('aria-hidden', 'true');
+    name.before(badge);
+
+    import(new URL(badgePath, document.baseURI).href)
+        .then(({ mount }) => mount(badge))
+        .catch((error) => console.warn('Header badge could not load:', error));
 }
 
 function renderSectionDescription(description, plain = false) {

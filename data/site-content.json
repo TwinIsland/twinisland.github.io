@@ -3,9 +3,13 @@
   "maintenance": false,
   "site": {
     "name": "Tianyi Huang",
-    "subtitle": "PhD Student, National University of Singapore"
+    "name_zh": "黄天毅"
   },
   "profile": {
+    "badge": {
+      "module": "badge/schwarz-d/index.js",
+      "width": 100
+    },
     "photo": "data/images/profile/me.jpg",
     "wasted_photo": "data/images/profile/me_wasted.jpg",
     "hp_max": 100,

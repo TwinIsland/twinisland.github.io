@@ -25,10 +25,10 @@
     "site": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "subtitle"],
+      "required": ["name"],
       "properties": {
         "name": { "type": "string" },
-        "subtitle": { "type": "string" }
+        "name_zh": { "type": "string" }
       }
     },
     "profile": {
@@ -36,6 +36,25 @@
       "additionalProperties": false,
       "required": ["photo", "wasted_photo", "hp_max", "hp_damage", "name", "role", "school", "links"],
       "properties": {
+        "badge": {
+          "description": "Optional square badge beside the header name.",
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["module"],
+              "properties": {
+                "module": { "type": "string", "minLength": 1, "description": "Site-relative JavaScript module that exports mount(canvas)." },
+                "width": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Optional side length in CSS pixels."
+                }
+              }
+            }
+          ]
+        },
         "photo": { "type": "string", "description": "Site-relative path to the profile photo (e.g. data/images/profile/me.jpg)." },
         "wasted_photo": { "type": "string", "description": "Site-relative path to the 'wasted' game-over photo." },
         "hp_max": { "type": "number", "exclusiveMinimum": 0 },
