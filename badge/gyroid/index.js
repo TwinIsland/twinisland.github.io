@@ -74,5 +74,6 @@ const fragmentSource = `
     `;
 
 export function mount(canvas) {
-    mountShader(canvas, fragmentSource);
+    canvas.style.aspectRatio = '1';
+    return mountShader(canvas, fragmentSource);
 }

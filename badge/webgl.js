@@ -1,4 +1,4 @@
-export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel } = {}) {
+export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel, pixelScale = 1 } = {}) {
     if (alpha) {
         canvas.style.background = 'none';
     }
@@ -46,6 +46,10 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel 
     }
 
     gl.useProgram(program);
+    const sceneSeed = gl.getUniformLocation(program, 'sceneSeed');
+    if (sceneSeed) {
+        gl.uniform1f(sceneSeed, Math.random() * 1024);
+    }
     const triangle = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, triangle);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
@@ -72,7 +76,7 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel 
         }
         lastFrame = now;
 
-        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        const ratio = Math.min(window.devicePixelRatio || 1, 2) * pixelScale;
         const width = Math.max(1, Math.round(canvas.clientWidth * ratio));
         const height = Math.max(1, Math.round(canvas.clientHeight * ratio));
         if (canvas.width !== width || canvas.height !== height) {
@@ -132,7 +136,10 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel 
     resizeObserver.observe(canvas);
     reducedMotion.addEventListener('change', refresh, { signal: events.signal });
     document.addEventListener('visibilitychange', refresh, { signal: events.signal });
-    canvas.addEventListener('webglcontextlost', () => {
+    function dispose() {
+        if (events.signal.aborted) {
+            return;
+        }
         cancelAnimationFrame(frame);
         clearTimeout(resetTimer);
         resizeObserver.disconnect();
@@ -143,6 +150,13 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel 
             canvas.removeAttribute('role');
             canvas.removeAttribute('tabindex');
         }
-    }, { once: true });
+        if (!gl.isContextLost()) {
+            gl.deleteBuffer(triangle);
+            gl.deleteProgram(program);
+            gl.getExtension('WEBGL_lose_context')?.loseContext();
+        }
+    }
+    canvas.addEventListener('webglcontextlost', dispose, { once: true, signal: events.signal });
     refresh();
+    return dispose;
 }

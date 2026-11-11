@@ -7,8 +7,9 @@
   },
   "profile": {
     "badge": {
-      "module": "badge/schwarz-d/index.js",
-      "width": 100
+      "list": ["badge/night-sky/index.js", "badge/schwarz-d/index.js", "badge/gyroid/index.js", "badge/prism-knot/index.js"],
+      "default": "badge/prism-knot/index.js",
+      "width": 88
     },
     "photo": "data/images/profile/me.jpg",
     "wasted_photo": "data/images/profile/me_wasted.jpg",
@@ -106,6 +107,13 @@
     "description": "Some of my side projects.",
     "content": [
       {
+        "title": "Badge Viewer",
+        "date": "Nov 2026",
+        "description": "The WebGL badges used on my website.",
+        "tags": ["WebGL", "GLSL"],
+        "run_url": "projects/badge-viewer/index.html"
+      },
+      {
         "title": "QSynth: High-performance Multi-layered Audio Synthesizer",
         "date": "Jan 2025 - Mar 2025",
         "description": "QSynth is a high-performance multi-layered audio synthesizer written in C, featuring real-time audio processing with advanced instrument design capabilities.",
@@ -131,7 +139,7 @@
   },
   "misc": {
     "title": "Misc",
-    "description": "I like bird photography, playing bass, whisky, reading, hifi, anime.",
+    "description": "I'm into bird photography, playing bass, whisky, music, reading, and anime.",
     "content": [
       {
         "title": "Bird Photography",
@@ -141,54 +149,67 @@
           "items": [
             {
               "src": "data/images/birds/1.jpg",
+              "thumbnail": "data/images/birds/thumbnails/1.webp",
               "alt": "缩脖白鹭"
             },
             {
               "src": "data/images/birds/2.jpg",
+              "thumbnail": "data/images/birds/thumbnails/2.webp",
               "alt": "帅帅帅"
             },
             {
               "src": "data/images/birds/3.jpg",
+              "thumbnail": "data/images/birds/thumbnails/3.webp",
               "alt": "万物神鸟🙌"
             },
             {
               "src": "data/images/birds/4.jpg",
+              "thumbnail": "data/images/birds/thumbnails/4.webp",
               "alt": "超大QQ😍"
             },
             {
               "src": "data/images/birds/5.jpg",
+              "thumbnail": "data/images/birds/thumbnails/5.webp",
               "alt": "嘎啦嘎啦"
             },
             {
               "src": "data/images/birds/6.jpg",
+              "thumbnail": "data/images/birds/thumbnails/6.webp",
               "alt": "柠檬"
             },
             {
               "src": "data/images/birds/7.jpg",
+              "thumbnail": "data/images/birds/thumbnails/7.webp",
               "alt": "苦恶苦恶"
             },
             {
               "src": "data/images/birds/8.jpg",
+              "thumbnail": "data/images/birds/thumbnails/8.webp",
               "alt": "猫猫😾"
             },
             {
               "src": "data/images/birds/9.jpg",
+              "thumbnail": "data/images/birds/thumbnails/9.webp",
               "alt": "帅"
             },
             {
               "src": "data/images/birds/10.jpg",
+              "thumbnail": "data/images/birds/thumbnails/10.webp",
               "alt": "小鸟玩具"
             },
             {
               "src": "data/images/birds/11.jpg",
+              "thumbnail": "data/images/birds/thumbnails/11.webp",
               "alt": "大嘴壳子"
             },
             {
               "src": "data/images/birds/12.jpg",
+              "thumbnail": "data/images/birds/thumbnails/12.webp",
               "alt": "炫"
             },
             {
               "src": "data/images/birds/13.jpg",
+              "thumbnail": "data/images/birds/thumbnails/13.webp",
               "alt": "抹茶团子"
             }
           ]
@@ -409,12 +430,5 @@
         "markdown": "posts/introducing isotropic level/Introducing Isotropic Level.md"
       }
     ]
-  },
-  "cv": {
-    "title": "CV",
-    "description": "Content might not be up to date.",
-    "content": {
-      "url": "data/resume/Resume_V4.pdf"
-    }
   }
 }

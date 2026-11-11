@@ -6,7 +6,7 @@ const fragmentSource = `
     uniform vec2 resolution;
     uniform float time;
     uniform vec3 press;
-    const float animationSpeed = 0.6;
+    const float animationSpeed = 0.48;
     vec3 pressCenter;
     vec3 viewRay;
 
@@ -63,14 +63,27 @@ const fragmentSource = `
         return p;
     }
 
+    float projectedExtent(vec3 axis) {
+        // The envelope's outermost vertex along an axis puts 0.83 on its
+        // largest component and the remaining 0.57 on its second largest.
+        vec3 a = abs(axis);
+        float largest = max(a.x, max(a.y, a.z));
+        float smallest = min(a.x, min(a.y, a.z));
+        float middle = a.x + a.y + a.z - largest - smallest;
+        return 0.83 * largest + 0.57 * middle;
+    }
+
     void main() {
         vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / min(resolution.x, resolution.y);
-        // Match --cp-accent and --cp-ink in style.css.
-        vec3 teal = vec3(136.0, 212.0, 204.0) / 255.0;
-        vec3 burgundy = vec3(113.0, 47.0, 62.0) / 255.0;
-        vec3 origin = objectSpace(vec3(uv * 2.02, -1.35));
+        vec3 seaGlass = vec3(173.0, 219.0, 211.0) / 255.0;
+        vec3 dustyRose = vec3(219.0, 167.0, 176.0) / 255.0;
+        float frameWidth = 1.88 * max(
+            projectedExtent(objectSpace(vec3(1.0, 0.0, 0.0))),
+            projectedExtent(objectSpace(vec3(0.0, 1.0, 0.0)))
+        );
+        vec3 origin = objectSpace(vec3(uv * frameWidth, -1.35));
         vec3 ray = objectSpace(vec3(0.0, 0.0, 1.0));
-        pressCenter = objectSpace(vec3(press.xy * 2.02, 0.0));
+        pressCenter = objectSpace(vec3(press.xy * frameWidth, 0.0));
         viewRay = ray;
         float depth = 0.0;
         const float hitTolerance = 0.0012;
@@ -81,16 +94,18 @@ const fragmentSource = `
                 vec3 n = normalAt(p);
                 vec3 key = objectSpace(normalize(vec3(-0.55, 0.65, -0.75)));
                 vec3 fill = objectSpace(normalize(vec3(0.8, -0.18, -0.36)));
+                vec3 bounce = objectSpace(normalize(vec3(0.12, -0.94, -0.32)));
                 float diffuse = max(dot(n, key), 0.0);
                 float warm = max(dot(n, fill), 0.0);
+                float bounceLight = max(dot(n, bounce), 0.0);
                 float fresnel = pow(1.0 - max(dot(n, -ray), 0.0), 3.0);
                 float shine = pow(max(dot(n, normalize(key - ray)), 0.0), 40.0);
                 float recess = clamp(crystal(p + n * 0.14) * 16.0, 0.0, 1.0);
                 // The clipped rim blends across the midsurface between both faces.
                 float face = smoothstep(-0.10, 0.10, signedDiamond(p));
-                vec3 material = mix(teal, burgundy, face);
-                vec3 color = material * (0.31 + 0.58 * diffuse + 0.19 * warm);
-                color *= mix(0.67, 1.0, recess);
+                vec3 material = mix(seaGlass, dustyRose, face);
+                vec3 color = material * (0.52 + 0.43 * diffuse + 0.16 * warm + 0.15 * bounceLight);
+                color *= mix(0.79, 1.0, recess);
                 vec3 highlight = mix(material, vec3(1.0, 0.92, 0.80), 0.22);
                 color = mix(color, highlight, 0.17 * fresnel + 0.40 * shine);
                 gl_FragColor = vec4(color, 1.0);
@@ -108,8 +123,10 @@ const fragmentSource = `
 `;
 
 export function mount(canvas) {
-    mountShader(canvas, fragmentSource, {
+    canvas.style.aspectRatio = '1';
+    return mountShader(canvas, fragmentSource, {
         alpha: true,
+        pixelScale: 1.15,
         pressLabel: 'Deform the Diamond TPMS sculpture'
     });
 }

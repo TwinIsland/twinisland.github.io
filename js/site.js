@@ -10,14 +10,13 @@ const state = {
     lazyMediaMutationObserver: null
 };
 
-const tabs = ['about', 'publications', 'projects', 'misc', 'blog', 'cv'];
+const tabs = ['about', 'publications', 'projects', 'misc', 'blog'];
 const tabRenderers = {
     about: (section, data) => renderAbout(section, data.profile),
     publications: (section) => renderPublications(section),
     projects: (section) => renderProjects(section),
     misc: (section) => renderMisc(section),
-    blog: (section) => renderBlog(section),
-    cv: (section) => renderCvTab(section)
+    blog: (section) => renderBlog(section)
 };
 const markdownRenderer = createMarkdownRenderer();
 
@@ -35,14 +34,38 @@ document.addEventListener('DOMContentLoaded', () => {
     initLazyMedia();
     bindTabEvents();
     syncHeaderOffset();
-    syncTabIndicator();
     window.addEventListener('resize', syncHeaderOffset);
-    window.addEventListener('resize', syncTabIndicator);
-    window.addEventListener('scroll', updateBlogScrollTopButtonVisibility, { passive: true });
+    let lastScrollY = window.scrollY;
+    const root = document.documentElement;
+    const badgeSwitch = document.querySelector('.badge-switch');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let switchMove;
+    window.addEventListener('scroll', () => {
+        const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        const scrollY = Math.max(0, Math.min(window.scrollY, maxScroll));
+        const delta = scrollY - lastScrollY;
+        if (scrollY <= 8 || Math.abs(delta) >= 8) {
+            const compact = scrollY > 8 && delta > 0;
+            if (root.classList.contains('is-badge-compact') !== compact) {
+                const animate = badgeSwitch && !badgeSwitch.hidden
+                    && !root.classList.contains('is-mobile-layout') && !reducedMotion.matches;
+                const start = animate ? badgeSwitch.getBoundingClientRect() : null;
+                switchMove?.cancel();
+                root.classList.toggle('is-badge-compact', compact);
+                if (start) {
+                    const end = badgeSwitch.getBoundingClientRect();
+                    switchMove = badgeSwitch.animate(
+                        [{ translate: `${start.left - end.left}px ${start.top - end.top}px` }, { translate: '0 0' }],
+                        { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+                    );
+                }
+            }
+            lastScrollY = scrollY;
+        }
+    }, { passive: true });
     if (document.fonts?.ready) {
         document.fonts.ready.then(() => {
             syncHeaderOffset();
-            syncTabIndicator();
         }).catch(() => { });
     }
     initPage();
@@ -139,6 +162,16 @@ function bindTabEvents() {
     document.querySelectorAll('.tab-button').forEach((button) => {
         button.addEventListener('click', () => activateTab(button.dataset.tab));
     });
+    document.querySelectorAll('.site-home-link').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+                return;
+            }
+            event.preventDefault();
+            activateTab('about');
+            window.scrollTo(0, 0);
+        });
+    });
 }
 
 function syncHeaderOffset() {
@@ -148,6 +181,8 @@ function syncHeaderOffset() {
     }
 
     const root = document.documentElement;
+    // Use the expanded header for both layout selection and the page offset.
+    root.classList.add('is-measuring-header', 'is-syncing-header');
     const mobileWidth = window.matchMedia('(max-width: 864px)').matches;
     let mobileLayout = mobileWidth;
     if (!mobileWidth) {
@@ -160,33 +195,11 @@ function syncHeaderOffset() {
 
     root.classList.toggle('is-mobile-layout', mobileLayout);
     root.classList.toggle('is-compact-layout', mobileLayout || window.matchMedia('(max-width: 980px)').matches);
-    const headerHeight = Math.ceil(header.getBoundingClientRect().height);
-    root.style.setProperty('--header-height', `${headerHeight}px`);
-}
-
-function syncTabIndicator() {
-    const nav = document.querySelector('.tab-nav');
-    const indicator = nav?.querySelector('.tab-indicator');
-    if (!nav || !indicator) {
-        return;
-    }
-
-    const buttons = [...nav.querySelectorAll('.tab-button')];
-    if (buttons.length === 0) {
-        return;
-    }
-
-    // The shared pill only makes sense on a single row; fall back to a plain
-    // active background when the tabs wrap (class handled in CSS).
-    const singleRow = buttons.every((button) => button.offsetTop === buttons[0].offsetTop);
-    nav.classList.toggle('is-wrapped', !singleRow);
-    if (!singleRow) {
-        return;
-    }
-
-    const activeButton = nav.querySelector('.tab-button.active') || buttons[0];
-    indicator.style.transform = `translateX(${activeButton.offsetLeft}px)`;
-    indicator.style.width = `${activeButton.offsetWidth}px`;
+    root.style.setProperty('--header-height', `${Math.ceil(header.getBoundingClientRect().height)}px`);
+    root.classList.remove('is-measuring-header');
+    // Commit the restored layout before re-enabling scroll transitions.
+    void header.offsetHeight;
+    root.classList.remove('is-syncing-header');
 }
 
 function activateTab(tabId) {
@@ -196,7 +209,13 @@ function activateTab(tabId) {
     const activePanel = document.getElementById(`tab-${tabId}`);
 
     document.querySelectorAll('.tab-button').forEach((button) => {
-        button.classList.toggle('active', button.dataset.tab === tabId);
+        const active = button.dataset.tab === tabId;
+        button.classList.toggle('active', active);
+        if (active) {
+            button.setAttribute('aria-current', 'page');
+        } else {
+            button.removeAttribute('aria-current');
+        }
     });
 
     document.querySelectorAll('.tab-panel').forEach((panel) => {
@@ -204,7 +223,6 @@ function activateTab(tabId) {
     });
 
     history.replaceState(null, '', `#${tabId}`);
-    syncTabIndicator();
 
     if (tabId === 'blog' && state.blogViewingPost) {
         renderBlog(state.data?.blog || {});
@@ -214,7 +232,6 @@ function activateTab(tabId) {
             replayTabMediaReveal(activePanel);
         }
     });
-    updateBlogScrollTopButtonVisibility();
 }
 
 function replayTabMediaReveal(panel) {
@@ -222,7 +239,7 @@ function replayTabMediaReveal(panel) {
         if (element.classList.contains('media-lazy')) {
             return;
         }
-        if (element.closest('.profile-photo-game')) {
+        if (element.closest('.profile-photo-game, .gallery-item')) {
             return;
         }
         if (element instanceof HTMLImageElement && !element.complete) {
@@ -255,27 +272,72 @@ function renderAll(data) {
 
 function renderHeader(site, badgeConfig) {
     const name = document.getElementById('site-name');
-    name.querySelector('.site-name-en').textContent = site?.name || 'Personal Website';
-    const chineseName = name.querySelector('.site-name-zh');
+    name.querySelector('.site-home-link').textContent = site?.name || 'Personal Website';
+    const brandName = name.closest('.brand-name');
+    const chineseName = brandName.querySelector('.site-name-zh');
     chineseName.textContent = site?.name_zh || '';
     chineseName.hidden = !site?.name_zh;
-    const badgePath = typeof badgeConfig === 'string' ? badgeConfig : badgeConfig?.module;
-    if (typeof badgePath !== 'string' || !badgePath.trim()) {
+
+    const sources = Array.isArray(badgeConfig?.list)
+        ? badgeConfig.list
+        : [typeof badgeConfig === 'string' ? badgeConfig : badgeConfig?.module];
+    const paths = [...new Set(sources.filter((path) => typeof path === 'string' && path.trim()))];
+    if (paths.length === 0) {
         return;
     }
 
-    const badge = document.createElement('canvas');
-    badge.className = 'brand-badge';
+    const button = brandName.querySelector('.badge-switch');
+    const icon = button.querySelector('span');
     const width = badgeConfig?.width;
-    if (Number.isFinite(width) && width > 0) {
-        badge.style.setProperty('--badge-width', `${width}px`);
-    }
-    badge.setAttribute('aria-hidden', 'true');
-    name.before(badge);
+    let current = Math.max(0, paths.indexOf(badgeConfig?.default));
+    let badge;
+    let dispose;
+    let switching = false;
+    let spin;
 
-    import(new URL(badgePath, document.baseURI).href)
-        .then(({ mount }) => mount(badge))
-        .catch((error) => console.warn('Header badge could not load:', error));
+    async function showBadge(index) {
+        switching = true;
+        try {
+            const { mount } = await import(new URL(paths[index], document.baseURI).href);
+            const next = document.createElement('canvas');
+            next.className = 'brand-badge';
+            next.setAttribute('aria-hidden', 'true');
+            if (Number.isFinite(width) && width > 0) {
+                next.style.setProperty('--badge-width', `${width}px`);
+            }
+            const release = mount(next);
+            if (badge) {
+                badge.replaceWith(next);
+                dispose?.();
+            } else {
+                brandName.before(next);
+            }
+            badge = next;
+            dispose = typeof release === 'function' ? release : undefined;
+            current = index;
+            button.hidden = paths.length < 2;
+            syncHeaderOffset();
+        } catch (error) {
+            console.warn('Header badge could not load:', error);
+        } finally {
+            switching = false;
+        }
+    }
+
+    button.addEventListener('click', () => {
+        if (switching) {
+            return;
+        }
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            spin?.cancel();
+            spin = icon.animate(
+                [{ transform: 'rotate(0turn)' }, { transform: 'rotate(1turn)' }],
+                { duration: 420, easing: 'cubic-bezier(0.25, 0.8, 0.25, 1)' }
+            );
+        }
+        showBadge((current + 1) % paths.length);
+    });
+    showBadge(current);
 }
 
 function renderSectionDescription(description, plain = false) {
@@ -400,10 +462,10 @@ function renderPublications(publications = {}) {
 
             const posterUrl = String(pub.poster || '').trim();
             const linkButtons = normalizedLinks
-                .map((item) => `<a class="cta-button secondary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a>`);
+                .map((item) => `<a class="cta-button" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a>`);
             if (posterUrl) {
                 linkButtons.push(`
-                    <a class="cta-button secondary publication-poster-link glightbox"
+                    <a class="cta-button publication-poster-link glightbox"
                         href="${escapeHtml(posterUrl)}"
                         data-gallery="publication-poster-${index}"
                         data-title="${escapeHtml(pub.title || 'Publication')} — Poster"
@@ -411,7 +473,7 @@ function renderPublications(publications = {}) {
                         rel="noopener">Poster</a>
                 `);
             }
-            const actionButtons = linkButtons.join('') || '<span class="cta-button secondary disabled">Links TBD</span>';
+            const actionButtons = linkButtons.join('') || '<span class="cta-button disabled">Links TBD</span>';
 
             return `
                 <article class="publication-row card">
@@ -469,7 +531,9 @@ function renderProjects(projects = {}) {
                     </div>
                 </div>
                 <div class="project-actions">
-                    <button class="run-button" data-project-index="${index}">Run Project</button>
+                    <button class="run-button" type="button" data-project-index="${index}">
+                        Play <span class="run-button-arrow" aria-hidden="true">↗</span>
+                    </button>
                 </div>
             </article>
         `)
@@ -531,10 +595,11 @@ function renderMiscModule(module = {}, index, itemTitle = '') {
             <div class="gallery-grid">
                 ${images.map((image, imageIndex) => {
                     const src = String(image?.src || '');
+                    const thumbnail = String(image?.thumbnail || src);
                     const alt = String(image?.alt || `Gallery image ${imageIndex + 1}`);
                     return `
                         <a class="gallery-item glightbox" href="${escapeHtml(src)}" data-gallery="misc-gallery-${index}" data-title="${escapeHtml(alt)}">
-                            <img data-src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" width="4" height="3" loading="lazy" decoding="async">
+                            <img data-src="${escapeHtml(thumbnail)}" alt="${escapeHtml(alt)}" width="4" height="3" loading="lazy" decoding="async">
                         </a>
                     `;
                 }).join('')}
@@ -716,31 +781,6 @@ function ensureScript(url) {
     });
 }
 
-function renderCvTab(payload) {
-    const panel = document.getElementById('tab-cv');
-    if (!panel) {
-        return;
-    }
-    const url = String(payload?.content?.url || '').trim();
-
-    panel.innerHTML = renderSectionShell(
-        payload,
-        `
-            <div class="cv-embed-wrap">
-                <iframe
-                    class="cv-embed-frame"
-                    src="${escapeHtml(url)}#view=FitH"
-                    title="Embedded CV PDF"
-                    loading="lazy">
-                </iframe>
-            </div>
-            <div class="link-row">
-                <a class="cta-button primary" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open Full PDF</a>
-            </div>
-        `
-    );
-}
-
 function renderBlog(blog = {}) {
     const panel = document.getElementById('tab-blog');
     if (!panel) {
@@ -752,13 +792,14 @@ function renderBlog(blog = {}) {
     const listHtml = posts.length > 0
         ? posts.map((post, index) => `
             <article class="blog-list-item card">
-                <div class="blog-cover-link">
-                    <img class="blog-cover" data-src="${escapeHtml(post.cover || '')}" alt="${escapeHtml(post.title || 'Blog cover')}" width="16" height="9" loading="lazy" decoding="async">
-                </div>
                 <div class="blog-item-content">
-                    <h3 class="blog-item-title">${renderConfigText(post.title || `Post ${index + 1}`)}</h3>
+                    <h3 class="blog-item-title">
+                        <button class="blog-title-button" type="button" data-post-index="${index}">${escapeHtml(post.title || `Post ${index + 1}`)}</button>
+                    </h3>
                     <p class="blog-item-intro">${renderConfigText(post.intro || '')}</p>
-                    <button class="cta-button secondary blog-open-button" type="button" data-post-index="${index}">Read Article</button>
+                </div>
+                <div class="blog-cover-wrap">
+                    <img class="blog-cover" data-src="${escapeHtml(post.cover || '')}" alt="${escapeHtml(post.title || 'Blog cover')}" width="16" height="9" loading="lazy" decoding="async">
                 </div>
             </article>
         `).join('')
@@ -769,7 +810,7 @@ function renderBlog(blog = {}) {
         `<div class="blog-list">${listHtml}</div>`
     );
 
-    panel.querySelectorAll('.blog-open-button').forEach((button) => {
+    panel.querySelectorAll('.blog-title-button').forEach((button) => {
         button.addEventListener('click', () => {
             const index = Number(button.dataset.postIndex);
             openBlogPost(index);
@@ -779,7 +820,6 @@ function renderBlog(blog = {}) {
         state.blogLightbox.destroy();
         state.blogLightbox = null;
     }
-    updateBlogScrollTopButtonVisibility();
 }
 
 async function openBlogPost(postIndex) {
@@ -796,31 +836,31 @@ async function openBlogPost(postIndex) {
     const intro = String(post.intro || '');
     const markdownPath = String(post.markdown || '').trim();
     state.blogViewingPost = true;
-    if (!markdownPath) {
-        panel.innerHTML = `
-            <section class="section-card card">
-                <h2 class="section-title">${escapeHtml(title)}</h2>
-                <p>Missing markdown path in blog post config.</p>
-                <button class="cta-button secondary blog-back-button" type="button">Back to Blog List</button>
-            </section>
-        `;
-        panel.querySelector('.blog-back-button')?.addEventListener('click', () => renderBlog(blogData));
-        return;
-    }
-
     panel.innerHTML = `
-        <section class="section-card card blog-article-shell">
-            <button class="cta-button secondary blog-back-button" type="button">Back to Blog List</button>
-            <h2 class="section-title">${escapeHtml(title)}</h2>
-            <p class="blog-item-intro">${renderConfigText(intro)}</p>
-            <div class="blog-article-loading">Loading article...</div>        
-            <button class="blog-scroll-top" type="button" aria-label="Back to top">Top</button>
-        </section>
+        <div class="blog-post-view">
+            <section class="section-card card blog-article-shell">
+                <header class="blog-article-heading">
+                    <h2 class="blog-article-title">${escapeHtml(title)}</h2>
+                    ${intro ? `<p class="blog-article-intro">${renderConfigText(intro)}</p>` : ''}
+                </header>
+                <div class="blog-article-content">
+                    <p class="blog-article-loading">Loading article...</p>
+                </div>
+            </section>
+            <nav class="blog-article-menu" aria-label="Article actions">
+                <button type="button" data-blog-action="back" aria-label="Back to blog list" title="Back to blog list"><span aria-hidden="true">←</span></button>
+                <button type="button" data-blog-action="top" aria-label="Back to top" title="Back to top"><span aria-hidden="true">↑</span></button>
+            </nav>
+        </div>
     `;
 
-    panel.querySelector('.blog-back-button')?.addEventListener('click', () => renderBlog(blogData));
-    panel.querySelector('.blog-scroll-top')?.addEventListener('click', scrollToTop);
-    updateBlogScrollTopButtonVisibility();
+    const content = panel.querySelector('.blog-article-content');
+    panel.querySelector('[data-blog-action="back"]').addEventListener('click', () => renderBlog(blogData));
+    panel.querySelector('[data-blog-action="top"]').addEventListener('click', scrollToTop);
+    if (!markdownPath) {
+        content.querySelector('p').textContent = 'Missing markdown path in blog post config.';
+        return;
+    }
 
     try {
         const response = await fetch(markdownPath, { cache: 'no-store' });
@@ -833,47 +873,33 @@ async function openBlogPost(postIndex) {
         }
 
         const markdown = await response.text();
+        if (!content.isConnected) {
+            return;
+        }
         const rawHtml = markdownRenderer.render(markdown);
         const hydratedHtml = hydrateBlogHtml(rawHtml, markdownPath, title);
         const coverMarkup = post.cover
             ? `
                 <figure class="blog-article-cover-wrap">
-                    <a class="blog-article-cover-link glightbox" href="${escapeHtml(post.cover)}" data-gallery="blog-article-cover" data-title="${escapeHtml(title)}">
-                        <img class="blog-article-cover" data-src="${escapeHtml(post.cover)}" alt="${escapeHtml(title)} cover" width="2" height="1" loading="lazy" decoding="async">
-                    </a>
+                    <img class="blog-article-cover" data-src="${escapeHtml(post.cover)}" alt="${escapeHtml(title)} cover" width="2" height="1" loading="lazy" decoding="async">
                 </figure>
             `
             : '';
 
-        panel.innerHTML = `
-            <section class="section-card card blog-article-shell">
-                <button class="cta-button secondary blog-back-button" type="button">Back to Blog List</button>
-                <h2 class="section-title">${escapeHtml(title)}</h2>
-                <p class="blog-item-intro">${renderConfigText(intro)}</p>
-                <article class="blog-article markdown-body">
-                    ${coverMarkup}
-                    ${hydratedHtml}
-                </article>
-                <button class="blog-scroll-top" type="button" aria-label="Back to top">Top</button>
-            </section>
+        content.innerHTML = `
+            <article class="blog-article">
+                ${coverMarkup}
+                <div class="markdown-body">${hydratedHtml}</div>
+            </article>
         `;
-
-        panel.querySelector('.blog-back-button')?.addEventListener('click', () => renderBlog(blogData));
-        panel.querySelector('.blog-scroll-top')?.addEventListener('click', scrollToTop);
         initBlogLightbox('#tab-blog .glightbox');
-        updateBlogScrollTopButtonVisibility();
     } catch (error) {
-        panel.innerHTML = `
-            <section class="section-card card blog-article-shell">
-                <button class="cta-button secondary blog-back-button" type="button">Back to Blog List</button>
-                <h2 class="section-title">${escapeHtml(title)}</h2>
-                <p>Failed to load this post: ${escapeHtml(error.message)}</p>
-                <button class="blog-scroll-top" type="button" aria-label="Back to top">Top</button>
-            </section>
-        `;
-        panel.querySelector('.blog-back-button')?.addEventListener('click', () => renderBlog(blogData));
-        panel.querySelector('.blog-scroll-top')?.addEventListener('click', scrollToTop);
-        updateBlogScrollTopButtonVisibility();
+        if (content.isConnected) {
+            const message = document.createElement('p');
+            message.className = 'blog-article-loading';
+            message.textContent = `Failed to load this post: ${error.message}`;
+            content.replaceChildren(message);
+        }
     }
 }
 
@@ -970,21 +996,10 @@ function createMarkdownRenderer() {
     return md;
 }
 
-function updateBlogScrollTopButtonVisibility() {
-    const button = document.querySelector('#tab-blog .blog-scroll-top');
-    if (!button) {
-        return;
-    }
-    const blogPanel = document.getElementById('tab-blog');
-    const isBlogActive = Boolean(blogPanel?.classList.contains('active'));
-    const shouldShow = isBlogActive && state.blogViewingPost && window.scrollY > 260;
-    button.classList.toggle('is-visible', shouldShow);
-}
-
 function scrollToTop() {
     window.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
     });
 }
 
@@ -1116,23 +1131,64 @@ function initProfileMiniGame(profile = {}) {
 
 function initLazyMedia() {
     const mediaSelector = 'img[data-src], iframe[data-src]';
+    const galleryQueue = new Set();
+    let activeGalleryLoads = 0;
+    let galleryObserver;
 
-    const loadMedia = (element) => {
+    const loadMedia = (element, onSettled) => {
         const source = element.dataset.src;
         if (!source) {
             markMediaRevealed(element);
+            onSettled?.();
             return;
         }
 
-        element.addEventListener('load', () => markMediaRevealed(element), { once: true });
-        element.addEventListener('error', () => markMediaRevealed(element), { once: true });
+        const events = new AbortController();
+        const finish = async () => {
+            if (events.signal.aborted) {
+                return;
+            }
+            events.abort();
+            if (onSettled && element.decode) {
+                await element.decode().catch(() => {});
+            }
+            markMediaRevealed(element);
+            onSettled?.();
+        };
+        element.addEventListener('load', finish, { signal: events.signal });
+        element.addEventListener('error', finish, { signal: events.signal });
         delete element.dataset.src;
         element.src = source;
 
         if (element instanceof HTMLImageElement && element.complete) {
-            markMediaRevealed(element);
+            finish();
         }
     };
+
+    function drainGalleryQueue() {
+        for (const image of galleryQueue) {
+            if (activeGalleryLoads >= 2) {
+                break;
+            }
+            if (!image.isConnected) {
+                galleryQueue.delete(image);
+                galleryObserver.unobserve(image);
+                continue;
+            }
+            if (!image.getClientRects().length) {
+                continue;
+            }
+            galleryQueue.delete(image);
+            galleryObserver.unobserve(image);
+            activeGalleryLoads += 1;
+            // The queue has already checked visibility, so start the request now.
+            image.loading = 'eager';
+            loadMedia(image, () => {
+                activeGalleryLoads -= 1;
+                requestAnimationFrame(drainGalleryQueue);
+            });
+        }
+    }
 
     const observeMedia = (element) => {
         if (!element.dataset.src || element.classList.contains('media-lazy') || element.classList.contains('media-revealed')) {
@@ -1140,7 +1196,9 @@ function initLazyMedia() {
         }
 
         element.classList.add('media-lazy');
-        if (state.lazyMediaObserver) {
+        if (galleryObserver && element.matches('.gallery-item img')) {
+            galleryObserver.observe(element);
+        } else if (state.lazyMediaObserver) {
             state.lazyMediaObserver.observe(element);
         } else {
             loadMedia(element);
@@ -1148,6 +1206,16 @@ function initLazyMedia() {
     };
 
     if ('IntersectionObserver' in window) {
+        galleryObserver = new IntersectionObserver((entries) => {
+            entries.forEach(({ target, isIntersecting }) => {
+                if (isIntersecting) {
+                    galleryQueue.add(target);
+                } else {
+                    galleryQueue.delete(target);
+                }
+            });
+            drainGalleryQueue();
+        }, { rootMargin: '80px 0px' });
         state.lazyMediaObserver = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (!entry.isIntersecting) {

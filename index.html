@@ -86,19 +86,18 @@
     <div class="page-shell" aria-busy="true">
         <header class="site-header" role="banner">
             <section class="brand-wrap" aria-label="Site identity">
-                <h1 id="site-name">
-                    <span class="site-name-zh" lang="zh-Hans">黄天毅</span>
-                    <span class="site-name-en">Tianyi Huang</span>
-                </h1>
+                <div class="brand-name">
+                    <a class="site-name-zh site-home-link" href="#about" lang="zh-Hans">黄天毅</a>
+                    <button class="badge-switch" type="button" aria-label="Switch header badge" title="Switch badge" hidden><span aria-hidden="true">↻</span></button>
+                    <h1 id="site-name"><a class="site-home-link" href="#about">Tianyi Huang</a></h1>
+                </div>
             </section>
             <nav class="tab-nav" aria-label="Main navigation">
-                <span class="tab-indicator" aria-hidden="true"></span>
-                <button class="tab-button active" type="button" data-tab="about">About</button>
+                <button class="tab-button active" type="button" aria-current="page" data-tab="about">About</button>
                 <button class="tab-button" type="button" data-tab="publications">Publications</button>
                 <button class="tab-button" type="button" data-tab="projects">Projects</button>
                 <button class="tab-button" type="button" data-tab="misc">Misc</button>
                 <button class="tab-button" type="button" data-tab="blog">Blog</button>
-                <button class="tab-button" type="button" data-tab="cv">CV</button>
             </nav>
         </header>
 
@@ -108,7 +107,6 @@
             <section id="tab-projects" class="tab-panel" aria-label="Projects"></section>
             <section id="tab-misc" class="tab-panel" aria-label="Misc"></section>
             <section id="tab-blog" class="tab-panel" aria-label="Blog"></section>
-            <section id="tab-cv" class="tab-panel" aria-label="CV"></section>
         </main>
 
         <footer class="site-footer" role="contentinfo">

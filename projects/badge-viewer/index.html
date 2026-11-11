@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Badge Viewer | Tianyi Huang</title>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="viewer.css">
+    <script type="module" src="viewer.js"></script>
+</head>
+<body class="badge-viewer">
+    <main>
+        <header class="viewer-heading">
+            <h1>Badge Viewer</h1>
+            <label>Badge
+                <select id="badge-select" disabled></select>
+            </label>
+        </header>
+        <p id="viewer-status" role="status">Loading badges…</p>
+        <div class="viewer-layout">
+            <div id="badge-preview" class="viewer-preview" aria-label="Badge preview"></div>
+            <section class="viewer-source" aria-label="WebGL source">
+                <div class="viewer-source-controls" role="group" aria-label="Source file">
+                    <button type="button" data-source="badge" aria-pressed="true">Badge shader</button>
+                    <button type="button" data-source="renderer" aria-pressed="false">WebGL renderer</button>
+                </div>
+                <pre tabindex="0" aria-label="Source code"><code id="badge-code"></code></pre>
+            </section>
+        </div>
+    </main>
+</body>
+</html>
