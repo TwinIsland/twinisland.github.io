@@ -1366,9 +1366,14 @@ body.not-found-page {
   margin-block: 0.22rem;
 }
 
+:where(.is-mobile-layout.is-badge-compact:not(.is-measuring-header)) .site-header:has(.brand-badge) :is(.tab-nav, .brand-name) {
+  display: none;
+}
+
 :where(.is-mobile-layout) .brand-wrap:has(.brand-badge) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  column-gap: 0.2rem;
   width: 100%;
 }
 
@@ -1379,7 +1384,8 @@ body.not-found-page {
 :where(.is-mobile-layout) .brand-wrap:has(.brand-badge) .brand-name {
   display: block;
   grid-column: 3;
-  margin-block: 0;
+  align-self: end;
+  margin-block: 0 0.5rem;
 }
 
 :where(.is-mobile-layout) .brand-wrap:has(.brand-badge) :is(#site-name, .site-name-zh) {
