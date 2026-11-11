@@ -1255,6 +1255,10 @@ body.not-found-page {
 }
 
 .site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
   margin-top: 1rem;
   text-align: center;
   opacity: 0.74;
@@ -1263,6 +1267,19 @@ body.not-found-page {
 
 .footer-heart {
   color: var(--cp-accent);
+}
+
+.footer-github {
+  display: block;
+  flex: none;
+}
+
+.footer-github img {
+  display: block;
+}
+
+.site-footer p {
+  margin: 0;
 }
 
 .maintenance-shell {
