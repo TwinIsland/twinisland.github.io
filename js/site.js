@@ -153,7 +153,7 @@ function renderMaintenancePage() {
         <section class="maintenance-shell">
             <img class="maintenance-gif" data-src="assets/suica_chara.gif" alt="Maintenance character" width="110" height="110" loading="lazy" decoding="async">
             <h1 class="maintenance-title">Under Maintenance</h1>
-            <p class="maintenance-text">The site will be available on April 1st.</p>
+            <p class="maintenance-text">The site will be available soooon.</p>
         </section>
     `;
 }
