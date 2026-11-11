@@ -34,7 +34,7 @@
   "about": {
     "title": "About",
     "description": [
-      "I am a first year PhD student in Computer Science at the National University of Singapore, fortunate to be advised by <a href=\"https://bohanwang123.com/\" target=\"_blank\" rel=\"noopener\">Bohan Wang</a>. My work is in computer graphics, with a focus on 3D shape design and generation.",
+      "I am a second-year PhD student in Computer Science at the National University of Singapore, fortunate to be advised by <a href=\"https://bohanwang123.com/\" target=\"_blank\" rel=\"noopener\">Bohan Wang</a>. My work is in computer graphics, with a focus on 3D shape design and generation.",
       "I like building systems that are both mathematically clean and actually useful. My recent interests span graphics, geometric modeling, and generative methods for controllable 3D content. Before NUS, I completed my bachelor's degree in Computer Science at the University of Illinois Urbana-Champaign."
     ],
     "content": {
@@ -149,39 +149,43 @@
             },
             {
               "src": "data/images/birds/4.jpg",
-              "alt": "🦅"
-            },
-            {
-              "src": "data/images/birds/5.jpg",
               "alt": "超大QQ😍"
             },
             {
-              "src": "data/images/birds/6.jpg",
-              "alt": "鹎鹎😎"
-            },
-            {
-              "src": "data/images/birds/7.jpg",
+              "src": "data/images/birds/5.jpg",
               "alt": "嘎啦嘎啦"
             },
             {
-              "src": "data/images/birds/8.jpg",
-              "alt": "咕咕咕的好盆友"
-            },
-            {
-              "src": "data/images/birds/9.jpg",
-              "alt": "植物园学猫叫的炫鹩哥"
-            },
-            {
-              "src": "data/images/birds/10.jpg",
+              "src": "data/images/birds/6.jpg",
               "alt": "柠檬"
             },
             {
-              "src": "data/images/birds/11.jpg",
+              "src": "data/images/birds/7.jpg",
               "alt": "苦恶苦恶"
             },
             {
-              "src": "data/images/birds/12.jpg",
+              "src": "data/images/birds/8.jpg",
               "alt": "猫猫😾"
+            },
+            {
+              "src": "data/images/birds/9.jpg",
+              "alt": "帅"
+            },
+            {
+              "src": "data/images/birds/10.jpg",
+              "alt": "小鸟玩具"
+            },
+            {
+              "src": "data/images/birds/11.jpg",
+              "alt": "大嘴壳子"
+            },
+            {
+              "src": "data/images/birds/12.jpg",
+              "alt": "炫"
+            },
+            {
+              "src": "data/images/birds/13.jpg",
+              "alt": "抹茶团子"
             }
           ]
         }
@@ -354,6 +358,11 @@
               "name": "Malaysia",
               "lat": 3.139,
               "lon": 101.6869
+            },
+            {
+              "name": "Sepilok, Borneo",
+              "lat": 5.87734,
+              "lon": 117.95051
             },
             {
               "name": "Ho Chi Minh City, Vietnam",
