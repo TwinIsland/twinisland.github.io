@@ -50,7 +50,8 @@ const fragmentSource = `
             vec3 cavity = vec3(0.29, 0.41, 0.38);
             vec3 jade = vec3(0.42, 0.65, 0.58);
             vec3 celadon = vec3(0.74, 0.87, 0.79);
-            vec3 ivory = vec3(0.98, 0.96, 0.89);
+            vec3 gold = vec3(0.96, 0.76, 0.33);
+            vec3 champagne = vec3(1.0, 0.93, 0.70);
             vec3 color = mix(cavity, jade, 0.16 + 0.23 * uv.y);
             if (hit) {
                 vec3 normal = normalize(gyroidGradient(samplePoint)) * (field < 0.0 ? -1.0 : 1.0);
@@ -63,8 +64,10 @@ const fragmentSource = `
                 float sweep = pow(0.5 + 0.5 * cos(p.x * 4.6 + p.y * 2.0 - time * 1.16), 8.0);
                 color = mix(jade, celadon, 0.78 * diffuse);
                 color = mix(cavity, color, exp(-0.20 * depth));
-                color = mix(color, celadon, rim * (0.06 + 0.15 * sweep));
-                color = mix(color, ivory, specular * (0.22 + 0.23 * sweep));
+                color = mix(color, celadon, 0.08 * rim);
+                float glint = sweep * (0.72 * rim + 0.28 * diffuse);
+                color = mix(color, gold, glint);
+                color = mix(color, champagne, specular * (0.24 + 0.62 * sweep));
             }
 
             float edge = smoothstep(0.0, 0.28, min(uv.y, 1.0 - uv.y));
@@ -73,7 +76,9 @@ const fragmentSource = `
         }
     `;
 
-export function mount(canvas) {
+export function mount(canvas, { onHighlight } = {}) {
     canvas.style.aspectRatio = '1';
-    return mountShader(canvas, fragmentSource);
+    return mountShader(canvas, fragmentSource, {
+        onFrame: onHighlight && ((time) => onHighlight('#235449, #528875, #a27827, #39756d, #235449', time * 1.16))
+    });
 }

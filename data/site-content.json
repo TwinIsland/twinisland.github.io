@@ -3,7 +3,10 @@
   "maintenance": false,
   "site": {
     "name": "Tianyi Huang",
-    "name_zh": "黄天毅"
+    "name_mark": {
+      "src": "data/images/profile/name-mark.svg",
+      "alt": "黄天毅"
+    }
   },
   "profile": {
     "badge": {
@@ -12,9 +15,6 @@
       "width": 88
     },
     "photo": "data/images/profile/me.jpg",
-    "wasted_photo": "data/images/profile/me_wasted.jpg",
-    "hp_max": 100,
-    "hp_damage": 8,
     "name": "Tianyi Huang",
     "role": "PhD Student",
     "school": "National University of Singapore",
@@ -91,7 +91,7 @@
         "title": "Shellular Metamaterial Design via Compact Electric Potential Parametrization",
         "authors": "<b>Tianyi Huang</b>, Chang Liu, Bohan Wang",
         "conference": "SIGGRAPH 2026",
-        "teaser": "data/images/publications/Shellular Metamaterial teaser.png",
+        "teaser": "data/images/publications/design-space-preview.webm",
         "poster": "data/images/publications/sig26_poster.jpg",
         "abstract": "A compact yet highly expressive design space for shellular metamaterials that support both interactive exploration and inverse design.",
         "links": {
@@ -139,7 +139,7 @@
   },
   "misc": {
     "title": "Misc",
-    "description": "I'm into bird photography, playing bass, whisky, music, reading, and anime.",
+    "description": "I'm into bird photography, bass, whisky, music, reading, and anime.",
     "content": [
       {
         "title": "Bird Photography",
@@ -195,7 +195,7 @@
             {
               "src": "data/images/birds/10.jpg",
               "thumbnail": "data/images/birds/thumbnails/10.webp",
-              "alt": "小鸟玩具"
+              "alt": "玩具"
             },
             {
               "src": "data/images/birds/11.jpg",
@@ -240,54 +240,54 @@
               "lon": -79.347
             },
             {
-              "name": "Chicago, USA",
+              "name": "Chicago, United States",
               "lat": 41.8781,
               "lon": -87.6298
             },
             {
-              "name": "Los Angeles (LAX), USA",
+              "name": "Los Angeles, United States",
               "lat": 34.0522,
               "lon": -118.2437
             },
             {
-              "name": "New York, USA",
+              "name": "New York City, United States",
               "lat": 40.7128,
               "lon": -74.006
             },
             {
-              "name": "Washington, DC, USA",
+              "name": "Washington, D.C., United States",
               "lat": 38.9072,
               "lon": -77.0369
             },
             {
-              "name": "Norway",
+              "name": "Oslo, Norway",
               "lat": 59.9139,
               "lon": 10.7522
             },
             {
-              "name": "Lofoten, Norway",
+              "name": "Leknes, Lofoten, Norway",
               "lat": 68.1469,
               "lon": 13.6113
             },
             {
-              "name": "Tromso, Norway",
+              "name": "Tromsø, Norway",
               "lat": 69.6492,
               "lon": 18.9553
             },
             {
-              "name": "Turkey",
+              "name": "Istanbul, Türkiye",
               "lat": 41.0082,
               "lon": 28.9784
             },
             {
-              "name": "China",
+              "name": "Shanghai, China",
               "lat": 31.2304,
               "lon": 121.4737
             },
             {
-              "name": "Sichuan, China",
-              "lat": 30.5728,
-              "lon": 104.0668
+              "name": "Chengdu, Sichuan, China",
+              "lat": 30.66667,
+              "lon": 104.06667
             },
             {
               "name": "Beijing, China",
@@ -295,17 +295,17 @@
               "lon": 116.4074
             },
             {
-              "name": "Guangdong, China",
+              "name": "Guangzhou, Guangdong, China",
               "lat": 23.1291,
               "lon": 113.2644
             },
             {
-              "name": "Shenzhen, China",
+              "name": "Shenzhen, Guangdong, China",
               "lat": 22.5431,
               "lon": 114.0579
             },
             {
-              "name": "Hangzhou, China",
+              "name": "Hangzhou, Zhejiang, China",
               "lat": 30.2741,
               "lon": 120.1551
             },
@@ -315,14 +315,14 @@
               "lon": 106.5516
             },
             {
-              "name": "Yunnan, China",
+              "name": "Kunming, Yunnan, China",
               "lat": 25.0389,
               "lon": 102.7183
             },
             {
-              "name": "Hainan, China",
-              "lat": 20.0440,
-              "lon": 110.1999
+              "name": "Haikou, Hainan, China",
+              "lat": 20.03421,
+              "lon": 110.34651
             },
             {
               "name": "Hong Kong, China",
@@ -330,37 +330,37 @@
               "lon": 114.1694
             },
             {
-              "name": "Jiangsu, China",
+              "name": "Nanjing, Jiangsu, China",
               "lat": 32.0603,
               "lon": 118.7969
             },
             {
-              "name": "Guizhou, China",
-              "lat": 26.6470,
-              "lon": 106.6302
+              "name": "Guiyang, Guizhou, China",
+              "lat": 26.58333,
+              "lon": 106.71667
             },
             {
-              "name": "Qinghai, China",
+              "name": "Xining, Qinghai, China",
               "lat": 36.6171,
               "lon": 101.7782
             },
             {
-              "name": "Inner Mongolia, China",
+              "name": "Hohhot, Inner Mongolia, China",
               "lat": 40.8426,
               "lon": 111.7492
             },
             {
-              "name": "Guangxi, China",
+              "name": "Nanning, Guangxi, China",
               "lat": 22.8170,
               "lon": 108.3669
             },
             {
-              "name": "Xinjiang, China",
+              "name": "Ürümqi, Xinjiang, China",
               "lat": 43.8256,
               "lon": 87.6168
             },
             {
-              "name": "Henan, China",
+              "name": "Zhengzhou, Henan, China",
               "lat": 34.7473,
               "lon": 113.6249
             },
@@ -380,12 +380,12 @@
               "lon": 100.8825
             },
             {
-              "name": "Malaysia",
+              "name": "Kuala Lumpur, Malaysia",
               "lat": 3.139,
               "lon": 101.6869
             },
             {
-              "name": "Sepilok, Borneo",
+              "name": "Sepilok, Sabah, Malaysia",
               "lat": 5.87734,
               "lon": 117.95051
             },
@@ -400,7 +400,7 @@
               "lon": 109.1967
             },
             {
-              "name": "Cambodia",
+              "name": "Phnom Penh, Cambodia",
               "lat": 11.5564,
               "lon": 104.9282
             },
@@ -411,8 +411,8 @@
             },
             {
               "name": "Tasmania, Australia",
-              "lat": -42.0409,
-              "lon": 146.8087
+              "lat": -42.0214,
+              "lon": 146.5933
             }
           ]
         }

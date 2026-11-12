@@ -62,8 +62,11 @@ const fragmentSource = `
     }
 `;
 
-export function mount(canvas) {
+export function mount(canvas, { onHighlight } = {}) {
     canvas.style.aspectRatio = '1';
     canvas.style.borderTopLeftRadius = '20%';
-    return mountShader(canvas, fragmentSource, { pixelScale: 1.15 });
+    return mountShader(canvas, fragmentSource, {
+        pixelScale: 1.15,
+        onFrame: onHighlight && ((time) => onHighlight('#263563, #5479c6, #287c84, #7655a4, #263563', time * 1.15))
+    });
 }

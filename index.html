@@ -67,13 +67,16 @@
         ]
     }
     </script>
+    <script src="js/theme.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/travel-map.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
     <script src="js/markdown-it-katex-bridge.js" defer></script>
+    <script src="js/travel-map.js" defer></script>
     <script src="js/site.js" defer></script>
 </head>
 
@@ -87,10 +90,16 @@
         <header class="site-header" role="banner">
             <section class="brand-wrap" aria-label="Site identity">
                 <div class="brand-name">
-                    <a class="site-name-zh site-home-link" href="#about" lang="zh-Hans">黄天毅</a>
-                    <button class="badge-switch" type="button" aria-label="Switch header badge" title="Switch badge" hidden><span aria-hidden="true">↻</span></button>
+                    <a class="site-name-mark site-home-link" href="#about" hidden>
+                        <span class="name-mark-art"><img alt=""></span>
+                    </a>
+                    <div class="brand-controls">
+                        <button class="badge-switch" type="button" aria-label="Switch header badge" title="Switch badge" hidden><span aria-hidden="true"></span></button>
+                        <button class="theme-toggle" type="button" aria-label="Dark mode" aria-pressed="false" hidden><span aria-hidden="true"></span></button>
+                    </div>
                     <h1 id="site-name"><a class="site-home-link" href="#about">Tianyi Huang</a></h1>
                 </div>
+                <a class="site-home-link mobile-site-name" href="#about">Tianyi Huang</a>
             </section>
             <nav class="tab-nav" aria-label="Main navigation">
                 <button class="tab-button active" type="button" aria-current="page" data-tab="about">About</button>
@@ -113,7 +122,7 @@
             <a class="footer-github" href="https://github.com/TwinIsland/twinisland.github.io" aria-label="Website source on GitHub">
                 <img src="assets/icons/github.svg" width="18" height="18" alt="">
             </a>
-            <p>Built by me with <span class="footer-heart">♥</span></p>
+            <p>Built by me with <span class="footer-heart" role="img" aria-label="love"></span></p>
         </footer>
     </div>
 

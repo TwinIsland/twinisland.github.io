@@ -1,7 +1,5 @@
 const state = {
     data: null,
-    miscMapRoots: [],
-    amChartsLoadPromise: null,
     miscGalleryLightbox: null,
     publicationPosterLightbox: null,
     blogLightbox: null,
@@ -20,13 +18,6 @@ const tabRenderers = {
 };
 const markdownRenderer = createMarkdownRenderer();
 
-const AMCHARTS_SCRIPTS = [
-    'https://cdn.amcharts.com/lib/5/index.js',
-    'https://cdn.amcharts.com/lib/5/map.js',
-    'https://cdn.amcharts.com/lib/5/geodata/worldLow.js',
-    'https://cdn.amcharts.com/lib/5/themes/Animated.js'
-];
-
 const PAGE_REVEAL_TIMEOUT_MS = 1500;
 const CONTENT_LOAD_TIMEOUT_MS = 5000;
 
@@ -34,7 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initLazyMedia();
     bindTabEvents();
     syncHeaderOffset();
-    window.addEventListener('resize', syncHeaderOffset);
+    let lastLayoutWidth = window.innerWidth;
+    window.addEventListener('resize', () => {
+        if (window.innerWidth !== lastLayoutWidth) {
+            lastLayoutWidth = window.innerWidth;
+            syncHeaderOffset();
+        }
+    });
     let lastScrollY = window.scrollY;
     const root = document.documentElement;
     const badgeSwitch = document.querySelector('.badge-switch');
@@ -44,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
         const scrollY = Math.max(0, Math.min(window.scrollY, maxScroll));
         const delta = scrollY - lastScrollY;
-        const threshold = 22;
+        const threshold = 100;
         if (scrollY <= 8 || Math.abs(delta) >= threshold) {
             const compact = scrollY > threshold && delta > 0;
             if (root.classList.contains('is-badge-compact') !== compact) {
@@ -196,6 +193,10 @@ function syncHeaderOffset() {
 
     root.classList.toggle('is-mobile-layout', mobileLayout);
     root.classList.toggle('is-compact-layout', mobileLayout || window.matchMedia('(max-width: 980px)').matches);
+    if (mobileLayout) {
+        const nav = header.querySelector('.tab-nav');
+        root.style.setProperty('--mobile-nav-height', `${Math.ceil(nav.getBoundingClientRect().height)}px`);
+    }
     root.style.setProperty('--header-height', `${Math.ceil(header.getBoundingClientRect().height)}px`);
     root.classList.remove('is-measuring-header');
     // Commit the restored layout before re-enabling scroll transitions.
@@ -240,7 +241,7 @@ function replayTabMediaReveal(panel) {
         if (element.classList.contains('media-lazy')) {
             return;
         }
-        if (element.closest('.profile-photo-game, .gallery-item')) {
+        if (element.closest('.profile-photo, .gallery-item')) {
             return;
         }
         if (element instanceof HTMLImageElement && !element.complete) {
@@ -275,10 +276,19 @@ function renderAll(data) {
 function renderHeader(site, badgeConfig) {
     const name = document.getElementById('site-name');
     name.querySelector('.site-home-link').textContent = site?.name || 'Personal Website';
+    document.querySelector('.mobile-site-name').textContent = name.textContent;
     const brandName = name.closest('.brand-name');
-    const chineseName = brandName.querySelector('.site-name-zh');
-    chineseName.textContent = site?.name_zh || '';
-    chineseName.hidden = !site?.name_zh;
+    const nameMark = brandName.querySelector('.site-name-mark');
+    const mark = site?.name_mark;
+    if (mark?.src && mark.alt) {
+        const image = nameMark.querySelector('img');
+        image.src = mark.src;
+        image.alt = mark.alt;
+        nameMark.querySelector('.name-mark-art').style.setProperty(
+            '--name-mark-image', `url(${JSON.stringify(image.src)})`
+        );
+        nameMark.hidden = false;
+    }
 
     const sources = Array.isArray(badgeConfig?.list)
         ? badgeConfig.list
@@ -307,7 +317,19 @@ function renderHeader(site, badgeConfig) {
             if (Number.isFinite(width) && width > 0) {
                 next.style.setProperty('--badge-width', `${width}px`);
             }
-            const release = mount(next);
+            const badgeTheme = brandName.closest('.page-shell');
+            let previousPosition;
+            const release = mount(next, {
+                onHighlight(colors, phase) {
+                    if (badge !== next) return;
+                    const position = Math.round(50 - 50 * Math.cos(phase));
+                    if (position !== previousPosition) {
+                        badgeTheme.style.setProperty('--badge-name-colors', colors);
+                        badgeTheme.style.setProperty('--badge-name-position', `${position}%`);
+                        previousPosition = position;
+                    }
+                }
+            });
             if (badge) {
                 badge.replaceWith(next);
                 dispose?.();
@@ -315,6 +337,8 @@ function renderHeader(site, badgeConfig) {
                 brandName.before(next);
             }
             badge = next;
+            badgeTheme.style.removeProperty('--badge-name-colors');
+            badgeTheme.style.removeProperty('--badge-name-position');
             dispose = typeof release === 'function' ? release : undefined;
             current = index;
             button.hidden = paths.length < 2;
@@ -417,17 +441,7 @@ function renderAbout(about = {}, profile = {}) {
     aboutPanel.innerHTML = `
         <div class="about-grid">
             <aside class="profile-card card">
-                <div class="profile-photo-game">
-                    <button class="profile-photo-hitbox" type="button" aria-label="Attack profile mini game">
-                        <img class="profile-photo" data-src="${escapeHtml(profile.photo || 'data/images/profile/me.jpg')}" alt="Profile photo" width="16" height="9" loading="lazy" decoding="async">
-                    </button>
-                    <div class="profile-hud">
-                        <div class="profile-hp-track" aria-hidden="true">
-                            <div class="profile-hp-fill"></div>
-                        </div>
-                        <p class="profile-hp-text"></p>
-                    </div>
-                </div>
+                <img class="profile-photo" data-src="${escapeHtml(profile.photo || 'data/images/profile/me.jpg')}" alt="Profile photo" width="16" height="9" loading="lazy" decoding="async">
                 <h2 class="profile-name">${renderConfigText(profile.name || '')}</h2>
                 <p class="profile-role">${renderConfigText(profile.role || '')}</p>
                 <p class="profile-school">${renderConfigText(profile.school || '')}</p>
@@ -441,8 +455,6 @@ function renderAbout(about = {}, profile = {}) {
             </div>
         </div>
     `;
-
-    initProfileMiniGame(profile);
 }
 
 function renderPublications(publications = {}) {
@@ -464,6 +476,8 @@ function renderPublications(publications = {}) {
             }
 
             const posterUrl = String(pub.poster || '').trim();
+            const teaserUrl = String(pub.teaser || '').trim();
+            const isVideoTeaser = /\.(?:webm|mp4|m4v|ogv|ogg)(?:[?#]|$)/i.test(teaserUrl);
             const linkButtons = normalizedLinks
                 .map((item) => `<a class="cta-button" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a>`);
             if (posterUrl) {
@@ -481,7 +495,9 @@ function renderPublications(publications = {}) {
             return `
                 <article class="publication-row card">
                     <div class="publication-teaser-wrap">
-                        <img class="publication-teaser" data-src="${escapeHtml(pub.teaser || '')}" alt="Publication teaser" width="16" height="9" loading="lazy" decoding="async">
+                        ${isVideoTeaser
+                            ? `<video class="publication-teaser" data-src="${escapeHtml(teaserUrl)}" autoplay muted loop playsinline aria-label="Publication teaser"></video>`
+                            : `<img class="publication-teaser" data-src="${escapeHtml(teaserUrl)}" alt="Publication teaser" width="16" height="9" loading="lazy" decoding="async">`}
                     </div>
                     <div class="publication-content">
                         <h3 class="publication-title">${renderConfigText(pub.title)}</h3>
@@ -535,7 +551,7 @@ function renderProjects(projects = {}) {
                 </div>
                 <div class="project-actions">
                     <button class="run-button" type="button" data-project-index="${index}">
-                        Play <span class="run-button-arrow" aria-hidden="true">↗</span>
+                        Play <span class="run-button-arrow" aria-hidden="true"></span>
                     </button>
                 </div>
             </article>
@@ -582,7 +598,7 @@ function renderMisc(misc = {}) {
     initMiscGalleryLightbox();
     items.forEach((item, index) => {
         if (item.module?.type === 'map') {
-            renderMiscMap(item.module, `misc-map-${index}`);
+            initTravelMap(document.getElementById(`misc-map-${index}`), getMapPlaces(item.module));
         }
     });
 }
@@ -619,13 +635,13 @@ function renderMiscModule(module = {}, index, itemTitle = '') {
     }
 
     if (module.type === 'map') {
-        const places = Array.isArray(module.places) ? module.places : [];
+        const places = getMapPlaces(module);
         return `
             <div id="misc-map-${index}" class="misc-map">
                 <p class="map-status">Loading map...</p>
             </div>
             <div class="map-place-list">
-                ${places.map((place) => `<span class="chip">${escapeHtml(place.name || '')}</span>`).join('')}
+                ${places.map((place) => `<button class="chip map-place" type="button" aria-controls="misc-map-${index}" aria-pressed="false" disabled>${escapeHtml(place.name || '')}</button>`).join('')}
             </div>
         `;
     }
@@ -634,9 +650,6 @@ function renderMiscModule(module = {}, index, itemTitle = '') {
 }
 
 function disposeMiscModules() {
-    state.miscMapRoots.forEach((root) => root.dispose());
-    state.miscMapRoots = [];
-
     if (state.miscGalleryLightbox) {
         state.miscGalleryLightbox.destroy();
         state.miscGalleryLightbox = null;
@@ -654,134 +667,10 @@ function initMiscGalleryLightbox() {
     });
 }
 
-async function renderMiscMap(module, containerId) {
-    const mapContainer = document.getElementById(containerId);
-    if (!mapContainer) {
-        return;
-    }
-
-    const places = (module.places || [])
-        .filter((place) => Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lon)));
-
-    if (places.length === 0) {
-        mapContainer.innerHTML = '<p class="map-status">No map locations configured yet.</p>';
-        return;
-    }
-
-    mapContainer.innerHTML = '<p class="map-status">Loading map...</p>';
-
-    try {
-        await ensureAmChartsReady();
-
-        mapContainer.innerHTML = '';
-
-        const root = window.am5.Root.new(containerId);
-        state.miscMapRoots.push(root);
-
-        root.setThemes([window.am5themes_Animated.new(root)]);
-
-        const chart = root.container.children.push(
-            window.am5map.MapChart.new(root, {
-                panX: 'translateX',
-                panY: 'translateY',
-                projection: window.am5map.geoMercator()
-            })
-        );
-
-        const polygonSeries = chart.series.push(
-            window.am5map.MapPolygonSeries.new(root, {
-                geoJSON: window.am5geodata_worldLow,
-                exclude: ['AQ']
-            })
-        );
-
-        polygonSeries.mapPolygons.template.setAll({
-            fill: window.am5.color(0xeaecf0),
-            stroke: window.am5.color(0x712f3e),
-            strokeOpacity: 0.35,
-            strokeWidth: 0.8
-        });
-
-        const pointSeries = chart.series.push(window.am5map.MapPointSeries.new(root, {}));
-
-        pointSeries.bullets.push(() => {
-            const marker = window.am5.Circle.new(root, {
-                radius: 5,
-                fill: window.am5.color(0x712f3e),
-                stroke: window.am5.color(0xffffff),
-                strokeWidth: 1.2,
-                tooltipText: '{title}'
-            });
-
-            return window.am5.Bullet.new(root, { sprite: marker });
-        });
-
-        pointSeries.data.setAll(
-            places.map((place) => ({
-                title: place.name,
-                geometry: {
-                    type: 'Point',
-                    coordinates: [Number(place.lon), Number(place.lat)]
-                }
-            }))
-        );
-
-        chart.appear(850, 120);
-    } catch (error) {
-        mapContainer.innerHTML = '<p class="map-status">Map failed to load. Check network/CDN availability.</p>';
-    }
-}
-
-async function ensureAmChartsReady() {
-    if (window.am5 && window.am5map && window.am5geodata_worldLow && window.am5themes_Animated) {
-        return;
-    }
-
-    if (!state.amChartsLoadPromise) {
-        state.amChartsLoadPromise = (async () => {
-            for (const scriptUrl of AMCHARTS_SCRIPTS) {
-                await ensureScript(scriptUrl);
-            }
-        })();
-    }
-
-    try {
-        await state.amChartsLoadPromise;
-    } catch (error) {
-        state.amChartsLoadPromise = null;
-        throw error;
-    }
-}
-
-function ensureScript(url) {
-    return new Promise((resolve, reject) => {
-        const existing = document.querySelector(`script[src="${url}"]`);
-        if (existing) {
-            if (existing.dataset.loaded === 'true') {
-                resolve();
-                return;
-            }
-
-            existing.addEventListener('load', () => {
-                existing.dataset.loaded = 'true';
-                resolve();
-            }, { once: true });
-            existing.addEventListener('error', () => reject(new Error(`Failed to load: ${url}`)), { once: true });
-            return;
-        }
-
-        const script = document.createElement('script');
-        script.src = url;
-        script.async = true;
-
-        script.onload = () => {
-            script.dataset.loaded = 'true';
-            resolve();
-        };
-        script.onerror = () => reject(new Error(`Failed to load: ${url}`));
-
-        document.head.appendChild(script);
-    });
+function getMapPlaces(module) {
+    return (module.places || []).filter((place) =>
+        Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lon))
+    );
 }
 
 function renderBlog(blog = {}) {
@@ -851,8 +740,8 @@ async function openBlogPost(postIndex) {
                 </div>
             </section>
             <nav class="blog-article-menu" aria-label="Article actions">
-                <button type="button" data-blog-action="back" aria-label="Back to blog list" title="Back to blog list"><span aria-hidden="true">←</span></button>
-                <button type="button" data-blog-action="top" aria-label="Back to top" title="Back to top"><span aria-hidden="true">↑</span></button>
+                <button type="button" data-blog-action="back" aria-label="Back to blog list" title="Back to blog list"><span class="blog-back-icon" aria-hidden="true"></span></button>
+                <button type="button" data-blog-action="top" aria-label="Back to top" title="Back to top"><span class="blog-top-icon" aria-hidden="true"></span></button>
             </nav>
         </div>
     `;
@@ -1006,134 +895,8 @@ function scrollToTop() {
     });
 }
 
-function initProfileMiniGame(profile = {}) {
-    const gameRoot = document.querySelector('.profile-photo-game');
-    if (!gameRoot) {
-        return;
-    }
-
-    const attackButton = gameRoot.querySelector('.profile-photo-hitbox');
-    const photo = gameRoot.querySelector('.profile-photo');
-    const hpFill = gameRoot.querySelector('.profile-hp-fill');
-    const hpText = gameRoot.querySelector('.profile-hp-text');
-
-    if (!attackButton || !photo || !hpFill || !hpText) {
-        return;
-    }
-
-    const maxHp = Math.max(1, Number(profile.hp_max) || 100);
-    const damagePerClick = Math.max(1, Number(profile.hp_damage) || 8);
-    const wastedPhoto = String(profile.wasted_photo || 'data/images/profile/me_wasted.jpg');
-
-    const wastedPreload = new Image();
-    wastedPreload.decoding = 'async';
-    wastedPreload.src = wastedPhoto;
-    wastedPreload.decode?.().catch(() => { });
-
-    const clearPhotoFadeState = () => {
-        photo.classList.remove('media-lazy', 'media-revealed', 'tab-media-revealed');
-    };
-
-    const swapToWastedPhoto = async () => {
-        try {
-            await wastedPreload.decode();
-        } catch {
-            // Preload failed; swap anyway and let the browser paint when ready.
-        }
-        clearPhotoFadeState();
-        photo.src = wastedPhoto;
-    };
-    const requiredClicksToStart = 1;
-
-    let hp = maxHp;
-    let defeated = false;
-    let lastAttackAt = 0;
-    let comboCount = 0;
-    let totalClicks = 0;
-    let hitTimerId = null;
-    let rageTimerId = null;
-
-    const updateHud = () => {
-        const hpClamped = Math.max(0, hp);
-        const hpRatio = hpClamped / maxHp;
-
-        hpFill.style.width = `${Math.round(hpRatio * 100)}%`;
-
-        if (defeated) {
-            hpText.textContent = 'WASTED';
-            gameRoot.classList.add('is-defeated');
-            gameRoot.classList.remove('is-low-hp');
-            return;
-        }
-
-        hpText.textContent = `HP ${hpClamped}/${maxHp}`;
-        gameRoot.classList.toggle('is-low-hp', hpRatio <= 0.3);
-    };
-
-    const triggerHitEffect = () => {
-        clearPhotoFadeState();
-        gameRoot.classList.remove('is-hit');
-        void gameRoot.offsetWidth;
-        gameRoot.classList.add('is-hit');
-
-        if (hitTimerId) {
-            clearTimeout(hitTimerId);
-        }
-        hitTimerId = setTimeout(() => {
-            gameRoot.classList.remove('is-hit');
-        }, 220);
-    };
-
-    const triggerRageEffect = () => {
-        gameRoot.classList.add('is-rage');
-        if (rageTimerId) {
-            clearTimeout(rageTimerId);
-        }
-        rageTimerId = setTimeout(() => {
-            gameRoot.classList.remove('is-rage');
-        }, 350);
-    };
-
-    gameRoot.classList.add('pre-combat');
-    updateHud();
-
-    attackButton.addEventListener('click', () => {
-        if (defeated) {
-            return;
-        }
-
-        totalClicks += 1;
-        if (totalClicks < requiredClicksToStart) {
-            return;
-        }
-        if (totalClicks === requiredClicksToStart) {
-            gameRoot.classList.remove('pre-combat');
-        }
-
-        const now = performance.now();
-        comboCount = (now - lastAttackAt <= 450) ? comboCount + 1 : 1;
-        lastAttackAt = now;
-
-        hp -= damagePerClick;
-        triggerHitEffect();
-
-        if (comboCount >= 4) {
-            triggerRageEffect();
-        }
-
-        if (hp <= 0) {
-            defeated = true;
-            hp = 0;
-            swapToWastedPhoto();
-            photo.alt = 'Wasted profile photo';
-        }
-
-        updateHud();
-    });
-}
-
 function initLazyMedia() {
-    const mediaSelector = 'img[data-src], iframe[data-src]';
+    const mediaSelector = 'img[data-src], iframe[data-src], video.publication-teaser[data-src]';
     const galleryQueue = new Set();
     let activeGalleryLoads = 0;
     let galleryObserver;
@@ -1158,7 +921,8 @@ function initLazyMedia() {
             markMediaRevealed(element);
             onSettled?.();
         };
-        element.addEventListener('load', finish, { signal: events.signal });
+        const readyEvent = element instanceof HTMLVideoElement ? 'loadeddata' : 'load';
+        element.addEventListener(readyEvent, finish, { signal: events.signal });
         element.addEventListener('error', finish, { signal: events.signal });
         delete element.dataset.src;
         element.src = source;

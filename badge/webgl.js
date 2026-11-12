@@ -1,4 +1,4 @@
-export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel, pixelScale = 1 } = {}) {
+export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel, pixelScale = 1, onFrame } = {}) {
     if (alpha) {
         canvas.style.background = 'none';
     }
@@ -98,6 +98,7 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel,
             gl.uniform3f(press, pressX, pressY - travel, strength);
         }
         gl.drawArrays(gl.TRIANGLES, 0, 3);
+        onFrame?.(elapsed);
         finishFirstFrame?.();
         finishFirstFrame = undefined;
         frame = reducedMotion.matches ? 0 : requestAnimationFrame(draw);

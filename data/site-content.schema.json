@@ -27,13 +27,21 @@
       "required": ["name"],
       "properties": {
         "name": { "type": "string" },
-        "name_zh": { "type": "string" }
+        "name_mark": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["src", "alt"],
+          "properties": {
+            "src": { "type": "string", "minLength": 1, "description": "Site-relative path to an SVG wordmark with a transparent background." },
+            "alt": { "type": "string", "minLength": 1, "description": "The name or text shown in the wordmark." }
+          }
+        }
       }
     },
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["photo", "wasted_photo", "hp_max", "hp_damage", "name", "role", "school", "links"],
+      "required": ["photo", "name", "role", "school", "links"],
       "properties": {
         "badge": {
           "description": "Optional header badge. Its module defines its shape.",
@@ -62,9 +70,6 @@
           ]
         },
         "photo": { "type": "string", "description": "Site-relative path to the profile photo (e.g. data/images/profile/me.jpg)." },
-        "wasted_photo": { "type": "string", "description": "Site-relative path to the 'wasted' game-over photo." },
-        "hp_max": { "type": "number", "exclusiveMinimum": 0 },
-        "hp_damage": { "type": "number", "exclusiveMinimum": 0 },
         "name": { "type": "string" },
         "role": { "type": "string" },
         "school": { "type": "string" },
@@ -221,7 +226,7 @@
         "title": { "type": "string" },
         "authors": { "type": "string" },
         "conference": { "type": "string" },
-        "teaser": { "type": "string", "description": "Site-relative path to the publication teaser image." },
+        "teaser": { "type": "string", "description": "Site-relative path to a teaser image or a video that loops silently." },
         "poster": { "type": "string", "description": "Site-relative path to the publication poster image (optional)." },
         "abstract": { "type": "string" },
         "links": {

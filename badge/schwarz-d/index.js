@@ -46,15 +46,6 @@ const fragmentSource = `
         return max(sheet, envelope);
     }
 
-    vec3 normalAt(vec3 p) {
-        vec2 e = vec2(0.002, 0.0);
-        return normalize(vec3(
-            crystal(p + e.xyy) - crystal(p - e.xyy),
-            crystal(p + e.yxy) - crystal(p - e.yxy),
-            crystal(p + e.yyx) - crystal(p - e.yyx)
-        ));
-    }
-
     vec3 objectSpace(vec3 p) {
         float t = time * animationSpeed;
         p.xy = rotation(0.11 * sin(t * 0.83)) * p.xy;
@@ -91,23 +82,7 @@ const fragmentSource = `
             vec3 p = origin + ray * depth;
             float distanceToCrystal = crystal(p);
             if (distanceToCrystal < hitTolerance) {
-                vec3 n = normalAt(p);
-                vec3 key = objectSpace(normalize(vec3(-0.55, 0.65, -0.75)));
-                vec3 fill = objectSpace(normalize(vec3(0.8, -0.18, -0.36)));
-                vec3 bounce = objectSpace(normalize(vec3(0.12, -0.94, -0.32)));
-                float diffuse = max(dot(n, key), 0.0);
-                float warm = max(dot(n, fill), 0.0);
-                float bounceLight = max(dot(n, bounce), 0.0);
-                float fresnel = pow(1.0 - max(dot(n, -ray), 0.0), 3.0);
-                float shine = pow(max(dot(n, normalize(key - ray)), 0.0), 40.0);
-                float recess = clamp(crystal(p + n * 0.14) * 16.0, 0.0, 1.0);
-                // The clipped rim blends across the midsurface between both faces.
-                float face = smoothstep(-0.10, 0.10, signedDiamond(p));
-                vec3 material = mix(seaGlass, dustyRose, face);
-                vec3 color = material * (0.52 + 0.43 * diffuse + 0.16 * warm + 0.15 * bounceLight);
-                color *= mix(0.79, 1.0, recess);
-                vec3 highlight = mix(material, vec3(1.0, 0.92, 0.80), 0.22);
-                color = mix(color, highlight, 0.17 * fresnel + 0.40 * shine);
+                vec3 color = signedDiamond(p) < 0.0 ? seaGlass : dustyRose;
                 gl_FragColor = vec4(color, 1.0);
                 return;
             }
@@ -122,10 +97,11 @@ const fragmentSource = `
     }
 `;
 
-export function mount(canvas) {
+export function mount(canvas, { onHighlight } = {}) {
     canvas.style.aspectRatio = '1';
     return mountShader(canvas, fragmentSource, {
         alpha: true,
+        onFrame: onHighlight && ((time) => onHighlight('#854658, #407f76, #966074, #854658', time * 0.77)),
         pixelScale: 1.15,
         pressLabel: 'Deform the Diamond TPMS sculpture'
     });
