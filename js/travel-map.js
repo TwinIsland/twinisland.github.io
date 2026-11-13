@@ -1,3 +1,37 @@
+function initPlaceDisclosure(panel, buttons) {
+    const viewport = panel.querySelector('.map-place-viewport');
+    const list = panel.querySelector('.map-place-list');
+    const toggle = panel.querySelector('.map-place-toggle');
+    let expanded = false;
+
+    function update() {
+        if (!list.clientWidth) return;
+
+        const rows = [...new Set(buttons.map((button) => button.offsetTop))];
+        const cutoff = rows[5];
+        const collapsed = cutoff !== undefined && !expanded;
+        toggle.hidden = cutoff === undefined;
+        toggle.setAttribute('aria-expanded', String(expanded && cutoff !== undefined));
+        toggle.setAttribute('aria-label', expanded ? 'Show fewer places' : 'Show all places');
+        viewport.classList.toggle('is-collapsed', collapsed);
+        viewport.style.setProperty('--map-place-full-height', `${list.offsetHeight}px`);
+        if (collapsed) {
+            viewport.style.setProperty('--map-place-cutoff', `${cutoff}px`);
+        }
+        for (const button of buttons) {
+            button.inert = collapsed && button.offsetTop >= cutoff;
+        }
+    }
+
+    toggle.addEventListener('click', () => {
+        expanded = !expanded;
+        update();
+    });
+    const observer = new ResizeObserver(update);
+    observer.observe(list);
+    update();
+}
+
 function initTravelMap(container, places) {
     if (!container || !places.length) {
         if (container) container.textContent = 'No map locations configured.';
@@ -54,7 +88,9 @@ function initTravelMap(container, places) {
     map.append(scene);
     container.replaceChildren(map, tooltip);
 
-    const buttons = [...container.nextElementSibling.querySelectorAll('.map-place')];
+    const placesPanel = container.nextElementSibling;
+    const buttons = [...placesPanel.querySelectorAll('.map-place')];
+    initPlaceDisclosure(placesPanel, buttons);
     let active = -1;
     let frame;
     let burst;

@@ -125,6 +125,12 @@
         "content": {
           "type": "array",
           "items": { "$ref": "#/$defs/project" }
+        },
+        "items_per_page": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 5,
+          "description": "Number of projects shown on each project list page."
         }
       }
     },
@@ -151,6 +157,12 @@
         "content": {
           "type": "array",
           "items": { "$ref": "#/$defs/blogPost" }
+        },
+        "posts_per_page": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 5,
+          "description": "Number of posts shown on each blog list page."
         }
       }
     }

@@ -107,7 +107,15 @@
   "projects": {
     "title": "Projects",
     "description": "Some of my side projects.",
+    "items_per_page": 5,
     "content": [
+      {
+        "title": "Color Palette",
+        "date": "Nov 2026",
+        "description": "A collection of my go-to color palettes for websites, papers, and more.",
+        "run_url": "projects/color-palette/index.html",
+        "background_image": "data/images/projects/color-palette.webp"
+      },
       {
         "title": "Badge Viewer",
         "date": "Nov 2026",
@@ -416,6 +424,7 @@
   "blog": {
     "title": "Blog",
     "description": "Just a mini technical blog.",
+    "posts_per_page": 5,
     "content": [
       {
         "title": "How to measure Isotropic",

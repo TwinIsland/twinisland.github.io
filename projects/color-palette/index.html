@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Color Palette | Tianyi Huang</title>
+    <script src="../../js/theme.js"></script>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="palette.css">
+    <link rel="stylesheet" href="templates/examples.css">
+    <script type="module" src="palette.js"></script>
+</head>
+<body>
+    <main class="palette-tool">
+        <h1>Color Palette</h1>
+        <div class="palette-layout">
+            <section aria-label="Palettes">
+                <div class="palette-filters">
+                    <label class="palette-picker">Application
+                        <select class="application-select">
+                            <option value="">All</option>
+                        </select>
+                    </label>
+                    <label class="palette-picker">Palette
+                        <select class="palette-select"></select>
+                    </label>
+                </div>
+                <p class="palette-description"></p>
+                <div class="palette-grid" role="group" aria-label="Theme colors and shades"></div>
+                <div class="palette-colors">
+                    <p class="palette-color-name" aria-live="polite"></p>
+                    <div class="palette-edit-controls">
+                        <label class="palette-edit-label">Adjust base color
+                            <input class="palette-editor" type="color">
+                        </label>
+                        <button class="cta-button palette-reset" type="button">Reset</button>
+                    </div>
+                    <button class="palette-value" type="button"><span>HEX</span><code></code></button>
+                    <button class="palette-value" type="button"><span>RGB</span><code></code></button>
+                    <button class="palette-value" type="button"><span>HSL</span><code></code></button>
+                </div>
+            </section>
+            <section class="palette-example" aria-labelledby="preview-heading">
+                <h2 id="preview-heading">Preview</h2>
+                <div class="preview-content"></div>
+            </section>
+        </div>
+    </main>
+    <div class="palette-status" role="status" aria-atomic="true"></div>
+</body>
+</html>

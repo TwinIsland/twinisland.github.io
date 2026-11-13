@@ -4,6 +4,8 @@ const state = {
     publicationPosterLightbox: null,
     blogLightbox: null,
     blogViewingPost: false,
+    blogPage: 0,
+    projectsPage: 0,
     lazyMediaObserver: null,
     lazyMediaMutationObserver: null
 };
@@ -540,13 +542,64 @@ function initPublicationPosterLightbox() {
     });
 }
 
+function getPagination(total, perPage, currentPage) {
+    const pageSize = Number.isSafeInteger(perPage) && perPage > 0 ? perPage : 5;
+    const pageCount = Math.max(1, Math.ceil(total / pageSize));
+    const page = Math.min(currentPage, pageCount - 1);
+    return { page, pageCount, pageSize, start: page * pageSize };
+}
+
+function renderPagination(label, page, pageCount) {
+    return `
+        <nav class="list-pagination" aria-label="${label} pagination, page ${page + 1} of ${pageCount}" tabindex="-1">
+            <button class="cta-button" type="button" data-page-step="-1" aria-label="Previous page"${page === 0 ? ' disabled' : ''}>
+                <span class="list-prev-icon" aria-hidden="true"></span>
+            </button>
+            <form class="list-page-jump">
+                <label>Page <input type="number" name="page" min="1" max="${pageCount}" step="1" value="${page + 1}" inputmode="numeric" enterkeyhint="go" required></label>
+                <span>of ${pageCount}</span>
+            </form>
+            <button class="cta-button" type="button" data-page-step="1" aria-label="Next page"${page === pageCount - 1 ? ' disabled' : ''}>
+                <span class="list-next-icon" aria-hidden="true"></span>
+            </button>
+        </nav>
+    `;
+}
+
+function bindPagination(panel, page, renderPage) {
+    function goToPage(nextPage, step) {
+        if (nextPage === page) return;
+        renderPage(nextPage);
+        const focusTarget = panel.querySelector(`[data-page-step="${step}"]:not(:disabled)`)
+            || panel.querySelector('.list-pagination');
+        focusTarget.focus({ preventScroll: true });
+        scrollToTop();
+    }
+
+    const jumpForm = panel.querySelector('.list-page-jump');
+    jumpForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const input = jumpForm.elements.namedItem('page');
+        goToPage(input.valueAsNumber - 1);
+    });
+    panel.querySelectorAll('[data-page-step]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const step = Number(button.dataset.pageStep);
+            goToPage(page + step, step);
+        });
+    });
+}
+
 function renderProjects(projects = {}) {
     const panel = document.getElementById('tab-projects');
 
-    const projectCards = (projects.content || [])
+    const items = Array.isArray(projects.content) ? projects.content : [];
+    const { page, pageCount, pageSize, start } = getPagination(items.length, projects.items_per_page, state.projectsPage);
+    state.projectsPage = page;
+    const projectCards = items.slice(start, start + pageSize)
         .map((project, index) => `
             <article class="project-item card">
-                <span class="project-number" aria-hidden="true">${index + 1}</span>
+                <span class="project-number" aria-hidden="true">${start + index + 1}</span>
                 ${project.background_image?.trim() ? `
                     <img class="project-background" data-src="${escapeHtml(project.background_image.trim())}" alt="" loading="lazy" decoding="async">` : ''}
                 <div class="project-main">
@@ -555,7 +608,7 @@ function renderProjects(projects = {}) {
                     <p class="project-desc">${renderConfigText(project.description)}</p>
                 </div>
                 <div class="project-actions">
-                    <button class="run-button" type="button" data-project-index="${index}">
+                    <button class="run-button" type="button" data-project-index="${start + index}">
                         Play <span class="run-button-arrow" aria-hidden="true"></span>
                     </button>
                 </div>
@@ -565,9 +618,13 @@ function renderProjects(projects = {}) {
 
     panel.innerHTML = renderSectionShell(
         projects,
-        `<div class="project-list">${projectCards}</div>`
+        `<div class="project-list">${projectCards}</div>${renderPagination("Projects", page, pageCount)}`
     );
 
+    bindPagination(panel, page, (nextPage) => {
+        state.projectsPage = nextPage;
+        renderProjects(projects);
+    });
     panel.querySelectorAll('.run-button').forEach((button) => {
         button.addEventListener('click', () => {
             const index = Number(button.dataset.projectIndex);
@@ -645,8 +702,13 @@ function renderMiscModule(module = {}, index, itemTitle = '') {
             <div id="misc-map-${index}" class="misc-map">
                 <p class="map-status">Loading map...</p>
             </div>
-            <div class="map-place-list">
-                ${places.map((place) => `<button class="chip map-place" type="button" aria-controls="misc-map-${index}" aria-pressed="false" disabled>${escapeHtml(place.name || '')}</button>`).join('')}
+            <div class="map-places">
+                <div class="map-place-viewport" id="map-places-${index}">
+                    <div class="map-place-list">
+                        ${places.map((place) => `<button class="chip map-place" type="button" aria-controls="misc-map-${index}" aria-pressed="false" disabled>${escapeHtml(place.name || '')}</button>`).join('')}
+                    </div>
+                </div>
+                <button class="map-place-toggle" type="button" aria-controls="map-places-${index}" aria-expanded="false" aria-label="Show all places" hidden></button>
             </div>
         `;
     }
@@ -686,12 +748,14 @@ function renderBlog(blog = {}) {
     state.blogViewingPost = false;
 
     const posts = Array.isArray(blog.content) ? blog.content : [];
+    const { page, pageCount, pageSize, start } = getPagination(posts.length, blog.posts_per_page, state.blogPage);
+    state.blogPage = page;
     const listHtml = posts.length > 0
-        ? posts.map((post, index) => `
+        ? posts.slice(start, start + pageSize).map((post, index) => `
             <article class="blog-list-item card">
                 <div class="blog-item-content">
                     <h3 class="blog-item-title">
-                        <button class="blog-title-button" type="button" data-post-index="${index}">${escapeHtml(post.title || `Post ${index + 1}`)}</button>
+                        <button class="blog-title-button" type="button" data-post-index="${start + index}">${escapeHtml(post.title || `Post ${start + index + 1}`)}</button>
                     </h3>
                     <p class="blog-item-intro">${renderConfigText(post.intro || '')}</p>
                 </div>
@@ -701,10 +765,9 @@ function renderBlog(blog = {}) {
             </article>
         `).join('')
         : '<p>No blog posts configured yet.</p>';
-
     panel.innerHTML = renderSectionShell(
         blog,
-        `<div class="blog-list">${listHtml}</div>`
+        `<div class="blog-list">${listHtml}</div>${renderPagination("Blog", page, pageCount)}`
     );
 
     panel.querySelectorAll('.blog-title-button').forEach((button) => {
@@ -712,6 +775,10 @@ function renderBlog(blog = {}) {
             const index = Number(button.dataset.postIndex);
             openBlogPost(index);
         });
+    });
+    bindPagination(panel, page, (nextPage) => {
+        state.blogPage = nextPage;
+        renderBlog(blog);
     });
     if (state.blogLightbox) {
         state.blogLightbox.destroy();

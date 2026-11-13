@@ -1,0 +1,194 @@
+.sample-rendering {
+  display: grid;
+  place-items: center;
+  background: var(--sample-background, #404040);
+  color: white;
+}
+
+.sample-rendering canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  cursor: grab;
+  touch-action: pan-y pinch-zoom;
+}
+
+.sample-rendering canvas:active {
+  cursor: grabbing;
+}
+
+.rendering-controls {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  color: var(--cp-ink);
+  font-size: var(--text-label);
+}
+
+.rendering-controls legend {
+  background: var(--surface);
+  padding-inline: 0.25rem;
+  font-weight: 700;
+}
+
+.rendering-controls label {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.rendering-controls .rendering-wireframe {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+}
+
+.rendering-controls input {
+  accent-color: var(--cp-ink);
+}
+
+.sample-page {
+  color: var(--sample-ink);
+  background: var(--sample-surface);
+  border: 1px solid color-mix(in srgb, var(--sample-ink) 25%, var(--sample-surface));
+  font-size: var(--text-body-small);
+}
+
+.sample-page header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--sample-accent);
+}
+
+.sample-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.sample-theme-toggle {
+  min-height: 44px;
+  padding-inline: 0.5rem;
+  border: 1px solid var(--sample-accent);
+  background: var(--sample-surface);
+  color: inherit;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.sample-theme-toggle[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--sample-accent) 20%, var(--sample-surface));
+}
+
+.sample-content { padding: clamp(1rem, 4vw, 2rem); }
+.sample-content h3 { margin: 0; font-size: clamp(1.4rem, 4vw, 2.2rem); line-height: 1.15; }
+.sample-content p { line-height: 1.6; }
+
+.sample-page .sample-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 0.75rem;
+  color: #18171d;
+  background: var(--sample-accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.sample-note {
+  margin-top: 1.3rem;
+  padding: 0.8rem;
+  border-inline-start: 3px solid var(--sample-accent);
+  background: color-mix(in srgb, var(--sample-accent) 12%, var(--sample-surface));
+}
+
+.sample-note h4, .sample-note p { margin: 0; }
+.sample-note p { margin-top: 0.3rem; }
+
+.sample-paper {
+  padding: clamp(0.85rem, 4vw, 1.5rem);
+  border: 1px solid var(--sample-grid);
+  background: var(--sample-surface);
+  color: var(--sample-ink);
+  font: 1rem/1.5 Georgia, serif;
+}
+
+.sample-paper header {
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--sample-grid);
+}
+
+.sample-paper header p {
+  margin: 0 0 0.3rem;
+  font: 0.7rem/1.4 Poppins, sans-serif;
+}
+
+.sample-paper h3 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3.5vw, 2rem);
+  line-height: 1.15;
+}
+
+.sample-paper figure { margin: 1rem 0 0; }
+.sample-paper svg { display: block; width: 100%; height: auto; }
+.sample-paper svg text { fill: currentColor; font: 9px Poppins, sans-serif; }
+.sample-paper figcaption { font-size: 0.82rem; }
+.chart-grid { stroke: var(--sample-grid); }
+.chart-axis { stroke: currentColor; fill: none; }
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.8rem;
+  margin: 0 0 0.45rem;
+  padding: 0;
+  list-style: none;
+  font: 0.7rem/1.4 Poppins, sans-serif;
+}
+
+.chart-legend span {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.65em;
+  margin-inline-end: 0.3em;
+  background: var(--series-color);
+}
+
+.series-1 { --series-color: var(--sample-series-1); }
+.series-2 { --series-color: var(--sample-series-2); }
+.series-3 { --series-color: var(--sample-series-3); }
+.sample-paper polyline { stroke: var(--series-color); }
+.sample-paper rect { fill: var(--series-color); }
+
+.surface-face {
+  fill: var(--series-color);
+  stroke: var(--sample-surface);
+  stroke-linejoin: round;
+  stroke-width: 1;
+}
+
+.surface-front {
+  fill: color-mix(in srgb, var(--series-color) 80%, var(--sample-ink));
+}
+
+.surface-side {
+  fill: color-mix(in srgb, var(--series-color) 65%, var(--sample-ink));
+}
+
+.sample-paper .surface-figure text {
+  fill: var(--sample-ink);
+  stroke: var(--sample-surface);
+  stroke-width: 2px;
+  paint-order: stroke;
+  text-anchor: middle;
+  font-weight: 700;
+}
