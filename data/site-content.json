@@ -10,8 +10,9 @@
   },
   "profile": {
     "badge": {
-      "list": ["badge/night-sky/index.js", "badge/schwarz-d/index.js", "badge/gyroid/index.js", "badge/prism-knot/index.js"],
+      "list": ["badge/schwarz-d/index.js", "badge/gyroid/index.js", "badge/prism-knot/index.js", "badge/soap-film/index.js"],
       "default": "badge/prism-knot/index.js",
+      "mode": "random",
       "width": 88
     },
     "photo": "data/images/profile/me.jpg",
@@ -93,6 +94,7 @@
         "conference": "SIGGRAPH 2026",
         "teaser": "data/images/publications/design-space-preview.webm",
         "poster": "data/images/publications/sig26_poster.jpg",
+        "background_image": "data/images/publications/shellular-geometry-grid.webp",
         "abstract": "A compact yet highly expressive design space for shellular metamaterials that support both interactive exploration and inverse design.",
         "links": {
           "Web": "https://dl.acm.org/doi/10.1145/3799902.3811075",
@@ -110,30 +112,22 @@
         "title": "Badge Viewer",
         "date": "Nov 2026",
         "description": "The WebGL badges used on my website.",
-        "tags": ["WebGL", "GLSL"],
-        "run_url": "projects/badge-viewer/index.html"
+        "run_url": "projects/badge-viewer/index.html",
+        "background_image": "data/images/projects/badge-viewer.webp"
       },
       {
         "title": "QSynth: High-performance Multi-layered Audio Synthesizer",
         "date": "Jan 2025 - Mar 2025",
         "description": "QSynth is a high-performance multi-layered audio synthesizer written in C, featuring real-time audio processing with advanced instrument design capabilities.",
-        "tags": [
-          "C",
-          "Real-time Audio",
-          "WebAssembly"
-        ],
-        "run_url": "projects/qsynth/index.html"
+        "run_url": "projects/qsynth/index.html",
+        "background_image": "data/images/projects/qsynth.webp"
       },
       {
         "title": "Octave: Music Programming Language",
         "date": "May 2024 - Jan 2025",
         "description": "Designed a language for programmatic music composition with notation-like syntax, variables, and functions, compiled into MIDI files.",
-        "tags": [
-          "C",
-          "Zig",
-          "MIDI"
-        ],
-        "run_url": "projects/octave/index.html"
+        "run_url": "projects/octave/index.html",
+        "background_image": "data/images/projects/octave.webp"
       }
     ]
   },

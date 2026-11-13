@@ -231,7 +231,7 @@ a[href]:where(:not(.site-header *, .cta-button, .profile-links a, :has(img, svg)
   }
 
   to {
-    opacity: 1;
+    opacity: var(--media-reveal-opacity, 1);
   }
 }
 
@@ -1170,13 +1170,72 @@ body.not-found-page {
 }
 
 /* Projects */
+.publication-row,
+.publication-teaser-wrap,
+.publication-content {
+  position: relative;
+}
+
 .project-item {
+  position: relative;
   padding: 1rem 0;
   display: flex;
   justify-content: space-between;
   gap: 1.25rem;
   align-items: flex-start;
   border-bottom: 1px solid var(--border-subtle);
+}
+
+.project-number {
+  display: none;
+  color: color-mix(in srgb, currentColor 10%, transparent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  pointer-events: none;
+}
+
+:where(:root:not(.is-compact-layout)) .project-number {
+  display: block;
+  flex: none;
+  min-width: 1ch;
+  font-size: 4rem;
+}
+
+.publication-background,
+.project-background {
+  --media-reveal-opacity: 0.16;
+  position: absolute;
+  inset: 0 4.5rem 0 auto;
+  width: min(42%, 25rem);
+  height: 100%;
+  object-fit: contain;
+  object-position: right center;
+  opacity: var(--media-reveal-opacity);
+  filter: grayscale(1);
+  mask-image: linear-gradient(to right, transparent, black 50%);
+  pointer-events: none;
+}
+
+.publication-background {
+  --media-reveal-opacity: 0.14;
+  inset-inline-end: 0;
+  object-fit: cover;
+  object-position: center;
+}
+
+.publication-background.media-lazy,
+.project-background.media-lazy {
+  opacity: 0;
+}
+
+:root[data-theme="dark"] :is(.publication-background, .project-background) {
+  filter: grayscale(1) invert(1);
+}
+
+.project-main,
+.project-actions {
+  position: relative;
 }
 
 .project-main {
@@ -1203,13 +1262,6 @@ body.not-found-page {
 .project-desc {
   margin: 0;
   line-height: var(--leading-body);
-}
-
-.project-tags {
-  margin-top: 0.75rem;
-  display: flex;
-  gap: 0.45rem;
-  flex-wrap: wrap;
 }
 
 .run-button-arrow {
@@ -1379,6 +1431,19 @@ body.not-found-page {
   align-self: flex-start;
 }
 
+:where(.is-compact-layout) .project-background,
+:where(.is-mobile-layout) .publication-background {
+  display: none;
+}
+
+:where(.is-mobile-layout) .project-number {
+  display: block;
+  position: absolute;
+  inset-block-end: 0.25rem;
+  inset-inline-end: 0;
+  font-size: 5.5rem;
+}
+
 :root:where(.is-mobile-layout) {
   --header-height: 148px;
 }
@@ -1477,7 +1542,7 @@ body.not-found-page {
   position: fixed;
   top: auto;
   right: max(0.65rem, env(safe-area-inset-right));
-  bottom: max(0.65rem, env(safe-area-inset-bottom));
+  bottom: calc(23dvh + env(safe-area-inset-bottom));
   z-index: 9;
 }
 

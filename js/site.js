@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
         const scrollY = Math.max(0, Math.min(window.scrollY, maxScroll));
         const delta = scrollY - lastScrollY;
-        const threshold = 100;
+        const threshold = 70;
         if (scrollY <= 8 || Math.abs(delta) >= threshold) {
             const compact = scrollY > threshold && delta > 0;
             if (root.classList.contains('is-badge-compact') !== compact) {
@@ -301,7 +301,9 @@ function renderHeader(site, badgeConfig) {
     const button = brandName.querySelector('.badge-switch');
     const icon = button.querySelector('span');
     const width = badgeConfig?.width;
-    let current = Math.max(0, paths.indexOf(badgeConfig?.default));
+    let current = badgeConfig?.mode === 'random'
+        ? Math.floor(Math.random() * paths.length)
+        : Math.max(0, paths.indexOf(badgeConfig?.default));
     let badge;
     let dispose;
     let switching = false;
@@ -477,6 +479,7 @@ function renderPublications(publications = {}) {
 
             const posterUrl = String(pub.poster || '').trim();
             const teaserUrl = String(pub.teaser || '').trim();
+            const backgroundImage = String(pub.background_image || '').trim();
             const isVideoTeaser = /\.(?:webm|mp4|m4v|ogv|ogg)(?:[?#]|$)/i.test(teaserUrl);
             const linkButtons = normalizedLinks
                 .map((item) => `<a class="cta-button" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a>`);
@@ -494,6 +497,8 @@ function renderPublications(publications = {}) {
 
             return `
                 <article class="publication-row card">
+                    ${backgroundImage ? `
+                        <img class="publication-background" data-src="${escapeHtml(backgroundImage)}" alt="" loading="lazy" decoding="async">` : ''}
                     <div class="publication-teaser-wrap">
                         ${isVideoTeaser
                             ? `<video class="publication-teaser" data-src="${escapeHtml(teaserUrl)}" autoplay muted loop playsinline aria-label="Publication teaser"></video>`
@@ -541,13 +546,13 @@ function renderProjects(projects = {}) {
     const projectCards = (projects.content || [])
         .map((project, index) => `
             <article class="project-item card">
+                <span class="project-number" aria-hidden="true">${index + 1}</span>
+                ${project.background_image?.trim() ? `
+                    <img class="project-background" data-src="${escapeHtml(project.background_image.trim())}" alt="" loading="lazy" decoding="async">` : ''}
                 <div class="project-main">
                     <h3 class="project-title">${renderConfigText(project.title)}</h3>
                     <p class="project-time">${renderConfigText(project.date)}</p>
                     <p class="project-desc">${renderConfigText(project.description)}</p>
-                    <div class="project-tags">
-                        ${(project.tags || []).map((tag) => `<span class="chip">${escapeHtml(tag)}</span>`).join('')}
-                    </div>
                 </div>
                 <div class="project-actions">
                     <button class="run-button" type="button" data-project-index="${index}">

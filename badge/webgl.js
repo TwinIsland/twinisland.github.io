@@ -1,4 +1,4 @@
-export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel, pixelScale = 1, onFrame } = {}) {
+export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel, pixelScale = 1, onFrame, setupInteraction } = {}) {
     if (alpha) {
         canvas.style.background = 'none';
     }
@@ -71,6 +71,7 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel,
     let resetTimer;
     let finishFirstFrame;
     const ready = new Promise((resolve) => { finishFirstFrame = resolve; });
+    const updateInteraction = setupInteraction?.({ gl, program, signal: events.signal, refresh, reducedMotion });
 
     function draw(now) {
         if (lastFrame !== null) {
@@ -88,6 +89,7 @@ export function mountShader(canvas, fragmentSource, { alpha = false, pressLabel,
         gl.viewport(0, 0, width, height);
         gl.uniform2f(resolution, width, height);
         gl.uniform1f(time, elapsed);
+        updateInteraction?.(now, elapsed);
         if (press) {
             const age = Math.max(0, (now - pressedAt) / 1000);
             const motionReduced = reducedMotion.matches;

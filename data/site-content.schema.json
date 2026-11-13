@@ -60,6 +60,11 @@
                   "description": "Site-relative badge modules in switch order. Each exports mount(canvas)."
                 },
                 "default": { "type": "string", "minLength": 1, "description": "Initial module from the list. Defaults to the first entry." },
+                "mode": {
+                  "enum": ["default", "random"],
+                  "default": "default",
+                  "description": "Use the default badge or choose a random badge from the list on each page load."
+                },
                 "width": {
                   "type": "number",
                   "exclusiveMinimum": 0,
@@ -227,6 +232,7 @@
         "authors": { "type": "string" },
         "conference": { "type": "string" },
         "teaser": { "type": "string", "description": "Site-relative path to a teaser image or a video that loops silently." },
+        "background_image": { "type": "string", "description": "Optional site-relative path or full URL to a decorative publication background image." },
         "poster": { "type": "string", "description": "Site-relative path to the publication poster image (optional)." },
         "abstract": { "type": "string" },
         "links": {
@@ -238,16 +244,13 @@
     "project": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["title", "date", "description", "tags", "run_url"],
+      "required": ["title", "date", "description", "run_url"],
       "properties": {
         "title": { "type": "string" },
         "date": { "type": "string" },
         "description": { "type": "string" },
-        "tags": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "run_url": { "type": "string", "description": "Site-relative path (or full URL) to a runnable demo page (e.g. projects/qsynth/index.html)." }
+        "run_url": { "type": "string", "description": "Site-relative path (or full URL) to a runnable demo page (e.g. projects/qsynth/index.html)." },
+        "background_image": { "type": "string", "description": "Optional site-relative path or full URL to a decorative background image for the wide project list layout." }
       }
     },
     "miscItem": {
