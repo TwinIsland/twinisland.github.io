@@ -2,7 +2,9 @@
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from decimal import Decimal
+from hashlib import sha256
 from html import escape
 from io import BytesIO
 import json
@@ -14,7 +16,7 @@ import shutil
 import subprocess
 import tarfile
 from tempfile import TemporaryDirectory
-from time import sleep
+from time import perf_counter, sleep
 from urllib.parse import quote, unquote, urljoin, urlsplit
 from urllib.request import urlopen
 
@@ -384,7 +386,67 @@ def rename_build_directory(source, destination):
             sleep(0.2 * (attempt + 1))
 
 
-def build(work, files, formatter, esbuild, args):
+def write_build_info(stage, started):
+    index = stage / "index.html"
+    homepage = index.read_bytes()
+    preview = re.compile(rb"<p\b[^>]*\bdata-build-preview\b[^>]*>.*?</p>", re.DOTALL)
+    if len(preview.findall(homepage)) != 1:
+        raise SystemExit("Expected one build link placeholder in index.html")
+
+    digest = sha256()
+    outputs = sorted(path for path in stage.rglob("*") if path.is_file())
+    for path in outputs:
+        digest.update(path.relative_to(stage).as_posix().encode("utf-8") + b"\0")
+        digest.update(sha256(path.read_bytes()).digest())
+    link = '<p class="footer-build">Build: <a href="build-info.html">{version}</a></p>'
+    digest.update(link.encode("utf-8"))
+
+    details = """<!doctype html>
+<html lang="en" class="build-info-page">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Build {version}</title>
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="build-info">
+      <h1>Build information</h1>
+      <dl>
+        <dt>Version</dt>
+        <dd><code>{version}</code></dd>
+        <dt>Built at</dt>
+        <dd><time datetime="{built_iso}">{built_at:%Y-%m-%d %H:%M:%S} UTC</time></dd>
+        <dt>Build duration</dt>
+        <dd>{duration:.2f} seconds</dd>
+        <dt>Files published</dt>
+        <dd>{file_count}</dd>
+        <dt>Artifact SHA-256</dt>
+        <dd><code>{full_version}</code></dd>
+      </dl>
+      <p><a href="./">Back to home</a></p>
+    </main>
+  </body>
+</html>
+"""
+    digest.update(details.encode("utf-8"))
+    full_version = digest.hexdigest()
+    version = full_version[:12]
+    index.write_bytes(preview.sub(link.format(version=version).encode("utf-8"), homepage))
+    built_at = datetime.now(timezone.utc)
+    (stage / "build-info.html").write_bytes(details.format(
+        version=version,
+        full_version=full_version,
+        built_iso=built_at.isoformat(timespec="seconds"),
+        built_at=built_at,
+        duration=perf_counter() - started,
+        file_count=len(outputs) + 1,
+    ).encode("utf-8"))
+
+
+def build(work, files, formatter, esbuild, args, started):
     format_excluded = {
         path.relative_to(ROOT) for pattern in args.format_exclude for path in ROOT.glob(pattern)
     }
@@ -424,6 +486,7 @@ def build(work, files, formatter, esbuild, args):
         print(f"Pre-rendered {rendered} Markdown posts.")
     if args.image_max_size or args.watermark:
         process_images(stage, work, args)
+    write_build_info(stage, started)
 
     previous = work / "previous-dist"
     if DIST.resolve() != DIST or not DIST.is_dir() and DIST.exists():
@@ -519,6 +582,7 @@ def deployment_options(parser, path):
 
 
 def main():
+    started = perf_counter()
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--config", type=Path, default=DEPLOY_CONFIG, metavar="FILE",
                         help="deployment JSON file (default: deploy.config.json at the repository root)")
@@ -531,7 +595,7 @@ def main():
         with ThreadPoolExecutor() as pool:
             prettier = pool.submit(download_prettier, work)
             esbuild = pool.submit(download_esbuild, work)
-            build(work, files, prettier.result(), esbuild.result(), options)
+            build(work, files, prettier.result(), esbuild.result(), options, started)
 
 
 if __name__ == "__main__":

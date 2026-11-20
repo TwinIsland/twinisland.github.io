@@ -15,16 +15,17 @@ To add a runnable demo, put it in `projects/<slug>/` and point the project's `ru
 ## Preview locally
 
 From the repository root, run `python -m http.server 8000` and open [localhost:8000](http://localhost:8000/).
+After building, open [localhost:8000/dist/](http://localhost:8000/dist/) to preview the published version.
 
 ## Deploy to GitHub Pages
 
-1. **Build the site** from the repository root. You need Python 3.10+, Node.js, Git, and internet access.
+1. **Build and publish** from the repository root. You need Python 3.10+, Node.js, Git, and internet access.
 
    ```sh
-   python scripts/build_site.py
+   python scripts/publish_site.py
    ```
 
-   The build requires [`deploy.config.json`](deploy.config.json) at the repository root. To use a different settings file, run `python scripts/build_site.py --config path/to/deploy.json`.
+   This builds `dist/` and pushes its contents to the root of `gh-pages`. Use `python scripts/build_site.py` to build locally. Both scripts read [`deploy.config.json`](deploy.config.json) from the repository root and accept `--config path/to/deploy.json` for another settings file.
 
    Set build options in that JSON file:
 
@@ -36,6 +37,8 @@ From the repository root, run `python -m http.server 8000` and open [localhost:8
 
    Compression and watermarking require FFmpeg and apply to JPEG, PNG, WebP, and GIF copies in `dist/`.
 
-2. **Publish the build.** Push the contents of `dist/` to the root of `gh-pages`, including `index.html` and `.nojekyll`. If Pages is new to the repository, set its publishing source to `gh-pages` → `/ (root)` in **Settings → Pages** once. [GitHub Pages publishing guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+2. **Set up Pages once.** In **Settings → Pages**, set the publishing source to `gh-pages` → `/ (root)`. [GitHub Pages publishing guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 
-After editing your site, rebuild and push the new output. To preview the build locally, run `python -m http.server 8000 --directory dist`.
+After editing your site, rerun `python scripts/publish_site.py`. To preview a local build, run `python -m http.server 8000 --directory dist`.
+
+The published footer links to the build version, time, and duration.

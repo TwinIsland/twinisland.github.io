@@ -1460,6 +1460,7 @@ body.not-found-page {
 /* Footer and maintenance screen */
 .site-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
@@ -1490,6 +1491,35 @@ body.not-found-page {
 
 .site-footer p {
   margin: 0;
+}
+
+.footer-build {
+  flex-basis: 100%;
+  color: color-mix(in srgb, var(--cp-ink) 72%, var(--surface));
+  font-size: var(--text-caption);
+}
+
+.footer-build a {
+  color: inherit;
+}
+
+.build-info-page {
+  overscroll-behavior-y: none;
+}
+
+.build-info-page body {
+  min-height: 100dvh;
+  padding-block: clamp(1rem, 5dvh, 4rem);
+}
+
+.build-info {
+  width: min(100% - 2rem, 38rem);
+  margin: 0 auto;
+}
+
+.build-info dd {
+  margin: 0 0 1rem;
+  overflow-wrap: anywhere;
 }
 
 .maintenance-shell {
@@ -1566,7 +1596,7 @@ body.not-found-page {
 }
 
 :where(.is-mobile-layout) .page-shell {
-  padding: calc(var(--header-height) + 0.5rem) 0.5rem 1.4rem;
+  padding: calc(var(--header-height) + 0.25rem) 0.5rem 1.4rem;
 }
 
 :where(.is-mobile-layout) .site-header {
