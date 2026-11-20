@@ -1,40 +1,55 @@
 const series = [
-    { name: 'Coated', values: [4, 15, 29, 45, 61], dash: '' },
-    { name: 'Textured', values: [6, 24, 46, 60, 73], dash: '7 4' },
-    { name: 'Untreated', values: [8, 35, 63, 79, 91], dash: '2 4' }
+  { name: 'Coated', values: [4, 15, 29, 45, 61], dash: '' },
+  { name: 'Textured', values: [6, 24, 46, 60, 73], dash: '7 4' },
+  { name: 'Untreated', values: [8, 35, 63, 79, 91], dash: '2 4' },
 ];
 
-function createPaper({ Surface, Ink, Grid, 'Series 1': first, 'Series 2': second, 'Series 3': third }) {
-    const page = document.createElement('article');
-    page.className = 'sample-paper';
-    page.style.setProperty('--sample-surface', Surface);
-    page.style.setProperty('--sample-ink', Ink);
-    page.style.setProperty('--sample-grid', Grid);
-    [first, second, third].forEach((color, index) => {
-        page.style.setProperty(`--sample-series-${index + 1}`, color);
-    });
-    return page;
+function createPaper({
+  Surface,
+  Ink,
+  Grid,
+  'Series 1': first,
+  'Series 2': second,
+  'Series 3': third,
+}) {
+  const page = document.createElement('article');
+  page.className = 'sample-paper';
+  page.style.setProperty('--sample-surface', Surface);
+  page.style.setProperty('--sample-ink', Ink);
+  page.style.setProperty('--sample-grid', Grid);
+  [first, second, third].forEach((color, index) => {
+    page.style.setProperty(`--sample-series-${index + 1}`, color);
+  });
+  return page;
 }
 
 export function paper(colors) {
-    const page = createPaper(colors);
-    const grid = [0, 25, 50, 75, 100].map((value) => {
-        const y = 112 - value;
-        return `<path class="chart-grid" d="M35 ${y}H255"/><text x="28" y="${y + 3}" text-anchor="end">${value}</text>`;
-    }).join('');
-    const lines = series.map(({ values, dash }, index) => {
-        const points = values.map((value, i) => `${35 + i * 55},${112 - value}`).join(' ');
-        return `<polyline class="series-${index + 1}" points="${points}" fill="none" stroke-width="2.4" stroke-dasharray="${dash}"/>`;
-    }).join('');
-    const bars = series.map(({ name, values }, index) => {
-        const x = 61 + 76 * index;
-        const value = values.at(-1);
-        return `<rect class="series-${index + 1}" x="${x - 17}" y="${112 - value}" width="34" height="${value}"/>
+  const page = createPaper(colors);
+  const grid = [0, 25, 50, 75, 100]
+    .map((value) => {
+      const y = 112 - value;
+      return `<path class="chart-grid" d="M35 ${y}H255"/><text x="28" y="${y + 3}" text-anchor="end">${value}</text>`;
+    })
+    .join('');
+  const lines = series
+    .map(({ values, dash }, index) => {
+      const points = values
+        .map((value, i) => `${35 + i * 55},${112 - value}`)
+        .join(' ');
+      return `<polyline class="series-${index + 1}" points="${points}" fill="none" stroke-width="2.4" stroke-dasharray="${dash}"/>`;
+    })
+    .join('');
+  const bars = series
+    .map(({ name, values }, index) => {
+      const x = 61 + 76 * index;
+      const value = values.at(-1);
+      return `<rect class="series-${index + 1}" x="${x - 17}" y="${112 - value}" width="34" height="${value}"/>
             <text x="${x}" y="${107 - value}" text-anchor="middle">${value}</text>
             <text x="${x}" y="127" text-anchor="middle">${name}</text>`;
-    }).join('');
+    })
+    .join('');
 
-    page.innerHTML = `
+  page.innerHTML = `
         <header>
             <p>Sample paper · Simulated data and geometry</p>
             <h3>Water uptake in porous films</h3>
@@ -88,5 +103,5 @@ export function paper(colors) {
             <figcaption><strong>Fig. 4.</strong> Extruded specimen with shaded front and side faces.</figcaption>
         </figure>
     `;
-    return page;
+  return page;
 }

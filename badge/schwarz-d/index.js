@@ -98,11 +98,14 @@ const fragmentSource = `
 `;
 
 export function mount(canvas, { onHighlight } = {}) {
-    canvas.style.aspectRatio = '1';
-    return mountShader(canvas, fragmentSource, {
-        alpha: true,
-        onFrame: onHighlight && ((time) => onHighlight('#854658, #407f76, #966074, #854658', time * 0.77)),
-        pixelScale: 1.15,
-        pressLabel: 'Deform the Diamond TPMS sculpture'
-    });
+  canvas.style.aspectRatio = '1';
+  return mountShader(canvas, fragmentSource, {
+    alpha: true,
+    onFrame:
+      onHighlight &&
+      ((time) =>
+        onHighlight('#854658, #407f76, #966074, #854658', time * 0.77)),
+    pixelScale: 1.15,
+    pressLabel: 'Deform the Diamond TPMS sculpture',
+  });
 }

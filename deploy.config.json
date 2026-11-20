@@ -1,0 +1,11 @@
+{
+  "$schema": "./deploy.config.schema.json",
+  "runtime_markdown": false,
+  "format_source": true,
+  "workers": 8,
+  "compress_images": true,
+  "image_max_size": "1MiB",
+  "watermark": "data/images/watermark-erdao.png",
+  "watermark_opacity": 0.35,
+  "watermark_include": ["data/images/birds/**/*"]
+}

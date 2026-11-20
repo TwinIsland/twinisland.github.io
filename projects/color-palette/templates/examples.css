@@ -54,7 +54,8 @@
 .sample-page {
   color: var(--sample-ink);
   background: var(--sample-surface);
-  border: 1px solid color-mix(in srgb, var(--sample-ink) 25%, var(--sample-surface));
+  border: 1px solid
+    color-mix(in srgb, var(--sample-ink) 25%, var(--sample-surface));
   font-size: var(--text-body-small);
 }
 
@@ -85,13 +86,25 @@
   cursor: pointer;
 }
 
-.sample-theme-toggle[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--sample-accent) 20%, var(--sample-surface));
+.sample-theme-toggle[aria-pressed='true'] {
+  background: color-mix(
+    in srgb,
+    var(--sample-accent) 20%,
+    var(--sample-surface)
+  );
 }
 
-.sample-content { padding: clamp(1rem, 4vw, 2rem); }
-.sample-content h3 { margin: 0; font-size: clamp(1.4rem, 4vw, 2.2rem); line-height: 1.15; }
-.sample-content p { line-height: 1.6; }
+.sample-content {
+  padding: clamp(1rem, 4vw, 2rem);
+}
+.sample-content h3 {
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  line-height: 1.15;
+}
+.sample-content p {
+  line-height: 1.6;
+}
 
 .sample-page .sample-button {
   display: inline-flex;
@@ -108,18 +121,29 @@
   margin-top: 1.3rem;
   padding: 0.8rem;
   border-inline-start: 3px solid var(--sample-accent);
-  background: color-mix(in srgb, var(--sample-accent) 12%, var(--sample-surface));
+  background: color-mix(
+    in srgb,
+    var(--sample-accent) 12%,
+    var(--sample-surface)
+  );
 }
 
-.sample-note h4, .sample-note p { margin: 0; }
-.sample-note p { margin-top: 0.3rem; }
+.sample-note h4,
+.sample-note p {
+  margin: 0;
+}
+.sample-note p {
+  margin-top: 0.3rem;
+}
 
 .sample-paper {
   padding: clamp(0.85rem, 4vw, 1.5rem);
   border: 1px solid var(--sample-grid);
   background: var(--sample-surface);
   color: var(--sample-ink);
-  font: 1rem/1.5 Georgia, serif;
+  font:
+    1rem/1.5 Georgia,
+    serif;
 }
 
 .sample-paper header {
@@ -129,7 +153,9 @@
 
 .sample-paper header p {
   margin: 0 0 0.3rem;
-  font: 0.7rem/1.4 Poppins, sans-serif;
+  font:
+    0.7rem/1.4 Poppins,
+    sans-serif;
 }
 
 .sample-paper h3 {
@@ -138,12 +164,30 @@
   line-height: 1.15;
 }
 
-.sample-paper figure { margin: 1rem 0 0; }
-.sample-paper svg { display: block; width: 100%; height: auto; }
-.sample-paper svg text { fill: currentColor; font: 9px Poppins, sans-serif; }
-.sample-paper figcaption { font-size: 0.82rem; }
-.chart-grid { stroke: var(--sample-grid); }
-.chart-axis { stroke: currentColor; fill: none; }
+.sample-paper figure {
+  margin: 1rem 0 0;
+}
+.sample-paper svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.sample-paper svg text {
+  fill: currentColor;
+  font:
+    9px Poppins,
+    sans-serif;
+}
+.sample-paper figcaption {
+  font-size: 0.82rem;
+}
+.chart-grid {
+  stroke: var(--sample-grid);
+}
+.chart-axis {
+  stroke: currentColor;
+  fill: none;
+}
 
 .chart-legend {
   display: flex;
@@ -152,7 +196,9 @@
   margin: 0 0 0.45rem;
   padding: 0;
   list-style: none;
-  font: 0.7rem/1.4 Poppins, sans-serif;
+  font:
+    0.7rem/1.4 Poppins,
+    sans-serif;
 }
 
 .chart-legend span {
@@ -163,11 +209,21 @@
   background: var(--series-color);
 }
 
-.series-1 { --series-color: var(--sample-series-1); }
-.series-2 { --series-color: var(--sample-series-2); }
-.series-3 { --series-color: var(--sample-series-3); }
-.sample-paper polyline { stroke: var(--series-color); }
-.sample-paper rect { fill: var(--series-color); }
+.series-1 {
+  --series-color: var(--sample-series-1);
+}
+.series-2 {
+  --series-color: var(--sample-series-2);
+}
+.series-3 {
+  --series-color: var(--sample-series-3);
+}
+.sample-paper polyline {
+  stroke: var(--series-color);
+}
+.sample-paper rect {
+  fill: var(--series-color);
+}
 
 .surface-face {
   fill: var(--series-color);

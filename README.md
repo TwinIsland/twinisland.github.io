@@ -1,59 +1,41 @@
 # Personal Site Template
 
-A single-page personal website template (About / Publications / Projects / Misc / Blog tabs) that runs entirely as static files — perfect for GitHub Pages. All site content is driven by one JSON file; no build step required.
+A static personal website for your profile, publications, projects, and blog.
 
-## Directory Layout
+## Make it yours
 
-```
-/
-├── index.html                # Page shell (tabs, header, footer). Normally no need to touch.
-├── style.css                 # All site styling.
-├── 404.html                  # GitHub Pages 404 page.
-├── CNAME                     # Custom domain (optional, delete if unused).
-├── js/
-│   ├── site.js               # Site rendering and interactions.
-│   └── markdown-it-katex-bridge.js
-├── assets/                   # Template-owned "skin" resources (do NOT put your content here).
-│   ├── fonts/poppins/
-│   └── suica_chara.gif       # Maintenance-page image.
-├── badge/                    # WebGL badge modules and shared renderer.
-├── data/                     # ★ Everything you edit lives here.
-│   ├── site-content.json     # ★ All site content in one place.
-│   ├── site-content.schema.json  # JSON Schema for site-content.json (editor autocomplete).
-│   └── images/               # Content images, grouped by topic.
-│       ├── profile/          # Profile photo.
-│       ├── birds/            # Bird gallery originals and WebP thumbnails.
-│       ├── logos/            # Education/affiliation logos.
-│       └── publications/     # Paper teasers and posters.
-├── posts/                    # ★ Blog posts live at the root, one folder per post.
-│   └── <post-slug>/
-│       ├── cover.jpg
-│       └── <Post Title>.md
-└── projects/                 # ★ Runnable demos (self-contained folders with their own index.html).
-    ├── badge-viewer/
-    ├── octave/
-    └── qsynth/
-```
+1. **Replace the sample content** in [`data/site-content.json`](data/site-content.json).
+2. **Add your images** under `data/images/` and use paths relative to the site root in the JSON, such as `data/images/profile/me.jpg`.
+4. **Set up your domain.** Remove [`CNAME`](CNAME) if you plan to use the default GitHub Pages URL. For a custom domain, update the file and set the domain under **Settings → Pages → Custom domain**.
 
-## How to Customize
+To add a blog post, put its files in `posts/<slug>/` and add an entry to `blog.content` with either a `markdown` or an `html` path. For HTML, write a trusted body fragment such as `<h2>Introduction</h2><p>...</p>`. Use URLs relative to the article for images and links.
 
-1. **Edit `data/site-content.json`.** Every tab's content, your profile info, publications, gallery images, and blog index are all in this one file. All image/path values are *site-relative* (relative to the repo root), e.g. `data/images/profile/me.jpg`.
-2. **Drop content files into `data/`.** Put photos in `data/images/<topic>/` and reference them in the JSON.
-3. **Write posts in `posts/<post-slug>/`.** Add a `cover.jpg` and a Markdown file, then register the post in the `blog` section of `site-content.json` (its `markdown` path). Images referenced inside the Markdown are resolved relative to the Markdown file itself.
-4. **Add projects under `projects/<project>/`.** Each folder is a self-contained static app; point `run_url` in `site-content.json` at its `index.html`. Set the optional `background_image` to an image path such as `data/images/projects/qsynth.webp` to show a faint illustration on wide screens.
-5. **Maintenance mode:** set `"maintenance": true` in `site-content.json` to show the under-maintenance page.
-6. **Search/replace the site identity:** set `site.name` in `site-content.json`. For an optional wordmark above it, set `site.name_mark.src` to a transparent SVG and `site.name_mark.alt` to its text. The SVG silhouette takes on the badge gradient. The SEO/social tags (og:image etc.) live in `index.html`. Set `profile.badge.list` to site-relative modules in switch order and `profile.badge.default` to the initial module path from that list. When the default path is omitted, the first module is used. Set `profile.badge.mode` to `random` to choose a badge on each page load, or use `default` (the fallback when omitted) to use the configured initial badge. Each module exports `mount(canvas)` and may return a cleanup function. Set `profile.badge.width` to a positive number in CSS pixels. Each module sets its canvas aspect ratio and any corner rounding in `mount(canvas)`. A module path on its own still works. Omit `profile.badge` to hide the badge.
+To add a runnable demo, put it in `projects/<slug>/` and point the project's `run_url` at its entry page.
 
-## Local Preview
+## Preview locally
 
-Any static file server works, e.g.:
-
-```bash
-npx serve .
-```
-
-or with Python: `python -m http.server`. Then open `http://localhost:<port>`.
+From the repository root, run `python -m http.server 8000` and open [localhost:8000](http://localhost:8000/).
 
 ## Deploy to GitHub Pages
 
-Push this folder to a repository named `<username>.github.io` (or enable Pages for any repo) and it is live. To use a custom domain, put it in `CNAME`.
+1. **Build the site** from the repository root. You need Python 3.10+, Node.js, Git, and internet access.
+
+   ```sh
+   python scripts/build_site.py
+   ```
+
+   The build requires [`deploy.config.json`](deploy.config.json) at the repository root. To use a different settings file, run `python scripts/build_site.py --config path/to/deploy.json`.
+
+   Set build options in that JSON file:
+
+   - Set `runtime_markdown` to `true` to render Markdown in the browser, or `false` to generate HTML during the build.
+   - Set `compress_images` to `true` and choose an `image_max_size` such as `"512KiB"`.
+   - Set `watermark` to a transparent PNG path, or `null` to disable it. Add site-relative globs to `watermark_include` to choose the images, and set `watermark_opacity` between `0` and `1`.
+   - Set `format_source` to `true` to write formatting changes back to the source files. Use `format_exclude` to skip formatting and minification for generated or standalone assets.
+   - Set `workers` to the number of images to process at once. The default is `1`.
+
+   Compression and watermarking require FFmpeg and apply to JPEG, PNG, WebP, and GIF copies in `dist/`.
+
+2. **Publish the build.** Push the contents of `dist/` to the root of `gh-pages`, including `index.html` and `.nojekyll`. If Pages is new to the repository, set its publishing source to `gh-pages` → `/ (root)` in **Settings → Pages** once. [GitHub Pages publishing guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+
+After editing your site, rebuild and push the new output. To preview the build locally, run `python -m http.server 8000 --directory dist`.

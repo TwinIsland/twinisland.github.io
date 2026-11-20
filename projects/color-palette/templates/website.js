@@ -1,7 +1,7 @@
 export function website(colors, { darkColors } = {}) {
-    const page = document.createElement('article');
-    page.className = 'sample-page';
-    page.innerHTML = `
+  const page = document.createElement('article');
+  page.className = 'sample-page';
+  page.innerHTML = `
         <header>
             <strong>Field Notes</strong>
             <div class="sample-nav"><span>Journal</span></div>
@@ -17,28 +17,28 @@ export function website(colors, { darkColors } = {}) {
         </div>
     `;
 
-    function applyColors({ Surface, Ink, Accent }, scheme) {
-        page.style.colorScheme = scheme;
-        page.style.setProperty('--sample-surface', Surface);
-        page.style.setProperty('--sample-ink', Ink);
-        page.style.setProperty('--sample-accent', Accent);
-    }
+  function applyColors({ Surface, Ink, Accent }, scheme) {
+    page.style.colorScheme = scheme;
+    page.style.setProperty('--sample-surface', Surface);
+    page.style.setProperty('--sample-ink', Ink);
+    page.style.setProperty('--sample-accent', Accent);
+  }
 
-    applyColors(colors, 'light');
-    if (darkColors) {
-        const toggle = document.createElement('button');
-        toggle.type = 'button';
-        toggle.className = 'sample-theme-toggle';
-        toggle.textContent = 'Dark mode';
-        toggle.setAttribute('aria-pressed', 'false');
-        let dark = false;
-        toggle.addEventListener('click', () => {
-            dark = !dark;
-            const activeColors = dark ? { ...colors, ...darkColors } : colors;
-            applyColors(activeColors, dark ? 'dark' : 'light');
-            toggle.setAttribute('aria-pressed', String(dark));
-        });
-        page.querySelector('.sample-nav').append(toggle);
-    }
-    return page;
+  applyColors(colors, 'light');
+  if (darkColors) {
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'sample-theme-toggle';
+    toggle.textContent = 'Dark mode';
+    toggle.setAttribute('aria-pressed', 'false');
+    let dark = false;
+    toggle.addEventListener('click', () => {
+      dark = !dark;
+      const activeColors = dark ? { ...colors, ...darkColors } : colors;
+      applyColors(activeColors, dark ? 'dark' : 'light');
+      toggle.setAttribute('aria-pressed', String(dark));
+    });
+    page.querySelector('.sample-nav').append(toggle);
+  }
+  return page;
 }

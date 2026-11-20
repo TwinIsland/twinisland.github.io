@@ -1,8 +1,25 @@
 {
   "$schema": "./site-content.schema.json",
   "maintenance": false,
+  "maintenance_image": "data/images/maintenance.gif",
   "site": {
     "name": "Tianyi Huang",
+    "language": "en",
+    "favicon": "",
+    "source_url": "https://github.com/TwinIsland/twinisland.github.io",
+    "seo": {
+      "title": "Tianyi Huang | 黄天毅",
+      "description": "PhD student in Computer Science at the National University of Singapore, working in computer graphics, 3D shape design and generation.",
+      "url": "https://tianyihuang.com/",
+      "image": "data/images/profile/me.jpg",
+      "robots": "index, follow, max-image-preview:large",
+      "alternate_names": ["黄天毅", "TwinIsland"],
+      "same_as": [
+        "https://github.com/TwinIsland",
+        "https://www.linkedin.com/in/tianyih5",
+        "https://cirno.me/"
+      ]
+    },
     "name_mark": {
       "src": "data/images/profile/name-mark.svg",
       "alt": "黄天毅"

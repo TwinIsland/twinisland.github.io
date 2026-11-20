@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Site deployment settings",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "siteGlobs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(?![/\\\\]|[A-Za-z]:)(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$))(?=.*\\S).+$"
+      }
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path to the deployment settings schema."
+    },
+    "runtime_markdown": {
+      "type": "boolean",
+      "default": false,
+      "description": "Render Markdown in the browser instead of pre-rendering it during the build."
+    },
+    "format_source": {
+      "type": "boolean",
+      "default": false,
+      "description": "Write formatting changes back to the source files."
+    },
+    "format_exclude": {
+      "$ref": "#/$defs/siteGlobs",
+      "default": [],
+      "description": "Site-relative globs excluded from source formatting and CSS/JS minification."
+    },
+    "compress_images": {
+      "type": "boolean",
+      "default": false,
+      "description": "Use FFmpeg to compress oversized images in dist/."
+    },
+    "workers": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1,
+      "description": "Maximum number of images to compress or watermark concurrently."
+    },
+    "image_max_size": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1 },
+        { "type": "string", "pattern": "^\\s*[0-9]+(?:\\.[0-9]+)?\\s*(?:[Bb]|[Kk][Ii]?[Bb]|[Mm][Ii]?[Bb])?\\s*$" }
+      ],
+      "default": "1MiB",
+      "examples": [524288, "512KiB", "1.5MB"],
+      "description": "Per-image compression cap. A bare number is measured in bytes. The limit must be at least one byte."
+    },
+    "watermark": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "pattern": "\\.[Pp][Nn][Gg]$" }
+      ],
+      "default": null,
+      "description": "Optional path to a PNG watermark. Relative paths are resolved from the repository root."
+    },
+    "watermark_include": {
+      "$ref": "#/$defs/siteGlobs",
+      "default": [],
+      "description": "Site-relative glob patterns that select images to watermark in dist/."
+    },
+    "watermark_opacity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 1,
+      "description": "Opacity multiplier for the watermark, from transparent (0) to the original opacity (1)."
+    }
+  }
+}

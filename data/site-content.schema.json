@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://tianyihuang.com/data/site-content.schema.json",
   "title": "Personal site content",
   "type": "object",
   "additionalProperties": false,
@@ -21,12 +20,32 @@
     "maintenance": {
       "type": "boolean"
     },
+    "maintenance_image": {
+      "type": "string",
+      "description": "Optional site-relative image for the maintenance page."
+    },
     "site": {
       "type": "object",
       "additionalProperties": false,
       "required": ["name"],
       "properties": {
         "name": { "type": "string" },
+        "language": { "type": "string", "default": "en", "description": "Homepage language tag." },
+        "favicon": { "type": "string", "description": "Site-relative or absolute HTTP(S) icon URL. Leave empty to omit the favicon." },
+        "source_url": { "type": "string", "description": "Optional GitHub repository URL for the footer." },
+        "seo": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": { "type": "string", "description": "Page title. Defaults to the site name." },
+            "description": { "type": "string" },
+            "url": { "type": "string", "description": "Absolute homepage URL, including the repository path for project sites." },
+            "image": { "type": "string", "description": "Social preview image URL or site-relative path. Relative paths require a homepage URL." },
+            "robots": { "type": "string" },
+            "alternate_names": { "type": "array", "items": { "type": "string" } },
+            "same_as": { "type": "array", "items": { "type": "string" } }
+          }
+        },
         "name_mark": {
           "type": "object",
           "additionalProperties": false,
@@ -261,7 +280,7 @@
         "title": { "type": "string" },
         "date": { "type": "string" },
         "description": { "type": "string" },
-        "run_url": { "type": "string", "description": "Site-relative path (or full URL) to a runnable demo page (e.g. projects/qsynth/index.html)." },
+        "run_url": { "type": "string", "description": "Site-relative path or full URL to a runnable demo page." },
         "background_image": { "type": "string", "description": "Optional site-relative path or full URL to a decorative background image for the wide project list layout." }
       }
     },
@@ -335,12 +354,14 @@
     "blogPost": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["title", "cover", "intro", "markdown"],
+      "required": ["title", "cover", "intro"],
+      "oneOf": [{ "required": ["markdown"] }, { "required": ["html"] }],
       "properties": {
         "title": { "type": "string" },
         "cover": { "type": "string", "description": "Site-relative path to the post cover image (e.g. posts/my-post/cover.jpg)." },
         "intro": { "type": "string" },
-        "markdown": { "type": "string", "description": "Site-relative path to the post markdown file." }
+        "markdown": { "type": "string", "minLength": 1, "description": "Site-relative path to the post Markdown file." },
+        "html": { "type": "string", "minLength": 1, "description": "Site-relative path to a trusted HTML fragment containing the post body." }
       }
     }
   }

@@ -1,22 +1,22 @@
 const state = {
-    data: null,
-    miscGalleryLightbox: null,
-    publicationPosterLightbox: null,
-    blogLightbox: null,
-    blogViewingPost: false,
-    blogPage: 0,
-    projectsPage: 0,
-    lazyMediaObserver: null,
-    lazyMediaMutationObserver: null
+  data: null,
+  miscGalleryLightbox: null,
+  publicationPosterLightbox: null,
+  blogLightbox: null,
+  blogViewingPost: false,
+  blogPage: 0,
+  projectsPage: 0,
+  lazyMediaObserver: null,
+  lazyMediaMutationObserver: null,
 };
 
 const tabs = ['about', 'publications', 'projects', 'misc', 'blog'];
 const tabRenderers = {
-    about: (section, data) => renderAbout(section, data.profile),
-    publications: (section) => renderPublications(section),
-    projects: (section) => renderProjects(section),
-    misc: (section) => renderMisc(section),
-    blog: (section) => renderBlog(section)
+  about: (section, data) => renderAbout(section, data.profile),
+  publications: (section) => renderPublications(section),
+  projects: (section) => renderProjects(section),
+  misc: (section) => renderMisc(section),
+  blog: (section) => renderBlog(section),
 };
 const markdownRenderer = createMarkdownRenderer();
 
@@ -24,368 +24,451 @@ const PAGE_REVEAL_TIMEOUT_MS = 1500;
 const CONTENT_LOAD_TIMEOUT_MS = 5000;
 
 document.addEventListener('DOMContentLoaded', () => {
-    initLazyMedia();
-    bindTabEvents();
-    syncHeaderOffset();
-    let lastLayoutWidth = window.innerWidth;
-    window.addEventListener('resize', () => {
-        if (window.innerWidth !== lastLayoutWidth) {
-            lastLayoutWidth = window.innerWidth;
-            syncHeaderOffset();
-        }
-    });
-    let lastScrollY = window.scrollY;
-    const root = document.documentElement;
-    const badgeSwitch = document.querySelector('.badge-switch');
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let switchMove;
-    window.addEventListener('scroll', () => {
-        const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-        const scrollY = Math.max(0, Math.min(window.scrollY, maxScroll));
-        const delta = scrollY - lastScrollY;
-        const threshold = 70;
-        if (scrollY <= 8 || Math.abs(delta) >= threshold) {
-            const compact = scrollY > threshold && delta > 0;
-            if (root.classList.contains('is-badge-compact') !== compact) {
-                const animate = badgeSwitch && !badgeSwitch.hidden
-                    && !root.classList.contains('is-mobile-layout') && !reducedMotion.matches;
-                const start = animate ? badgeSwitch.getBoundingClientRect() : null;
-                switchMove?.cancel();
-                root.classList.toggle('is-badge-compact', compact);
-                if (start) {
-                    const end = badgeSwitch.getBoundingClientRect();
-                    switchMove = badgeSwitch.animate(
-                        [{ translate: `${start.left - end.left}px ${start.top - end.top}px` }, { translate: '0 0' }],
-                        { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
-                    );
-                }
-            }
-            lastScrollY = scrollY;
-        }
-    }, { passive: true });
-    if (document.fonts?.ready) {
-        document.fonts.ready.then(() => {
-            syncHeaderOffset();
-        }).catch(() => { });
+  initLazyMedia();
+  bindTabEvents();
+  syncHeaderOffset();
+  let lastLayoutWidth = window.innerWidth;
+  window.addEventListener('resize', () => {
+    if (window.innerWidth !== lastLayoutWidth) {
+      lastLayoutWidth = window.innerWidth;
+      syncHeaderOffset();
     }
-    initPage();
+  });
+  let lastScrollY = window.scrollY;
+  const root = document.documentElement;
+  const badgeSwitch = document.querySelector('.badge-switch');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let switchMove;
+  window.addEventListener(
+    'scroll',
+    () => {
+      const maxScroll = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight
+      );
+      const scrollY = Math.max(0, Math.min(window.scrollY, maxScroll));
+      const delta = scrollY - lastScrollY;
+      const threshold = 70;
+      if (scrollY <= 8 || Math.abs(delta) >= threshold) {
+        const compact = scrollY > threshold && delta > 0;
+        if (root.classList.contains('is-badge-compact') !== compact) {
+          const animate =
+            badgeSwitch &&
+            !badgeSwitch.hidden &&
+            !root.classList.contains('is-mobile-layout') &&
+            !reducedMotion.matches;
+          const start = animate ? badgeSwitch.getBoundingClientRect() : null;
+          switchMove?.cancel();
+          root.classList.toggle('is-badge-compact', compact);
+          if (start) {
+            const end = badgeSwitch.getBoundingClientRect();
+            switchMove = badgeSwitch.animate(
+              [
+                {
+                  translate: `${start.left - end.left}px ${start.top - end.top}px`,
+                },
+                { translate: '0 0' },
+              ],
+              { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+            );
+          }
+        }
+        lastScrollY = scrollY;
+      }
+    },
+    { passive: true }
+  );
+  if (document.fonts?.ready) {
+    document.fonts.ready
+      .then(() => {
+        syncHeaderOffset();
+      })
+      .catch(() => {});
+  }
+  initPage();
 });
 
 async function initPage() {
-    const contentController = new AbortController();
-    const contentTimeoutId = setTimeout(() => contentController.abort(), CONTENT_LOAD_TIMEOUT_MS);
+  const contentController = new AbortController();
+  const contentTimeoutId = setTimeout(
+    () => contentController.abort(),
+    CONTENT_LOAD_TIMEOUT_MS
+  );
 
-    try {
-        const response = await fetch('data/site-content.json', {
-            cache: 'no-store',
-            signal: contentController.signal
-        });
-        if (!response.ok) {
-            throw new Error(`Failed to load content: ${response.status}`);
-        }
-        state.data = await response.json();
-
-        if (state.data?.maitnaiance === true || state.data?.maintenance === true) {
-            renderMaintenancePage();
-            await revealSiteWhenReady(document.querySelector('.maintenance-gif'));
-            return;
-        }
-
-        const badgeReady = renderAll(state.data);
-        syncHeaderOffset();
-
-        const initialTab = location.hash.replace('#', '');
-        if (tabs.includes(initialTab)) {
-            activateTab(initialTab);
-        } else {
-            activateTab('about');
-        }
-
-        await revealSiteWhenReady(document.querySelector('.profile-photo'), badgeReady);
-    } catch (error) {
-        const message = error.name === 'AbortError'
-            ? 'The site content took too long to load. Please refresh and try again.'
-            : error.message;
-        showLoadError(message);
-        syncHeaderOffset();
-        revealSite();
-    } finally {
-        clearTimeout(contentTimeoutId);
+  try {
+    const response = await fetch('data/site-content.json', {
+      cache: 'no-store',
+      signal: contentController.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to load content: ${response.status}`);
     }
+    state.data = await response.json();
+    applySiteIdentity(state.data.site);
+
+    if (state.data?.maitnaiance === true || state.data?.maintenance === true) {
+      renderMaintenancePage(state.data.maintenance_image);
+      await revealSiteWhenReady(document.querySelector('.maintenance-gif'));
+      return;
+    }
+
+    const badgeReady = renderAll(state.data);
+    syncHeaderOffset();
+
+    const initialTab = location.hash.replace('#', '');
+    if (tabs.includes(initialTab)) {
+      activateTab(initialTab);
+    } else {
+      activateTab('about');
+    }
+
+    await revealSiteWhenReady(
+      document.querySelector('.profile-photo'),
+      badgeReady
+    );
+  } catch (error) {
+    const message =
+      error.name === 'AbortError'
+        ? 'The site content took too long to load. Please refresh and try again.'
+        : error.message;
+    showLoadError(message);
+    syncHeaderOffset();
+    revealSite();
+  } finally {
+    clearTimeout(contentTimeoutId);
+  }
 }
 
 async function revealSiteWhenReady(criticalImage, badgeReady) {
-    const fontPromise = document.fonts
-        ? Promise.all([
-            document.fonts.load('400 1rem Poppins'),
-            document.fonts.load('700 1rem Poppins')
-        ])
-        : Promise.resolve();
+  const fontPromise = document.fonts
+    ? Promise.all([
+        document.fonts.load('400 1rem Poppins'),
+        document.fonts.load('700 1rem Poppins'),
+      ])
+    : Promise.resolve();
 
-    const imagePromise = criticalImage?.decode
-        ? criticalImage.decode().catch(() => { })
-        : Promise.resolve();
+  const imagePromise = criticalImage?.decode
+    ? criticalImage.decode().catch(() => {})
+    : Promise.resolve();
 
-    await Promise.race([
-        Promise.allSettled([fontPromise, imagePromise, badgeReady]),
-        new Promise((resolve) => setTimeout(resolve, PAGE_REVEAL_TIMEOUT_MS))
-    ]);
+  await Promise.race([
+    Promise.allSettled([fontPromise, imagePromise, badgeReady]),
+    new Promise((resolve) => setTimeout(resolve, PAGE_REVEAL_TIMEOUT_MS)),
+  ]);
 
-    syncHeaderOffset();
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    revealSite();
+  syncHeaderOffset();
+  await new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  );
+  revealSite();
 }
 
 function revealSite() {
-    document.body.classList.remove('site-loading');
-    document.querySelector('.page-shell')?.setAttribute('aria-busy', 'false');
-    document.getElementById('site-loader')?.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('site-loading');
+  document.querySelector('.page-shell')?.setAttribute('aria-busy', 'false');
+  document.getElementById('site-loader')?.setAttribute('aria-hidden', 'true');
 }
 
-function renderMaintenancePage() {
-    const pageShell = document.querySelector('.page-shell');
-    if (!pageShell) {
-        return;
-    }
+function renderMaintenancePage(image) {
+  const pageShell = document.querySelector('.page-shell');
+  if (!pageShell) {
+    return;
+  }
 
-    document.body.classList.add('maintenance-mode');
-    pageShell.innerHTML = `
+  document.body.classList.add('maintenance-mode');
+  pageShell.innerHTML = `
         <section class="maintenance-shell">
-            <img class="maintenance-gif" data-src="assets/suica_chara.gif" alt="Maintenance character" width="110" height="110" loading="lazy" decoding="async">
+            ${image ? `<img class="maintenance-gif" data-src="${escapeHtml(image)}" alt="" width="110" height="110" loading="lazy" decoding="async">` : ''}
             <h1 class="maintenance-title">Under Maintenance</h1>
-            <p class="maintenance-text">The site will be available soooon.</p>
+            <p class="maintenance-text">The site will be available again soon.</p>
         </section>
     `;
 }
 
 function bindTabEvents() {
-    document.querySelectorAll('.tab-button').forEach((button) => {
-        button.addEventListener('click', () => activateTab(button.dataset.tab));
+  document.querySelectorAll('.tab-button').forEach((button) => {
+    button.addEventListener('click', () => activateTab(button.dataset.tab));
+  });
+  document.querySelectorAll('.site-home-link').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      event.preventDefault();
+      activateTab('about');
+      window.scrollTo(0, 0);
     });
-    document.querySelectorAll('.site-home-link').forEach((link) => {
-        link.addEventListener('click', (event) => {
-            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-                return;
-            }
-            event.preventDefault();
-            activateTab('about');
-            window.scrollTo(0, 0);
-        });
-    });
+  });
 }
 
 function syncHeaderOffset() {
-    const header = document.querySelector('.site-header');
-    if (!header) {
-        return;
-    }
+  const header = document.querySelector('.site-header');
+  if (!header) {
+    return;
+  }
 
-    const root = document.documentElement;
-    // Use the expanded header for both layout selection and the page offset.
-    root.classList.add('is-measuring-header', 'is-syncing-header');
-    const mobileWidth = window.matchMedia('(max-width: 864px)').matches;
-    let mobileLayout = mobileWidth;
-    if (!mobileWidth) {
-        // Measure the desktop header so the layout can switch back as space returns.
-        root.classList.remove('is-mobile-layout');
-        const brand = header.querySelector('.brand-wrap');
-        const nav = header.querySelector('.tab-nav');
-        mobileLayout = nav.getBoundingClientRect().top >= brand.getBoundingClientRect().bottom;
-    }
+  const root = document.documentElement;
+  // Use the expanded header for both layout selection and the page offset.
+  root.classList.add('is-measuring-header', 'is-syncing-header');
+  const mobileWidth = window.matchMedia('(max-width: 864px)').matches;
+  let mobileLayout = mobileWidth;
+  if (!mobileWidth) {
+    // Measure the desktop header so the layout can switch back as space returns.
+    root.classList.remove('is-mobile-layout');
+    const brand = header.querySelector('.brand-wrap');
+    const nav = header.querySelector('.tab-nav');
+    mobileLayout =
+      nav.getBoundingClientRect().top >= brand.getBoundingClientRect().bottom;
+  }
 
-    root.classList.toggle('is-mobile-layout', mobileLayout);
-    root.classList.toggle('is-compact-layout', mobileLayout || window.matchMedia('(max-width: 980px)').matches);
-    if (mobileLayout) {
-        const nav = header.querySelector('.tab-nav');
-        root.style.setProperty('--mobile-nav-height', `${Math.ceil(nav.getBoundingClientRect().height)}px`);
-    }
-    root.style.setProperty('--header-height', `${Math.ceil(header.getBoundingClientRect().height)}px`);
-    root.classList.remove('is-measuring-header');
-    // Commit the restored layout before re-enabling scroll transitions.
-    void header.offsetHeight;
-    root.classList.remove('is-syncing-header');
+  root.classList.toggle('is-mobile-layout', mobileLayout);
+  root.classList.toggle(
+    'is-compact-layout',
+    mobileLayout || window.matchMedia('(max-width: 980px)').matches
+  );
+  if (mobileLayout) {
+    const nav = header.querySelector('.tab-nav');
+    root.style.setProperty(
+      '--mobile-nav-height',
+      `${Math.ceil(nav.getBoundingClientRect().height)}px`
+    );
+  }
+  root.style.setProperty(
+    '--header-height',
+    `${Math.ceil(header.getBoundingClientRect().height)}px`
+  );
+  root.classList.remove('is-measuring-header');
+  // Commit the restored layout before re-enabling scroll transitions.
+  void header.offsetHeight;
+  root.classList.remove('is-syncing-header');
 }
 
 function activateTab(tabId) {
-    if (!tabs.includes(tabId)) {
-        return;
+  if (!tabs.includes(tabId)) {
+    return;
+  }
+  const activePanel = document.getElementById(`tab-${tabId}`);
+
+  document.querySelectorAll('.tab-button').forEach((button) => {
+    const active = button.dataset.tab === tabId;
+    button.classList.toggle('active', active);
+    if (active) {
+      button.setAttribute('aria-current', 'page');
+    } else {
+      button.removeAttribute('aria-current');
     }
-    const activePanel = document.getElementById(`tab-${tabId}`);
+  });
 
-    document.querySelectorAll('.tab-button').forEach((button) => {
-        const active = button.dataset.tab === tabId;
-        button.classList.toggle('active', active);
-        if (active) {
-            button.setAttribute('aria-current', 'page');
-        } else {
-            button.removeAttribute('aria-current');
-        }
-    });
+  document.querySelectorAll('.tab-panel').forEach((panel) => {
+    panel.classList.toggle('active', panel.id === `tab-${tabId}`);
+  });
 
-    document.querySelectorAll('.tab-panel').forEach((panel) => {
-        panel.classList.toggle('active', panel.id === `tab-${tabId}`);
-    });
+  history.replaceState(null, '', `#${tabId}`);
 
-    history.replaceState(null, '', `#${tabId}`);
-
-    if (tabId === 'blog' && state.blogViewingPost) {
-        renderBlog(state.data?.blog || {});
+  if (tabId === 'blog' && state.blogViewingPost) {
+    renderBlog(state.data?.blog || {});
+  }
+  requestAnimationFrame(() => {
+    if (activePanel?.classList.contains('active')) {
+      replayTabMediaReveal(activePanel);
     }
-    requestAnimationFrame(() => {
-        if (activePanel?.classList.contains('active')) {
-            replayTabMediaReveal(activePanel);
-        }
-    });
+  });
 }
 
 function replayTabMediaReveal(panel) {
-    panel.querySelectorAll('img[src], iframe[src]').forEach((element) => {
-        if (element.classList.contains('media-lazy')) {
-            return;
-        }
-        if (element.closest('.profile-photo, .gallery-item')) {
-            return;
-        }
-        if (element instanceof HTMLImageElement && !element.complete) {
-            return;
-        }
+  panel.querySelectorAll('img[src], iframe[src]').forEach((element) => {
+    if (element.classList.contains('media-lazy')) {
+      return;
+    }
+    if (element.closest('.profile-photo, .gallery-item')) {
+      return;
+    }
+    if (element instanceof HTMLImageElement && !element.complete) {
+      return;
+    }
 
-        element.classList.remove('tab-media-revealed');
-        void element.offsetWidth;
-        element.classList.add('tab-media-revealed');
-    });
+    element.classList.remove('tab-media-revealed');
+    void element.offsetWidth;
+    element.classList.add('tab-media-revealed');
+  });
 }
 
 function renderAll(data) {
-    const badgeReady = renderHeader(data.site, data.profile?.badge);
-    tabs.forEach((tabId) => {
-        const section = data[tabId] || {};
-        const label = String(section.title || tabId);
-        const button = document.querySelector(`[data-tab="${tabId}"]`);
-        const panel = document.getElementById(`tab-${tabId}`);
+  const badgeReady = renderHeader(data.site, data.profile?.badge);
+  tabs.forEach((tabId) => {
+    const section = data[tabId] || {};
+    const label = String(section.title || tabId);
+    const button = document.querySelector(`[data-tab="${tabId}"]`);
+    const panel = document.getElementById(`tab-${tabId}`);
 
-        if (button) {
-            button.textContent = label;
-        }
-        if (panel) {
-            panel.setAttribute('aria-label', label);
-        }
-        tabRenderers[tabId]?.(section, data);
-    });
-    return badgeReady;
+    if (button) {
+      button.textContent = label;
+    }
+    if (panel) {
+      panel.setAttribute('aria-label', label);
+    }
+    tabRenderers[tabId]?.(section, data);
+  });
+  return badgeReady;
+}
+
+function applySiteIdentity(site = {}) {
+  document.title = site.seo?.title || site.name || 'Personal Website';
+  document.documentElement.lang = site.language || 'en';
+
+  const source = document.querySelector('[data-site-source]');
+  if (source && /^https?:\/\//i.test(site.source_url || '')) {
+    source.href = site.source_url;
+    source.hidden = false;
+  }
+
+  if (site.favicon && !document.querySelector('link[rel="icon"]')) {
+    try {
+      const url = new URL(site.favicon, document.baseURI);
+      if (url.protocol === 'http:' || url.protocol === 'https:') {
+        const icon = document.createElement('link');
+        icon.rel = 'icon';
+        icon.href = url.href;
+        document.head.append(icon);
+      }
+    } catch {
+      // An invalid optional favicon should not prevent the site from loading.
+    }
+  }
 }
 
 function renderHeader(site, badgeConfig) {
-    const name = document.getElementById('site-name');
-    name.querySelector('.site-home-link').textContent = site?.name || 'Personal Website';
-    document.querySelector('.mobile-site-name').textContent = name.textContent;
-    const brandName = name.closest('.brand-name');
-    const nameMark = brandName.querySelector('.site-name-mark');
-    const mark = site?.name_mark;
-    if (mark?.src && mark.alt) {
-        const image = nameMark.querySelector('img');
-        image.src = mark.src;
-        image.alt = mark.alt;
-        nameMark.querySelector('.name-mark-art').style.setProperty(
-            '--name-mark-image', `url(${JSON.stringify(image.src)})`
-        );
-        nameMark.hidden = false;
-    }
+  const name = document.getElementById('site-name');
+  name.querySelector('.site-home-link').textContent =
+    site?.name || 'Personal Website';
+  document.querySelector('.mobile-site-name').textContent = name.textContent;
+  const brandName = name.closest('.brand-name');
+  const nameMark = brandName.querySelector('.site-name-mark');
+  const mark = site?.name_mark;
+  if (mark?.src && mark.alt) {
+    const image = nameMark.querySelector('img');
+    image.src = mark.src;
+    image.alt = mark.alt;
+    nameMark
+      .querySelector('.name-mark-art')
+      .style.setProperty(
+        '--name-mark-image',
+        `url(${JSON.stringify(image.src)})`
+      );
+    nameMark.hidden = false;
+  }
 
-    const sources = Array.isArray(badgeConfig?.list)
-        ? badgeConfig.list
-        : [typeof badgeConfig === 'string' ? badgeConfig : badgeConfig?.module];
-    const paths = [...new Set(sources.filter((path) => typeof path === 'string' && path.trim()))];
-    if (paths.length === 0) {
-        return;
-    }
+  const sources = Array.isArray(badgeConfig?.list)
+    ? badgeConfig.list
+    : [typeof badgeConfig === 'string' ? badgeConfig : badgeConfig?.module];
+  const paths = [
+    ...new Set(
+      sources.filter((path) => typeof path === 'string' && path.trim())
+    ),
+  ];
+  if (paths.length === 0) {
+    return;
+  }
 
-    const button = brandName.querySelector('.badge-switch');
-    const icon = button.querySelector('span');
-    const width = badgeConfig?.width;
-    let current = badgeConfig?.mode === 'random'
-        ? Math.floor(Math.random() * paths.length)
-        : Math.max(0, paths.indexOf(badgeConfig?.default));
-    let badge;
-    let dispose;
-    let switching = false;
-    let spin;
+  const button = brandName.querySelector('.badge-switch');
+  const icon = button.querySelector('span');
+  const width = badgeConfig?.width;
+  let current =
+    badgeConfig?.mode === 'random'
+      ? Math.floor(Math.random() * paths.length)
+      : Math.max(0, paths.indexOf(badgeConfig?.default));
+  let badge;
+  let dispose;
+  let switching = false;
+  let spin;
 
-    async function showBadge(index) {
-        switching = true;
-        try {
-            const { mount } = await import(new URL(paths[index], document.baseURI).href);
-            const next = document.createElement('canvas');
-            next.className = 'brand-badge';
-            next.setAttribute('aria-hidden', 'true');
-            if (Number.isFinite(width) && width > 0) {
-                next.style.setProperty('--badge-width', `${width}px`);
-            }
-            const badgeTheme = brandName.closest('.page-shell');
-            let previousPosition;
-            const release = mount(next, {
-                onHighlight(colors, phase) {
-                    if (badge !== next) return;
-                    const position = Math.round(50 - 50 * Math.cos(phase));
-                    if (position !== previousPosition) {
-                        badgeTheme.style.setProperty('--badge-name-colors', colors);
-                        badgeTheme.style.setProperty('--badge-name-position', `${position}%`);
-                        previousPosition = position;
-                    }
-                }
-            });
-            if (badge) {
-                badge.replaceWith(next);
-                dispose?.();
-            } else {
-                brandName.before(next);
-            }
-            badge = next;
-            badgeTheme.style.removeProperty('--badge-name-colors');
-            badgeTheme.style.removeProperty('--badge-name-position');
-            dispose = typeof release === 'function' ? release : undefined;
-            current = index;
-            button.hidden = paths.length < 2;
-            syncHeaderOffset();
-            return release?.ready;
-        } catch (error) {
-            console.warn('Header badge could not load:', error);
-        } finally {
-            switching = false;
-        }
-    }
-
-    button.addEventListener('click', () => {
-        if (switching) {
-            return;
-        }
-        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            spin?.cancel();
-            spin = icon.animate(
-                [{ transform: 'rotate(0turn)' }, { transform: 'rotate(1turn)' }],
-                { duration: 420, easing: 'cubic-bezier(0.25, 0.8, 0.25, 1)' }
+  async function showBadge(index) {
+    switching = true;
+    try {
+      const { mount } = await import(
+        new URL(paths[index], document.baseURI).href
+      );
+      const next = document.createElement('canvas');
+      next.className = 'brand-badge';
+      next.setAttribute('aria-hidden', 'true');
+      if (Number.isFinite(width) && width > 0) {
+        next.style.setProperty('--badge-width', `${width}px`);
+      }
+      const badgeTheme = brandName.closest('.page-shell');
+      let previousPosition;
+      const release = mount(next, {
+        onHighlight(colors, phase) {
+          if (badge !== next) return;
+          const position = Math.round(50 - 50 * Math.cos(phase));
+          if (position !== previousPosition) {
+            badgeTheme.style.setProperty('--badge-name-colors', colors);
+            badgeTheme.style.setProperty(
+              '--badge-name-position',
+              `${position}%`
             );
-        }
-        showBadge((current + 1) % paths.length);
-    });
-    return showBadge(current);
+            previousPosition = position;
+          }
+        },
+      });
+      if (badge) {
+        badge.replaceWith(next);
+        dispose?.();
+      } else {
+        brandName.before(next);
+      }
+      badge = next;
+      badgeTheme.style.removeProperty('--badge-name-colors');
+      badgeTheme.style.removeProperty('--badge-name-position');
+      dispose = typeof release === 'function' ? release : undefined;
+      current = index;
+      button.hidden = paths.length < 2;
+      syncHeaderOffset();
+      return release?.ready;
+    } catch (error) {
+      console.warn('Header badge could not load:', error);
+    } finally {
+      switching = false;
+    }
+  }
+
+  button.addEventListener('click', () => {
+    if (switching) {
+      return;
+    }
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      spin?.cancel();
+      spin = icon.animate(
+        [{ transform: 'rotate(0turn)' }, { transform: 'rotate(1turn)' }],
+        { duration: 420, easing: 'cubic-bezier(0.25, 0.8, 0.25, 1)' }
+      );
+    }
+    showBadge((current + 1) % paths.length);
+  });
+  return showBadge(current);
 }
 
 function renderSectionDescription(description, plain = false) {
-    const paragraphs = Array.isArray(description) ? description : [description];
-    const content = paragraphs
-        .filter((paragraph) => String(paragraph ?? '').trim())
-        .map((paragraph) => `<p>${renderConfigText(paragraph)}</p>`)
-        .join('');
-    if (!content) {
-        return '';
-    }
-    return plain ? content : `<div class="section-description">${content}</div>`;
+  const paragraphs = Array.isArray(description) ? description : [description];
+  const content = paragraphs
+    .filter((paragraph) => String(paragraph ?? '').trim())
+    .map((paragraph) => `<p>${renderConfigText(paragraph)}</p>`)
+    .join('');
+  if (!content) {
+    return '';
+  }
+  return plain ? content : `<div class="section-description">${content}</div>`;
 }
 
-function renderSectionShell(section = {}, contentHtml = '', extraClass = '', plainDescription = false) {
-    const className = ['section-card', 'card', extraClass].filter(Boolean).join(' ');
-    return `
+function renderSectionShell(
+  section = {},
+  contentHtml = '',
+  extraClass = '',
+  plainDescription = false
+) {
+  const className = ['section-card', 'card', extraClass]
+    .filter(Boolean)
+    .join(' ');
+  return `
         <section class="${className}">
             <h2 class="section-title">${renderConfigText(section.title || '')}</h2>
             ${renderSectionDescription(section.description, plainDescription)}
@@ -395,23 +478,24 @@ function renderSectionShell(section = {}, contentHtml = '', extraClass = '', pla
 }
 
 function renderAbout(about = {}, profile = {}) {
-    const aboutPanel = document.getElementById('tab-about');
-    const aboutContent = about.content || {};
-    const experience = aboutContent.experience || {};
-    const education = aboutContent.education || {};
+  const aboutPanel = document.getElementById('tab-about');
+  const aboutContent = about.content || {};
+  const experience = aboutContent.experience || {};
+  const education = aboutContent.education || {};
 
-    const profileLinks = (profile.links || [])
-        .map((link) => {
-            const icon = String(link.icon || '').trim();
-            const iconMarkup = icon
-                ? `<img class="profile-link-icon" src="assets/icons/${escapeHtml(icon)}.svg" alt="" width="16" height="16" loading="lazy" decoding="async" onerror="this.remove()">`
-                : '';
-            return `<a href="${link.url}" target="_blank" rel="noopener">${iconMarkup}${escapeHtml(link.label)}</a>`;
-        })
-        .join('');
+  const profileLinks = (profile.links || [])
+    .map((link) => {
+      const icon = String(link.icon || '').trim();
+      const iconMarkup = icon
+        ? `<img class="profile-link-icon" src="assets/icons/${escapeHtml(icon)}.svg" alt="" width="16" height="16" loading="lazy" decoding="async" onerror="this.remove()">`
+        : '';
+      return `<a href="${link.url}" target="_blank" rel="noopener">${iconMarkup}${escapeHtml(link.label)}</a>`;
+    })
+    .join('');
 
-    const experienceHtml = (experience.items || [])
-        .map((item) => `
+  const experienceHtml = (experience.items || [])
+    .map(
+      (item) => `
             <article class="timeline-item">
                 <div class="timeline-header">
                     <h3 class="timeline-role">${renderConfigText(item.role)}</h3>
@@ -421,11 +505,13 @@ function renderAbout(about = {}, profile = {}) {
                 <p class="timeline-meta">${renderConfigText(item.meta || '')}</p>
                 <p class="timeline-desc">${renderConfigText(item.description)}</p>
             </article>
-        `)
-        .join('');
+        `
+    )
+    .join('');
 
-    const educationHtml = (education.items || [])
-        .map((item) => `
+  const educationHtml = (education.items || [])
+    .map(
+      (item) => `
             <article class="education-item">
                 <div class="education-logo-wrap">
                     <img class="education-logo" data-src="${escapeHtml(item.logo || '')}" alt="${escapeHtml(item.school || 'School')} logo" loading="lazy" decoding="async">
@@ -439,10 +525,11 @@ function renderAbout(about = {}, profile = {}) {
                     <p class="timeline-desc">${renderConfigText(item.details)}</p>
                 </div>
             </article>
-        `)
-        .join('');
+        `
+    )
+    .join('');
 
-    aboutPanel.innerHTML = `
+  aboutPanel.innerHTML = `
         <div class="about-grid">
             <aside class="profile-card card">
                 <img class="profile-photo" data-src="${escapeHtml(profile.photo || 'data/images/profile/me.jpg')}" alt="Profile photo" width="16" height="9" loading="lazy" decoding="async">
@@ -462,31 +549,39 @@ function renderAbout(about = {}, profile = {}) {
 }
 
 function renderPublications(publications = {}) {
-    const panel = document.getElementById('tab-publications');
-    const rows = (publications.content || [])
-        .map((pub, index) => {
-            const linkMap = (pub.links && typeof pub.links === 'object') ? pub.links : {};
-            const normalizedLinks = Object.entries(linkMap)
-                .filter(([name, url]) => String(name).trim() && String(url).trim())
-                .map(([name, url]) => ({ name: String(name).trim(), url: String(url).trim() }));
+  const panel = document.getElementById('tab-publications');
+  const rows = (publications.content || [])
+    .map((pub, index) => {
+      const linkMap =
+        pub.links && typeof pub.links === 'object' ? pub.links : {};
+      const normalizedLinks = Object.entries(linkMap)
+        .filter(([name, url]) => String(name).trim() && String(url).trim())
+        .map(([name, url]) => ({
+          name: String(name).trim(),
+          url: String(url).trim(),
+        }));
 
-            if (normalizedLinks.length === 0) {
-                if (pub.doi) {
-                    normalizedLinks.push({ name: 'DOI', url: String(pub.doi) });
-                }
-                if (pub.pdf) {
-                    normalizedLinks.push({ name: 'PDF', url: String(pub.pdf) });
-                }
-            }
+      if (normalizedLinks.length === 0) {
+        if (pub.doi) {
+          normalizedLinks.push({ name: 'DOI', url: String(pub.doi) });
+        }
+        if (pub.pdf) {
+          normalizedLinks.push({ name: 'PDF', url: String(pub.pdf) });
+        }
+      }
 
-            const posterUrl = String(pub.poster || '').trim();
-            const teaserUrl = String(pub.teaser || '').trim();
-            const backgroundImage = String(pub.background_image || '').trim();
-            const isVideoTeaser = /\.(?:webm|mp4|m4v|ogv|ogg)(?:[?#]|$)/i.test(teaserUrl);
-            const linkButtons = normalizedLinks
-                .map((item) => `<a class="cta-button" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a>`);
-            if (posterUrl) {
-                linkButtons.push(`
+      const posterUrl = String(pub.poster || '').trim();
+      const teaserUrl = String(pub.teaser || '').trim();
+      const backgroundImage = String(pub.background_image || '').trim();
+      const isVideoTeaser = /\.(?:webm|mp4|m4v|ogv|ogg)(?:[?#]|$)/i.test(
+        teaserUrl
+      );
+      const linkButtons = normalizedLinks.map(
+        (item) =>
+          `<a class="cta-button" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a>`
+      );
+      if (posterUrl) {
+        linkButtons.push(`
                     <a class="cta-button publication-poster-link glightbox"
                         href="${escapeHtml(posterUrl)}"
                         data-gallery="publication-poster-${index}"
@@ -494,17 +589,25 @@ function renderPublications(publications = {}) {
                         target="_blank"
                         rel="noopener">Poster</a>
                 `);
-            }
-            const actionButtons = linkButtons.join('') || '<span class="cta-button disabled">Links TBD</span>';
+      }
+      const actionButtons =
+        linkButtons.join('') ||
+        '<span class="cta-button disabled">Links TBD</span>';
 
-            return `
+      return `
                 <article class="publication-row card">
-                    ${backgroundImage ? `
-                        <img class="publication-background" data-src="${escapeHtml(backgroundImage)}" alt="" loading="lazy" decoding="async">` : ''}
+                    ${
+                      backgroundImage
+                        ? `
+                        <img class="publication-background" data-src="${escapeHtml(backgroundImage)}" alt="" loading="lazy" decoding="async">`
+                        : ''
+                    }
                     <div class="publication-teaser-wrap">
-                        ${isVideoTeaser
+                        ${
+                          isVideoTeaser
                             ? `<video class="publication-teaser" data-src="${escapeHtml(teaserUrl)}" autoplay muted loop playsinline aria-label="Publication teaser"></video>`
-                            : `<img class="publication-teaser" data-src="${escapeHtml(teaserUrl)}" alt="Publication teaser" width="16" height="9" loading="lazy" decoding="async">`}
+                            : `<img class="publication-teaser" data-src="${escapeHtml(teaserUrl)}" alt="Publication teaser" width="16" height="9" loading="lazy" decoding="async">`
+                        }
                     </div>
                     <div class="publication-content">
                         <h3 class="publication-title">${renderConfigText(pub.title)}</h3>
@@ -517,40 +620,40 @@ function renderPublications(publications = {}) {
                     </div>
                 </article>
             `;
-        })
-        .join('');
+    })
+    .join('');
 
-    panel.innerHTML = renderSectionShell(
-        publications,
-        `<div class="publication-list">${rows}</div>`
-    );
+  panel.innerHTML = renderSectionShell(
+    publications,
+    `<div class="publication-list">${rows}</div>`
+  );
 
-    initPublicationPosterLightbox();
+  initPublicationPosterLightbox();
 }
 
 function initPublicationPosterLightbox() {
-    if (!window.GLightbox) {
-        return;
-    }
-    if (state.publicationPosterLightbox) {
-        state.publicationPosterLightbox.destroy();
-    }
-    state.publicationPosterLightbox = window.GLightbox({
-        selector: '#tab-publications .publication-poster-link',
-        touchNavigation: true,
-        loop: false
-    });
+  if (!window.GLightbox) {
+    return;
+  }
+  if (state.publicationPosterLightbox) {
+    state.publicationPosterLightbox.destroy();
+  }
+  state.publicationPosterLightbox = window.GLightbox({
+    selector: '#tab-publications .publication-poster-link',
+    touchNavigation: true,
+    loop: false,
+  });
 }
 
 function getPagination(total, perPage, currentPage) {
-    const pageSize = Number.isSafeInteger(perPage) && perPage > 0 ? perPage : 5;
-    const pageCount = Math.max(1, Math.ceil(total / pageSize));
-    const page = Math.min(currentPage, pageCount - 1);
-    return { page, pageCount, pageSize, start: page * pageSize };
+  const pageSize = Number.isSafeInteger(perPage) && perPage > 0 ? perPage : 5;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(currentPage, pageCount - 1);
+  return { page, pageCount, pageSize, start: page * pageSize };
 }
 
 function renderPagination(label, page, pageCount) {
-    return `
+  return `
         <nav class="list-pagination" aria-label="${label} pagination, page ${page + 1} of ${pageCount}" tabindex="-1">
             <button class="cta-button" type="button" data-page-step="-1" aria-label="Previous page"${page === 0 ? ' disabled' : ''}>
                 <span class="list-prev-icon" aria-hidden="true"></span>
@@ -567,41 +670,52 @@ function renderPagination(label, page, pageCount) {
 }
 
 function bindPagination(panel, page, renderPage) {
-    function goToPage(nextPage, step) {
-        if (nextPage === page) return;
-        renderPage(nextPage);
-        const focusTarget = panel.querySelector(`[data-page-step="${step}"]:not(:disabled)`)
-            || panel.querySelector('.list-pagination');
-        focusTarget.focus({ preventScroll: true });
-        scrollToTop();
-    }
+  function goToPage(nextPage, step) {
+    if (nextPage === page) return;
+    renderPage(nextPage);
+    const focusTarget =
+      panel.querySelector(`[data-page-step="${step}"]:not(:disabled)`) ||
+      panel.querySelector('.list-pagination');
+    focusTarget.focus({ preventScroll: true });
+    scrollToTop();
+  }
 
-    const jumpForm = panel.querySelector('.list-page-jump');
-    jumpForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const input = jumpForm.elements.namedItem('page');
-        goToPage(input.valueAsNumber - 1);
+  const jumpForm = panel.querySelector('.list-page-jump');
+  jumpForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const input = jumpForm.elements.namedItem('page');
+    goToPage(input.valueAsNumber - 1);
+  });
+  panel.querySelectorAll('[data-page-step]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const step = Number(button.dataset.pageStep);
+      goToPage(page + step, step);
     });
-    panel.querySelectorAll('[data-page-step]').forEach((button) => {
-        button.addEventListener('click', () => {
-            const step = Number(button.dataset.pageStep);
-            goToPage(page + step, step);
-        });
-    });
+  });
 }
 
 function renderProjects(projects = {}) {
-    const panel = document.getElementById('tab-projects');
+  const panel = document.getElementById('tab-projects');
 
-    const items = Array.isArray(projects.content) ? projects.content : [];
-    const { page, pageCount, pageSize, start } = getPagination(items.length, projects.items_per_page, state.projectsPage);
-    state.projectsPage = page;
-    const projectCards = items.slice(start, start + pageSize)
-        .map((project, index) => `
+  const items = Array.isArray(projects.content) ? projects.content : [];
+  const { page, pageCount, pageSize, start } = getPagination(
+    items.length,
+    projects.items_per_page,
+    state.projectsPage
+  );
+  state.projectsPage = page;
+  const projectCards = items
+    .slice(start, start + pageSize)
+    .map(
+      (project, index) => `
             <article class="project-item card">
                 <span class="project-number" aria-hidden="true">${start + index + 1}</span>
-                ${project.background_image?.trim() ? `
-                    <img class="project-background" data-src="${escapeHtml(project.background_image.trim())}" alt="" loading="lazy" decoding="async">` : ''}
+                ${
+                  project.background_image?.trim()
+                    ? `
+                    <img class="project-background" data-src="${escapeHtml(project.background_image.trim())}" alt="" loading="lazy" decoding="async">`
+                    : ''
+                }
                 <div class="project-main">
                     <h3 class="project-title">${renderConfigText(project.title)}</h3>
                     <p class="project-time">${renderConfigText(project.date)}</p>
@@ -613,92 +727,102 @@ function renderProjects(projects = {}) {
                     </button>
                 </div>
             </article>
-        `)
-        .join('');
+        `
+    )
+    .join('');
 
-    panel.innerHTML = renderSectionShell(
-        projects,
-        `<div class="project-list">${projectCards}</div>${renderPagination("Projects", page, pageCount)}`
-    );
+  panel.innerHTML = renderSectionShell(
+    projects,
+    `<div class="project-list">${projectCards}</div>${renderPagination('Projects', page, pageCount)}`
+  );
 
-    bindPagination(panel, page, (nextPage) => {
-        state.projectsPage = nextPage;
-        renderProjects(projects);
+  bindPagination(panel, page, (nextPage) => {
+    state.projectsPage = nextPage;
+    renderProjects(projects);
+  });
+  panel.querySelectorAll('.run-button').forEach((button) => {
+    button.addEventListener('click', () => {
+      const index = Number(button.dataset.projectIndex);
+      openProjectModal(index);
     });
-    panel.querySelectorAll('.run-button').forEach((button) => {
-        button.addEventListener('click', () => {
-            const index = Number(button.dataset.projectIndex);
-            openProjectModal(index);
-        });
-    });
+  });
 }
 
 function renderMisc(misc = {}) {
-    const panel = document.getElementById('tab-misc');
-    if (!panel) {
-        return;
-    }
+  const panel = document.getElementById('tab-misc');
+  if (!panel) {
+    return;
+  }
 
-    disposeMiscModules();
+  disposeMiscModules();
 
-    const items = Array.isArray(misc.content) ? misc.content : [];
-    const itemHtml = items
-        .map((item, index) => `
+  const items = Array.isArray(misc.content) ? misc.content : [];
+  const itemHtml = items
+    .map(
+      (item, index) => `
             <section class="misc-block card">
                 <h2>${renderConfigText(item.title || `Misc item ${index + 1}`)}</h2>
                 ${item.description ? `<p class="misc-caption">${renderConfigText(item.description)}</p>` : ''}
                 ${renderMiscModule(item.module, index, item.title)}
             </section>
-        `)
-        .join('');
+        `
+    )
+    .join('');
 
-    panel.innerHTML = renderSectionShell(
-        misc,
-        itemHtml || '<p>No miscellaneous items configured yet.</p>'
-    );
+  panel.innerHTML = renderSectionShell(
+    misc,
+    itemHtml || '<p>No miscellaneous items configured yet.</p>'
+  );
 
-    initMiscGalleryLightbox();
-    items.forEach((item, index) => {
-        if (item.module?.type === 'map') {
-            initTravelMap(document.getElementById(`misc-map-${index}`), getMapPlaces(item.module));
-        }
-    });
+  initMiscGalleryLightbox();
+  items.forEach((item, index) => {
+    if (item.module?.type === 'map') {
+      initTravelMap(
+        document.getElementById(`misc-map-${index}`),
+        getMapPlaces(item.module)
+      );
+    }
+  });
 }
 
 function renderMiscModule(module = {}, index, itemTitle = '') {
-    if (!module || typeof module !== 'object') {
-        return '<p class="misc-caption">No module configured.</p>';
-    }
+  if (!module || typeof module !== 'object') {
+    return '<p class="misc-caption">No module configured.</p>';
+  }
 
-    if (module.type === 'gallery') {
-        const images = Array.isArray(module.items) ? module.items : [];
-        return `
+  if (module.type === 'gallery') {
+    const images = Array.isArray(module.items) ? module.items : [];
+    return `
             <div class="gallery-grid">
-                ${images.map((image, imageIndex) => {
+                ${images
+                  .map((image, imageIndex) => {
                     const src = String(image?.src || '');
                     const thumbnail = String(image?.thumbnail || src);
-                    const alt = String(image?.alt || `Gallery image ${imageIndex + 1}`);
+                    const alt = String(
+                      image?.alt || `Gallery image ${imageIndex + 1}`
+                    );
                     return `
                         <a class="gallery-item glightbox" href="${escapeHtml(src)}" data-gallery="misc-gallery-${index}" data-title="${escapeHtml(alt)}">
                             <img data-src="${escapeHtml(thumbnail)}" alt="${escapeHtml(alt)}" width="4" height="3" loading="lazy" decoding="async">
                         </a>
                     `;
-                }).join('')}
+                  })
+                  .join('')}
             </div>
         `;
-    }
+  }
 
-    if (module.type === 'youtube') {
-        return `
+  if (module.type === 'youtube') {
+    return `
             <div class="embed-wrap">
                 <iframe data-src="${escapeHtml(module.url || '')}" title="YouTube video: ${escapeHtml(itemTitle || `misc item ${index + 1}`)}" width="16" height="9" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
         `;
-    }
+  }
 
-    if (module.type === 'map') {
-        const places = getMapPlaces(module);
-        return `
+  if (module.type === 'map') {
+    const places = getMapPlaces(module);
+    return `
             <div id="misc-map-${index}" class="misc-map">
                 <p class="map-status">Loading map...</p>
             </div>
@@ -711,47 +835,56 @@ function renderMiscModule(module = {}, index, itemTitle = '') {
                 <button class="map-place-toggle" type="button" aria-controls="map-places-${index}" aria-expanded="false" aria-label="Show all places" hidden></button>
             </div>
         `;
-    }
+  }
 
-    return `<p class="misc-caption">Unsupported module type: ${escapeHtml(module.type || 'unknown')}.</p>`;
+  return `<p class="misc-caption">Unsupported module type: ${escapeHtml(module.type || 'unknown')}.</p>`;
 }
 
 function disposeMiscModules() {
-    if (state.miscGalleryLightbox) {
-        state.miscGalleryLightbox.destroy();
-        state.miscGalleryLightbox = null;
-    }
+  if (state.miscGalleryLightbox) {
+    state.miscGalleryLightbox.destroy();
+    state.miscGalleryLightbox = null;
+  }
 }
 
 function initMiscGalleryLightbox() {
-    if (!window.GLightbox) {
-        return;
-    }
-    state.miscGalleryLightbox = window.GLightbox({
-        selector: '#tab-misc .glightbox',
-        touchNavigation: true,
-        loop: true
-    });
+  if (!window.GLightbox) {
+    return;
+  }
+  state.miscGalleryLightbox = window.GLightbox({
+    selector: '#tab-misc .glightbox',
+    touchNavigation: true,
+    loop: true,
+  });
 }
 
 function getMapPlaces(module) {
-    return (module.places || []).filter((place) =>
-        Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lon))
-    );
+  return (module.places || []).filter(
+    (place) =>
+      Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lon))
+  );
 }
 
 function renderBlog(blog = {}) {
-    const panel = document.getElementById('tab-blog');
-    if (!panel) {
-        return;
-    }
-    state.blogViewingPost = false;
+  const panel = document.getElementById('tab-blog');
+  if (!panel) {
+    return;
+  }
+  state.blogViewingPost = false;
 
-    const posts = Array.isArray(blog.content) ? blog.content : [];
-    const { page, pageCount, pageSize, start } = getPagination(posts.length, blog.posts_per_page, state.blogPage);
-    state.blogPage = page;
-    const listHtml = posts.length > 0
-        ? posts.slice(start, start + pageSize).map((post, index) => `
+  const posts = Array.isArray(blog.content) ? blog.content : [];
+  const { page, pageCount, pageSize, start } = getPagination(
+    posts.length,
+    blog.posts_per_page,
+    state.blogPage
+  );
+  state.blogPage = page;
+  const listHtml =
+    posts.length > 0
+      ? posts
+          .slice(start, start + pageSize)
+          .map(
+            (post, index) => `
             <article class="blog-list-item card">
                 <div class="blog-item-content">
                     <h3 class="blog-item-title">
@@ -763,44 +896,47 @@ function renderBlog(blog = {}) {
                     <img class="blog-cover" data-src="${escapeHtml(post.cover || '')}" alt="${escapeHtml(post.title || 'Blog cover')}" width="16" height="9" loading="lazy" decoding="async">
                 </div>
             </article>
-        `).join('')
-        : '<p>No blog posts configured yet.</p>';
-    panel.innerHTML = renderSectionShell(
-        blog,
-        `<div class="blog-list">${listHtml}</div>${renderPagination("Blog", page, pageCount)}`
-    );
+        `
+          )
+          .join('')
+      : '<p>No blog posts configured yet.</p>';
+  panel.innerHTML = renderSectionShell(
+    blog,
+    `<div class="blog-list">${listHtml}</div>${renderPagination('Blog', page, pageCount)}`
+  );
 
-    panel.querySelectorAll('.blog-title-button').forEach((button) => {
-        button.addEventListener('click', () => {
-            const index = Number(button.dataset.postIndex);
-            openBlogPost(index);
-        });
+  panel.querySelectorAll('.blog-title-button').forEach((button) => {
+    button.addEventListener('click', () => {
+      const index = Number(button.dataset.postIndex);
+      openBlogPost(index);
     });
-    bindPagination(panel, page, (nextPage) => {
-        state.blogPage = nextPage;
-        renderBlog(blog);
-    });
-    if (state.blogLightbox) {
-        state.blogLightbox.destroy();
-        state.blogLightbox = null;
-    }
+  });
+  bindPagination(panel, page, (nextPage) => {
+    state.blogPage = nextPage;
+    renderBlog(blog);
+  });
+  if (state.blogLightbox) {
+    state.blogLightbox.destroy();
+    state.blogLightbox = null;
+  }
 }
 
 async function openBlogPost(postIndex) {
-    const panel = document.getElementById('tab-blog');
-    const blogData = state.data?.blog || {};
-    const posts = Array.isArray(blogData.content) ? blogData.content : [];
-    const post = posts[postIndex];
+  const panel = document.getElementById('tab-blog');
+  const blogData = state.data?.blog || {};
+  const posts = Array.isArray(blogData.content) ? blogData.content : [];
+  const post = posts[postIndex];
 
-    if (!panel || !post) {
-        return;
-    }
+  if (!panel || !post) {
+    return;
+  }
 
-    const title = String(post.title || 'Untitled Post');
-    const intro = String(post.intro || '');
-    const markdownPath = String(post.markdown || '').trim();
-    state.blogViewingPost = true;
-    panel.innerHTML = `
+  const title = String(post.title || 'Untitled Post');
+  const intro = String(post.intro || '');
+  const htmlPath = String(post.html || '').trim();
+  const postPath = htmlPath || String(post.markdown || '').trim();
+  state.blogViewingPost = true;
+  panel.innerHTML = `
         <div class="blog-post-view">
             <section class="section-card card blog-article-shell">
                 <header class="blog-article-heading">
@@ -818,330 +954,371 @@ async function openBlogPost(postIndex) {
         </div>
     `;
 
-    const content = panel.querySelector('.blog-article-content');
-    panel.querySelector('[data-blog-action="back"]').addEventListener('click', () => renderBlog(blogData));
-    panel.querySelector('[data-blog-action="top"]').addEventListener('click', scrollToTop);
-    if (!markdownPath) {
-        content.querySelector('p').textContent = 'Missing markdown path in blog post config.';
-        return;
+  const content = panel.querySelector('.blog-article-content');
+  panel
+    .querySelector('[data-blog-action="back"]')
+    .addEventListener('click', () => renderBlog(blogData));
+  panel
+    .querySelector('[data-blog-action="top"]')
+    .addEventListener('click', scrollToTop);
+  if (!postPath) {
+    content.querySelector('p').textContent =
+      'Missing HTML or Markdown path in blog post config.';
+    return;
+  }
+
+  try {
+    const response = await fetch(postPath, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`Failed to load post: ${response.status}`);
     }
 
-    try {
-        const response = await fetch(markdownPath, { cache: 'no-store' });
-        if (!response.ok) {
-            throw new Error(`Failed to load markdown: ${response.status}`);
-        }
+    if (!htmlPath && !markdownRenderer) {
+      throw new Error('Markdown renderer is not available.');
+    }
 
-        if (!markdownRenderer) {
-            throw new Error('Markdown renderer is not available.');
-        }
-
-        const markdown = await response.text();
-        if (!content.isConnected) {
-            return;
-        }
-        const rawHtml = markdownRenderer.render(markdown);
-        const hydratedHtml = hydrateBlogHtml(rawHtml, markdownPath, title);
-        const coverMarkup = post.cover
-            ? `
+    const source = await response.text();
+    if (!content.isConnected) {
+      return;
+    }
+    const rawHtml = htmlPath ? source : markdownRenderer.render(source);
+    const hydratedHtml = hydrateBlogHtml(rawHtml, postPath, title);
+    const coverMarkup = post.cover
+      ? `
                 <figure class="blog-article-cover-wrap">
                     <img class="blog-article-cover" data-src="${escapeHtml(post.cover)}" alt="${escapeHtml(title)} cover" width="2" height="1" loading="lazy" decoding="async">
                 </figure>
             `
-            : '';
+      : '';
 
-        content.innerHTML = `
+    content.innerHTML = `
             <article class="blog-article">
                 ${coverMarkup}
                 <div class="markdown-body">${hydratedHtml}</div>
             </article>
         `;
-        initBlogLightbox('#tab-blog .glightbox');
-    } catch (error) {
-        if (content.isConnected) {
-            const message = document.createElement('p');
-            message.className = 'blog-article-loading';
-            message.textContent = `Failed to load this post: ${error.message}`;
-            content.replaceChildren(message);
-        }
+    initBlogLightbox('#tab-blog .glightbox');
+  } catch (error) {
+    if (content.isConnected) {
+      const message = document.createElement('p');
+      message.className = 'blog-article-loading';
+      message.textContent = `Failed to load this post: ${error.message}`;
+      content.replaceChildren(message);
     }
+  }
 }
 
-function hydrateBlogHtml(html, markdownPath, title) {
-    const template = document.createElement('template');
-    template.innerHTML = html;
-    const base = new URL(markdownPath, window.location.href);
+function hydrateBlogHtml(html, postPath, title) {
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  const base = new URL(postPath, window.location.href);
 
-    template.content.querySelectorAll('img').forEach((image) => {
-        const src = image.getAttribute('src') || '';
-        if (!src) {
-            return;
+  const mathStyles = document.getElementById('blog-math-styles');
+  if (mathStyles && template.content.querySelector('.katex, .katex-display')) {
+    mathStyles.replaceWith(mathStyles.content.cloneNode(true));
+  }
+
+  template.content
+    .querySelectorAll(
+      'iframe[src], audio[src], video[src], source[src], track[src], video[poster]'
+    )
+    .forEach((media) => {
+      for (const attribute of ['src', 'poster']) {
+        const value = media.getAttribute(attribute);
+        if (value) {
+          media.setAttribute(attribute, new URL(value, base).href);
         }
-
-        const resolvedSrc = new URL(src, base).href;
-        image.removeAttribute('src');
-        image.setAttribute('data-src', resolvedSrc);
-        image.setAttribute('loading', 'lazy');
-        image.setAttribute('decoding', 'async');
-
-        const parentAnchor = image.closest('a');
-        if (parentAnchor) {
-            const href = parentAnchor.getAttribute('href') || resolvedSrc;
-            parentAnchor.setAttribute('href', new URL(href, base).href);
-            parentAnchor.classList.add('glightbox');
-            parentAnchor.setAttribute('data-gallery', 'blog-article-images');
-            parentAnchor.setAttribute('data-title', title);
-            return;
-        }
-
-        const link = document.createElement('a');
-        link.href = resolvedSrc;
-        link.className = 'glightbox';
-        link.setAttribute('data-gallery', 'blog-article-images');
-        link.setAttribute('data-title', title);
-        image.replaceWith(link);
-        link.appendChild(image);
+      }
     });
 
-    template.content.querySelectorAll('a[href]').forEach((anchor) => {
-        if (anchor.classList.contains('glightbox')) {
-            return;
-        }
+  template.content.querySelectorAll('img').forEach((image) => {
+    const src = image.getAttribute('src') || '';
+    if (!src) {
+      return;
+    }
 
-        const href = anchor.getAttribute('href') || '';
-        if (!href || href.startsWith('#')) {
-            return;
-        }
+    const resolvedSrc = new URL(src, base).href;
+    image.removeAttribute('src');
+    image.setAttribute('data-src', resolvedSrc);
+    image.setAttribute('loading', 'lazy');
+    image.setAttribute('decoding', 'async');
 
-        try {
-            const parsed = new URL(href, base);
-            anchor.setAttribute('href', parsed.href);
-            if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-                anchor.setAttribute('target', '_blank');
-                anchor.setAttribute('rel', 'noopener');
-            }
-        } catch {
-            // Keep original href when URL parsing fails.
-        }
-    });
+    const parentAnchor = image.closest('a');
+    if (parentAnchor) {
+      const href = parentAnchor.getAttribute('href') || resolvedSrc;
+      parentAnchor.setAttribute('href', new URL(href, base).href);
+      parentAnchor.classList.add('glightbox');
+      parentAnchor.setAttribute('data-gallery', 'blog-article-images');
+      parentAnchor.setAttribute('data-title', title);
+      return;
+    }
 
-    return template.innerHTML;
+    const link = document.createElement('a');
+    link.href = resolvedSrc;
+    link.className = 'glightbox';
+    link.setAttribute('data-gallery', 'blog-article-images');
+    link.setAttribute('data-title', title);
+    const picture = image.closest('picture') || image;
+    picture.replaceWith(link);
+    link.appendChild(picture);
+  });
+
+  template.content.querySelectorAll('a[href]').forEach((anchor) => {
+    if (anchor.classList.contains('glightbox')) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href') || '';
+    if (!href || href.startsWith('#')) {
+      return;
+    }
+
+    try {
+      const parsed = new URL(href, base);
+      anchor.setAttribute('href', parsed.href);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        anchor.setAttribute('target', '_blank');
+        anchor.setAttribute('rel', 'noopener');
+      }
+    } catch {
+      // Keep original href when URL parsing fails.
+    }
+  });
+
+  return template.innerHTML;
 }
 
 function initBlogLightbox(selector) {
-    if (!window.GLightbox) {
-        return;
-    }
-    if (state.blogLightbox) {
-        state.blogLightbox.destroy();
-    }
-    state.blogLightbox = window.GLightbox({
-        selector,
-        touchNavigation: true,
-        loop: true
-    });
+  if (!window.GLightbox) {
+    return;
+  }
+  if (state.blogLightbox) {
+    state.blogLightbox.destroy();
+  }
+  state.blogLightbox = window.GLightbox({
+    selector,
+    touchNavigation: true,
+    loop: true,
+  });
 }
 
 function createMarkdownRenderer() {
-    if (!window.markdownit) {
-        return;
-    }
+  if (!window.markdownit) {
+    return;
+  }
 
-    const md = window.markdownit({
-        html: false,
-        linkify: true,
-        breaks: false
-    });
+  const md = window.markdownit({
+    html: false,
+    linkify: true,
+    breaks: false,
+  });
 
-    if (typeof window.markdownitKatexBridge === 'function') {
-        md.use(window.markdownitKatexBridge);
-    }
+  if (typeof window.markdownitKatexBridge === 'function') {
+    md.use(window.markdownitKatexBridge);
+  }
 
-    return md;
+  return md;
 }
 
 function scrollToTop() {
-    window.scrollTo({
-        top: 0,
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
-    });
+  window.scrollTo({
+    top: 0,
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'instant'
+      : 'smooth',
+  });
 }
 
 function initLazyMedia() {
-    const mediaSelector = 'img[data-src], iframe[data-src], video.publication-teaser[data-src]';
-    const galleryQueue = new Set();
-    let activeGalleryLoads = 0;
-    let galleryObserver;
+  const mediaSelector =
+    'img[data-src], iframe[data-src], video.publication-teaser[data-src]';
+  const galleryQueue = new Set();
+  let activeGalleryLoads = 0;
+  let galleryObserver;
 
-    const loadMedia = (element, onSettled) => {
-        const source = element.dataset.src;
-        if (!source) {
-            markMediaRevealed(element);
-            onSettled?.();
-            return;
-        }
-
-        const events = new AbortController();
-        const finish = async () => {
-            if (events.signal.aborted) {
-                return;
-            }
-            events.abort();
-            if (onSettled && element.decode) {
-                await element.decode().catch(() => {});
-            }
-            markMediaRevealed(element);
-            onSettled?.();
-        };
-        const readyEvent = element instanceof HTMLVideoElement ? 'loadeddata' : 'load';
-        element.addEventListener(readyEvent, finish, { signal: events.signal });
-        element.addEventListener('error', finish, { signal: events.signal });
-        delete element.dataset.src;
-        element.src = source;
-
-        if (element instanceof HTMLImageElement && element.complete) {
-            finish();
-        }
-    };
-
-    function drainGalleryQueue() {
-        for (const image of galleryQueue) {
-            if (activeGalleryLoads >= 2) {
-                break;
-            }
-            if (!image.isConnected) {
-                galleryQueue.delete(image);
-                galleryObserver.unobserve(image);
-                continue;
-            }
-            if (!image.getClientRects().length) {
-                continue;
-            }
-            galleryQueue.delete(image);
-            galleryObserver.unobserve(image);
-            activeGalleryLoads += 1;
-            // The queue has already checked visibility, so start the request now.
-            image.loading = 'eager';
-            loadMedia(image, () => {
-                activeGalleryLoads -= 1;
-                requestAnimationFrame(drainGalleryQueue);
-            });
-        }
+  const loadMedia = (element, onSettled) => {
+    const source = element.dataset.src;
+    if (!source) {
+      markMediaRevealed(element);
+      onSettled?.();
+      return;
     }
 
-    const observeMedia = (element) => {
-        if (!element.dataset.src || element.classList.contains('media-lazy') || element.classList.contains('media-revealed')) {
-            return;
-        }
-
-        element.classList.add('media-lazy');
-        if (galleryObserver && element.matches('.gallery-item img')) {
-            galleryObserver.observe(element);
-        } else if (state.lazyMediaObserver) {
-            state.lazyMediaObserver.observe(element);
-        } else {
-            loadMedia(element);
-        }
+    const events = new AbortController();
+    const finish = async () => {
+      if (events.signal.aborted) {
+        return;
+      }
+      events.abort();
+      if (onSettled && element.decode) {
+        await element.decode().catch(() => {});
+      }
+      markMediaRevealed(element);
+      onSettled?.();
     };
+    const readyEvent =
+      element instanceof HTMLVideoElement ? 'loadeddata' : 'load';
+    element.addEventListener(readyEvent, finish, { signal: events.signal });
+    element.addEventListener('error', finish, { signal: events.signal });
+    delete element.dataset.src;
+    element.src = source;
 
-    if ('IntersectionObserver' in window) {
-        galleryObserver = new IntersectionObserver((entries) => {
-            entries.forEach(({ target, isIntersecting }) => {
-                if (isIntersecting) {
-                    galleryQueue.add(target);
-                } else {
-                    galleryQueue.delete(target);
-                }
-            });
-            drainGalleryQueue();
-        }, { rootMargin: '80px 0px' });
-        state.lazyMediaObserver = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (!entry.isIntersecting) {
-                    return;
-                }
+    if (element instanceof HTMLImageElement && element.complete) {
+      finish();
+    }
+  };
 
-                loadMedia(entry.target);
-                state.lazyMediaObserver.unobserve(entry.target);
-            });
-        }, {
-            rootMargin: '200px 0px',
-            threshold: 0.1
-        });
+  function drainGalleryQueue() {
+    for (const image of galleryQueue) {
+      if (activeGalleryLoads >= 2) {
+        break;
+      }
+      if (!image.isConnected) {
+        galleryQueue.delete(image);
+        galleryObserver.unobserve(image);
+        continue;
+      }
+      if (!image.getClientRects().length) {
+        continue;
+      }
+      galleryQueue.delete(image);
+      galleryObserver.unobserve(image);
+      activeGalleryLoads += 1;
+      // The queue has already checked visibility, so start the request now.
+      image.loading = 'eager';
+      loadMedia(image, () => {
+        activeGalleryLoads -= 1;
+        requestAnimationFrame(drainGalleryQueue);
+      });
+    }
+  }
+
+  const observeMedia = (element) => {
+    if (
+      !element.dataset.src ||
+      element.classList.contains('media-lazy') ||
+      element.classList.contains('media-revealed')
+    ) {
+      return;
     }
 
-    document.querySelectorAll(mediaSelector).forEach(observeMedia);
-    state.lazyMediaMutationObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-                if (!(node instanceof Element)) {
-                    return;
-                }
+    element.classList.add('media-lazy');
+    if (galleryObserver && element.matches('.gallery-item img')) {
+      galleryObserver.observe(element);
+    } else if (state.lazyMediaObserver) {
+      state.lazyMediaObserver.observe(element);
+    } else {
+      loadMedia(element);
+    }
+  };
 
-                if (node.matches(mediaSelector)) {
-                    observeMedia(node);
-                    return;
-                }
-
-                node.querySelectorAll(mediaSelector).forEach(observeMedia);
-            });
+  if ('IntersectionObserver' in window) {
+    galleryObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(({ target, isIntersecting }) => {
+          if (isIntersecting) {
+            galleryQueue.add(target);
+          } else {
+            galleryQueue.delete(target);
+          }
         });
+        drainGalleryQueue();
+      },
+      { rootMargin: '80px 0px' }
+    );
+    state.lazyMediaObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          loadMedia(entry.target);
+          state.lazyMediaObserver.unobserve(entry.target);
+        });
+      },
+      {
+        rootMargin: '200px 0px',
+        threshold: 0.1,
+      }
+    );
+  }
+
+  document.querySelectorAll(mediaSelector).forEach(observeMedia);
+  state.lazyMediaMutationObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (!(node instanceof Element)) {
+          return;
+        }
+
+        if (node.matches(mediaSelector)) {
+          observeMedia(node);
+          return;
+        }
+
+        node.querySelectorAll(mediaSelector).forEach(observeMedia);
+      });
     });
-    state.lazyMediaMutationObserver.observe(document.body, { childList: true, subtree: true });
+  });
+  state.lazyMediaMutationObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 }
 
 function markMediaRevealed(element) {
-    element.classList.remove('media-lazy');
-    if (element.classList.contains('media-revealed')) {
-        return;
+  element.classList.remove('media-lazy');
+  if (element.classList.contains('media-revealed')) {
+    return;
+  }
+  element.classList.add('media-revealed');
+
+  let cleanedUp = false;
+  const finishReveal = () => {
+    if (cleanedUp) {
+      return;
     }
-    element.classList.add('media-revealed');
+    cleanedUp = true;
+    element.classList.remove('media-revealed');
+  };
 
-    let cleanedUp = false;
-    const finishReveal = () => {
-        if (cleanedUp) {
-            return;
-        }
-        cleanedUp = true;
-        element.classList.remove('media-revealed');
-    };
-
-    element.addEventListener('animationend', finishReveal, { once: true });
-    setTimeout(finishReveal, 900);
+  element.addEventListener('animationend', finishReveal, { once: true });
+  setTimeout(finishReveal, 900);
 }
 
 function openProjectModal(projectIndex) {
-    const project = state.data?.projects?.content?.[projectIndex];
-    if (!project) {
-        return;
-    }
-    const width = Math.min(window.screen.width - 100, 1440);
-    const height = Math.min(window.screen.height - 100, 920);
-    const left = Math.max(0, Math.round((window.screen.width - width) / 2));
-    const top = Math.max(0, Math.round((window.screen.height - height) / 2));
+  const project = state.data?.projects?.content?.[projectIndex];
+  if (!project) {
+    return;
+  }
+  const width = Math.min(window.screen.width - 100, 1440);
+  const height = Math.min(window.screen.height - 100, 920);
+  const left = Math.max(0, Math.round((window.screen.width - width) / 2));
+  const top = Math.max(0, Math.round((window.screen.height - height) / 2));
 
-    const popupFeatures = [
-        `width=${width}`,
-        `height=${height}`,
-        `left=${left}`,
-        `top=${top}`,
-        'popup=yes',
-        'resizable=yes',
-        'menubar=no',
-        'toolbar=no',
-        'location=no',
-        'status=no',
-        'scrollbars=no'
-    ].join(',');
+  const popupFeatures = [
+    `width=${width}`,
+    `height=${height}`,
+    `left=${left}`,
+    `top=${top}`,
+    'popup=yes',
+    'resizable=yes',
+    'menubar=no',
+    'toolbar=no',
+    'location=no',
+    'status=no',
+    'scrollbars=no',
+  ].join(',');
 
-    const popup = window.open(project.run_url, '_blank', popupFeatures);
-    if (!popup) {
-        window.open(project.run_url, '_blank');
-    }
+  const popup = window.open(project.run_url, '_blank', popupFeatures);
+  if (!popup) {
+    window.open(project.run_url, '_blank');
+  }
 }
 
 function showLoadError(message) {
-    const errorHtml = `
+  const errorHtml = `
         <section class="section-card card">
             <h2 class="section-title">Load Error</h2>
             <p>${escapeHtml(message)}</p>
@@ -1149,77 +1326,88 @@ function showLoadError(message) {
         </section>
     `;
 
-    tabs.forEach((tab) => {
-        const panel = document.getElementById(`tab-${tab}`);
-        if (panel) {
-            panel.innerHTML = errorHtml;
-        }
-    });
+  tabs.forEach((tab) => {
+    const panel = document.getElementById(`tab-${tab}`);
+    if (panel) {
+      panel.innerHTML = errorHtml;
+    }
+  });
 }
 
 function renderConfigText(value) {
-    const template = document.createElement('template');
-    template.innerHTML = String(value ?? '');
+  const template = document.createElement('template');
+  template.innerHTML = String(value ?? '');
 
-    const allowedTags = new Set(['B', 'I', 'EM', 'STRONG', 'U', 'BR', 'SUP', 'SUB', 'CODE', 'A']);
-    const allowedProtocols = ['http:', 'https:', 'mailto:'];
+  const allowedTags = new Set([
+    'B',
+    'I',
+    'EM',
+    'STRONG',
+    'U',
+    'BR',
+    'SUP',
+    'SUB',
+    'CODE',
+    'A',
+  ]);
+  const allowedProtocols = ['http:', 'https:', 'mailto:'];
 
-    const sanitizeNode = (node) => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node;
-            const tag = element.tagName.toUpperCase();
+  const sanitizeNode = (node) => {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node;
+      const tag = element.tagName.toUpperCase();
 
-            if (!allowedTags.has(tag)) {
-                const text = document.createTextNode(element.textContent || '');
-                element.replaceWith(text);
-                return;
-            }
+      if (!allowedTags.has(tag)) {
+        const text = document.createTextNode(element.textContent || '');
+        element.replaceWith(text);
+        return;
+      }
 
-            [...element.attributes].forEach((attr) => {
-                const name = attr.name.toLowerCase();
-                if (tag === 'A') {
-                    if (!['href', 'target', 'rel'].includes(name)) {
-                        element.removeAttribute(attr.name);
-                    }
-                } else {
-                    element.removeAttribute(attr.name);
-                }
-            });
+      [...element.attributes].forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        if (tag === 'A') {
+          if (!['href', 'target', 'rel'].includes(name)) {
+            element.removeAttribute(attr.name);
+          }
+        } else {
+          element.removeAttribute(attr.name);
+        }
+      });
 
-            if (tag === 'A') {
-                const href = element.getAttribute('href') || '';
-                let safe = false;
-                try {
-                    const parsed = new URL(href, window.location.origin);
-                    safe = allowedProtocols.includes(parsed.protocol);
-                } catch {
-                    safe = false;
-                }
-
-                if (!safe) {
-                    const text = document.createTextNode(element.textContent || '');
-                    element.replaceWith(text);
-                    return;
-                }
-
-                if (element.getAttribute('target') === '_blank') {
-                    element.setAttribute('rel', 'noopener');
-                }
-            }
+      if (tag === 'A') {
+        const href = element.getAttribute('href') || '';
+        let safe = false;
+        try {
+          const parsed = new URL(href, window.location.origin);
+          safe = allowedProtocols.includes(parsed.protocol);
+        } catch {
+          safe = false;
         }
 
-        [...node.childNodes].forEach(sanitizeNode);
-    };
+        if (!safe) {
+          const text = document.createTextNode(element.textContent || '');
+          element.replaceWith(text);
+          return;
+        }
 
-    sanitizeNode(template.content);
-    return template.innerHTML;
+        if (element.getAttribute('target') === '_blank') {
+          element.setAttribute('rel', 'noopener');
+        }
+      }
+    }
+
+    [...node.childNodes].forEach(sanitizeNode);
+  };
+
+  sanitizeNode(template.content);
+  return template.innerHTML;
 }
 
 function escapeHtml(value) {
-    return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
