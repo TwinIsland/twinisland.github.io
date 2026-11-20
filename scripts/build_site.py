@@ -20,6 +20,8 @@ from time import perf_counter, sleep
 from urllib.parse import quote, unquote, urljoin, urlsplit
 from urllib.request import urlopen
 
+from package_template import package_template
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
@@ -386,7 +388,7 @@ def rename_build_directory(source, destination):
             sleep(0.2 * (attempt + 1))
 
 
-def write_build_info(stage, started):
+def write_build_info(stage, started, template_archive):
     index = stage / "index.html"
     homepage = index.read_bytes()
     preview = re.compile(rb"<p\b[^>]*\bdata-build-preview\b[^>]*>.*?</p>", re.DOTALL)
@@ -426,6 +428,10 @@ def write_build_info(stage, started):
         <dt>Artifact SHA-256</dt>
         <dd><code>{full_version}</code></dd>
       </dl>
+      <a class="template-download" href="{template_name}" download>
+        <span>Download site template</span>
+        <small>ZIP · {template_size:.0f} KiB</small>
+      </a>
       <p><a href="./">Back to home</a></p>
     </main>
   </body>
@@ -443,6 +449,8 @@ def write_build_info(stage, started):
         built_at=built_at,
         duration=perf_counter() - started,
         file_count=len(outputs) + 1,
+        template_name=template_archive.name,
+        template_size=template_archive.stat().st_size / 1024,
     ).encode("utf-8"))
 
 
@@ -486,7 +494,8 @@ def build(work, files, formatter, esbuild, args, started):
         print(f"Pre-rendered {rendered} Markdown posts.")
     if args.image_max_size or args.watermark:
         process_images(stage, work, args)
-    write_build_info(stage, started)
+    template_archive = package_template(ROOT, stage, formatted)
+    write_build_info(stage, started, template_archive)
 
     previous = work / "previous-dist"
     if DIST.resolve() != DIST or not DIST.is_dir() and DIST.exists():

@@ -479,15 +479,16 @@ body.not-found-page {
 }
 
 .brand-badge {
+  --badge-size: var(--badge-width, 88px);
   display: block;
   flex: none;
-  width: var(--badge-width, 2.1rem);
+  width: var(--badge-size);
   margin-block: 0.5rem;
   background: linear-gradient(135deg, var(--accent-soft), var(--cp-accent));
 }
 
 :where(.is-badge-compact:not(.is-measuring-header)) .brand-badge {
-  width: calc(var(--badge-width, 2.1rem) * 0.7);
+  width: calc(var(--badge-size) * 0.7);
 }
 
 :where(.is-badge-compact:not(.is-mobile-layout, .is-measuring-header))
@@ -1520,6 +1521,42 @@ body.not-found-page {
 .build-info dd {
   margin: 0 0 1rem;
   overflow-wrap: anywhere;
+}
+
+.build-info .template-download {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.6rem;
+  background: var(--surface-chip);
+  color: var(--cp-ink);
+  font-size: var(--text-body-small);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.template-download::before {
+  content: '';
+  flex: 0 0 1.2rem;
+  height: 1.2rem;
+  background: currentColor;
+  mask: url('assets/icons/lucide/file-archive.svg') center / contain no-repeat;
+}
+
+.template-download small {
+  padding-inline-start: 0.65rem;
+  border-inline-start: 1px solid var(--border-strong);
+  font-size: var(--text-caption);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.build-info .template-download:is(:hover, :focus-visible) {
+  border-color: currentColor;
 }
 
 .maintenance-shell {

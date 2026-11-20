@@ -2,6 +2,8 @@
 
 A static personal website for your profile, publications, projects, and blog.
 
+If you downloaded the template ZIP, extract it and run `git init` from the extracted folder before building. The example content and SVG placeholders are ready to preview.
+
 ## Make it yours
 
 1. **Replace the sample content** in [`data/site-content.json`](data/site-content.json).
@@ -41,4 +43,4 @@ After building, open [localhost:8000/dist/](http://localhost:8000/dist/) to prev
 
 After editing your site, rerun `python scripts/publish_site.py`. To preview a local build, run `python -m http.server 8000 --directory dist`.
 
-The published footer links to the build version, time, and duration.
+The published footer links to a build information page with the version, time, duration, and a downloadable template ZIP.

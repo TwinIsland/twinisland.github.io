@@ -1,0 +1,152 @@
+{
+  "$schema": "./site-content.schema.json",
+  "maintenance": false,
+  "site": {
+    "name": "Your Name",
+    "language": "en",
+    "favicon": "",
+    "source_url": "",
+    "seo": {
+      "title": "Your Name | Personal Website",
+      "description": "A personal site for my work, projects, and writing."
+    }
+  },
+  "profile": {
+    "badge": {
+      "list": [
+        "badge/gyroid/index.js",
+        "badge/prism-knot/index.js",
+        "badge/schwarz-d/index.js",
+        "badge/soap-film/index.js"
+      ]
+    },
+    "photo": "data/images/placeholders/profile.svg",
+    "name": "Your Name",
+    "role": "Researcher and Designer",
+    "school": "Your Institution",
+    "links": [
+      { "label": "Email", "icon": "mail", "url": "mailto:you@example.com" },
+      { "label": "GitHub", "icon": "github", "url": "https://github.com/" },
+      { "label": "ORCID", "icon": "orcid", "url": "https://orcid.org/" }
+    ]
+  },
+  "about": {
+    "title": "About",
+    "description": ["I work on questions that bring research, design, and technology together. Replace this introduction with a short bio and tell readers what you are working on now."],
+    "content": {
+      "experience": {
+        "title": "Experience",
+        "items": [
+          {
+            "role": "Research Assistant",
+            "org": "Your Lab",
+            "date": "2024 – Present",
+            "meta": "Research and development",
+            "description": "Describe a problem you worked on and what you contributed."
+          }
+        ]
+      },
+      "education": {
+        "title": "Education",
+        "items": [
+          {
+            "degree": "Your Degree",
+            "school": "Your Institution",
+            "date": "2020 – 2024",
+            "details": "Add your field of study or a short description of your work.",
+            "logo": "data/images/placeholders/square.svg"
+          }
+        ]
+      }
+    }
+  },
+  "publications": {
+    "title": "Publications",
+    "description": "Selected research and writing.",
+    "content": [
+      {
+        "title": "Example Publication",
+        "authors": "<b>Your Name</b>, Coauthor Name",
+        "conference": "Example Conference",
+        "teaser": "data/images/placeholders/wide.svg",
+        "poster": "data/images/placeholders/portrait.svg",
+        "abstract": "Use this space to summarize the research question, approach, and main finding.",
+        "links": {
+          "Project Page": "projects/example/index.html",
+          "DOI": "https://doi.org/",
+          "arXiv": "https://arxiv.org/",
+          "Code": "https://github.com/"
+        }
+      }
+    ]
+  },
+  "projects": {
+    "title": "Projects",
+    "description": "A selection of things I have made.",
+    "content": [
+      {
+        "title": "Example Project",
+        "date": "2026",
+        "description": "Describe what the project does and link to a demo or its source.",
+        "run_url": "projects/example/index.html",
+        "background_image": "data/images/placeholders/wide.svg"
+      }
+    ]
+  },
+  "misc": {
+    "title": "Misc",
+    "description": "A place for interests and work outside my main projects.",
+    "content": [
+      {
+        "title": "Example Gallery",
+        "description": "Replace these placeholders with your own photographs or illustrations.",
+        "module": {
+          "type": "gallery",
+          "items": [
+            { "src": "data/images/placeholders/gallery-gray.svg", "alt": "Grayscale landscape placeholder" },
+            { "src": "data/images/placeholders/gallery-gray.svg", "alt": "Grayscale landscape placeholder" },
+            { "src": "data/images/placeholders/gallery-gray.svg", "alt": "Grayscale landscape placeholder" }
+          ]
+        }
+      },
+      {
+        "title": "Example Video",
+        "description": "Embed a YouTube video using its embed URL.",
+        "module": {
+          "type": "youtube",
+          "url": "https://www.youtube.com/embed/M7lc1UVf-VE"
+        }
+      },
+      {
+        "title": "Example Map",
+        "description": "Add named places to the map using latitude and longitude.",
+        "module": {
+          "type": "map",
+          "places": [
+            { "name": "Lisbon", "lat": 38.7223, "lon": -9.1393 },
+            { "name": "Nairobi", "lat": -1.2864, "lon": 36.8172 },
+            { "name": "Osaka", "lat": 34.6937, "lon": 135.5023 }
+          ]
+        }
+      }
+    ]
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Notes on projects, ideas, and things I am learning.",
+    "content": [
+      {
+        "title": "Welcome to the Blog",
+        "intro": "An example post written in Markdown.",
+        "cover": "data/images/placeholders/wide.svg",
+        "markdown": "posts/welcome/index.md"
+      },
+      {
+        "title": "A Post Written in HTML",
+        "intro": "An example of a hand-written article fragment.",
+        "cover": "data/images/placeholders/landscape.svg",
+        "html": "posts/html-example/index.html"
+      }
+    ]
+  }
+}

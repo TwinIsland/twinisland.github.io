@@ -1,0 +1,11 @@
+{
+  "$schema": "./deploy.config.schema.json",
+  "runtime_markdown": false,
+  "format_source": false,
+  "workers": 1,
+  "compress_images": false,
+  "image_max_size": "1MiB",
+  "watermark": null,
+  "watermark_include": [],
+  "watermark_opacity": 1
+}
