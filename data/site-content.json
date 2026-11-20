@@ -37,8 +37,7 @@
         "badge/soap-film/index.js"
       ],
       "default": "badge/prism-knot/index.js",
-      "mode": "random",
-      "width": 88
+      "mode": "random"
     },
     "photo": "data/images/profile/me.jpg",
     "name": "Tianyi Huang",
