@@ -1,0 +1,462 @@
+{
+  "$schema": "./site-content.schema.json",
+  "maintenance": false,
+  "maintenance_image": "data/images/maintenance.gif",
+  "site": {
+    "name": "Tianyi Huang",
+    "language": "en",
+    "favicon": "",
+    "source_url": "https://github.com/TwinIsland/twinisland.github.io",
+    "seo": {
+      "title": "Tianyi Huang | 黄天毅",
+      "description": "PhD student in Computer Science at the National University of Singapore, working in computer graphics, 3D shape design and generation.",
+      "url": "https://tianyihuang.com/",
+      "image": "data/images/profile/me.jpg",
+      "robots": "index, follow, max-image-preview:large",
+      "alternate_names": [
+        "黄天毅",
+        "TwinIsland"
+      ],
+      "same_as": [
+        "https://github.com/TwinIsland",
+        "https://www.linkedin.com/in/tianyih5",
+        "https://cirno.me/"
+      ]
+    },
+    "name_mark": {
+      "src": "data/images/profile/name-mark.svg",
+      "alt": "黄天毅"
+    }
+  },
+  "profile": {
+    "badge": {
+      "list": [
+        "badge/schwarz-d/index.js",
+        "badge/gyroid/index.js",
+        "badge/prism-knot/index.js",
+        "badge/soap-film/index.js"
+      ],
+      "default": "badge/prism-knot/index.js",
+      "mode": "random",
+      "width": 88
+    },
+    "photo": "data/images/profile/me.jpg",
+    "name": "Tianyi Huang",
+    "role": "PhD Student",
+    "school": "National University of Singapore",
+    "links": [
+      {
+        "label": "Email",
+        "icon": "mail",
+        "url": "mailto:tianyih@u.nus.edu"
+      },
+      {
+        "label": "GitHub",
+        "icon": "github",
+        "url": "https://github.com/TwinIsland"
+      },
+      {
+        "label": "ORCID",
+        "icon": "orcid",
+        "url": "https://orcid.org/0009-0007-9773-1174"
+      }
+    ]
+  },
+  "about": {
+    "title": "About",
+    "description": [
+      "I am a second-year PhD student in Computer Science at the National University of Singapore, fortunate to be advised by <a href=\"https://bohanwang123.com/\" target=\"_blank\" rel=\"noopener\">Bohan Wang</a>. My work is in computer graphics, with a focus on 3D shape design and generation.",
+      "I like building systems that are both mathematically clean and actually useful. My recent interests span graphics, geometric modeling, and generative methods for controllable 3D content. Before NUS, I completed my bachelor's degree in Computer Science at the University of Illinois Urbana-Champaign."
+    ],
+    "content": {
+      "experience": {
+        "title": "Experience",
+        "items": [
+          {
+            "role": "Visiting Scholar",
+            "org": "University of Virginia",
+            "date": "Oct 2024 - Oct 2025",
+            "meta": "Remote | Advisor: <a href=\"https://wenxiwang.github.io/\" target=\"_blank\" rel=\"noopener\">Wenxi Wang</a>",
+            "description": "Research on improving CDCL-based SAT solving performance, including advanced SAT solving strategies with graph neural network guidance."
+          },
+          {
+            "role": "Course Assistant",
+            "org": "University of Illinois Urbana-Champaign",
+            "date": "Aug 2022 - Dec 2022",
+            "meta": "Part-time | United States",
+            "description": "Served as course assistant for MATH 257: Linear Algebra with Computational Applications, hosted weekly office hours, and led weekly lab sessions supporting 100+ students."
+          }
+        ]
+      },
+      "education": {
+        "title": "Education",
+        "items": [
+          {
+            "degree": "PhD in Computer Science",
+            "school": "National University of Singapore",
+            "date": "2025 - Present",
+            "details": "Working on computer graphics, especially 3D shape design and generation.",
+            "logo": "data/images/logos/nus_logo.png"
+          },
+          {
+            "degree": "B.S. in Computer Science",
+            "school": "University of Illinois Urbana-Champaign",
+            "date": "2021 - 2025",
+            "details": "Highest Distinction, Dean's List, James Scholar, GPA: 3.97/4.00.",
+            "logo": "data/images/logos/uiuc_logo.png"
+          }
+        ]
+      }
+    }
+  },
+  "publications": {
+    "title": "Publications",
+    "description": "Feel free to reach out if you are interested in or have questions about any of my publications.",
+    "content": [
+      {
+        "title": "Shellular Metamaterial Design via Compact Electric Potential Parametrization",
+        "authors": "<b>Tianyi Huang</b>, Chang Liu, Bohan Wang",
+        "conference": "SIGGRAPH 2026",
+        "teaser": "data/images/publications/design-space-preview.webm",
+        "poster": "data/images/publications/sig26_poster.jpg",
+        "background_image": "data/images/publications/shellular-geometry-grid.webp",
+        "abstract": "A compact yet highly expressive design space for shellular metamaterials that support both interactive exploration and inverse design.",
+        "links": {
+          "Web": "https://dl.acm.org/doi/10.1145/3799902.3811075",
+          "arXiv": "https://arxiv.org/pdf/2511.04025",
+          "Code": "https://github.com/TwinIsland/shell-homogenization"
+        }
+      }
+    ]
+  },
+  "projects": {
+    "title": "Projects",
+    "description": "Some of my side projects.",
+    "items_per_page": 5,
+    "content": [
+      {
+        "title": "Color Palette",
+        "date": "Nov 2026",
+        "description": "A collection of my go-to color palettes for websites, papers, and more.",
+        "run_url": "projects/color-palette/index.html",
+        "background_image": "data/images/projects/color-palette.webp"
+      },
+      {
+        "title": "Badge Viewer",
+        "date": "Nov 2026",
+        "description": "The WebGL badges used on my website.",
+        "run_url": "projects/badge-viewer/index.html",
+        "background_image": "data/images/projects/badge-viewer.webp"
+      },
+      {
+        "title": "QSynth: High-performance Multi-layered Audio Synthesizer",
+        "date": "Jan 2025 - Mar 2025",
+        "description": "QSynth is a high-performance multi-layered audio synthesizer written in C, featuring real-time audio processing with advanced instrument design capabilities.",
+        "run_url": "projects/qsynth/index.html",
+        "background_image": "data/images/projects/qsynth.webp"
+      },
+      {
+        "title": "Octave: Music Programming Language",
+        "date": "May 2024 - Jan 2025",
+        "description": "Designed a language for programmatic music composition with notation-like syntax, variables, and functions, compiled into MIDI files.",
+        "run_url": "projects/octave/index.html",
+        "background_image": "data/images/projects/octave.webp"
+      }
+    ]
+  },
+  "misc": {
+    "title": "Misc",
+    "description": "I'm into bird photography, bass, whisky, music, reading, and anime.",
+    "content": [
+      {
+        "title": "Bird Photography",
+        "description": "Photos taken with a Canon R8 (RF100-400, RF600, RF200-800). If you also like birding and based in Singapore, feel free to contact me for birding together😎.",
+        "module": {
+          "type": "gallery",
+          "items": [
+            {
+              "src": "data/images/birds/1.jpg",
+              "thumbnail": "data/images/birds/thumbnails/1.webp",
+              "alt": "缩脖白鹭"
+            },
+            {
+              "src": "data/images/birds/2.jpg",
+              "thumbnail": "data/images/birds/thumbnails/2.webp",
+              "alt": "帅帅帅"
+            },
+            {
+              "src": "data/images/birds/3.jpg",
+              "thumbnail": "data/images/birds/thumbnails/3.webp",
+              "alt": "万物神鸟🙌"
+            },
+            {
+              "src": "data/images/birds/4.jpg",
+              "thumbnail": "data/images/birds/thumbnails/4.webp",
+              "alt": "超大QQ😍"
+            },
+            {
+              "src": "data/images/birds/5.jpg",
+              "thumbnail": "data/images/birds/thumbnails/5.webp",
+              "alt": "嘎啦嘎啦"
+            },
+            {
+              "src": "data/images/birds/6.jpg",
+              "thumbnail": "data/images/birds/thumbnails/6.webp",
+              "alt": "柠檬"
+            },
+            {
+              "src": "data/images/birds/7.jpg",
+              "thumbnail": "data/images/birds/thumbnails/7.webp",
+              "alt": "苦恶苦恶"
+            },
+            {
+              "src": "data/images/birds/8.jpg",
+              "thumbnail": "data/images/birds/thumbnails/8.webp",
+              "alt": "猫猫😾"
+            },
+            {
+              "src": "data/images/birds/9.jpg",
+              "thumbnail": "data/images/birds/thumbnails/9.webp",
+              "alt": "帅"
+            },
+            {
+              "src": "data/images/birds/10.jpg",
+              "thumbnail": "data/images/birds/thumbnails/10.webp",
+              "alt": "玩具"
+            },
+            {
+              "src": "data/images/birds/11.jpg",
+              "thumbnail": "data/images/birds/thumbnails/11.webp",
+              "alt": "大嘴壳子"
+            },
+            {
+              "src": "data/images/birds/12.jpg",
+              "thumbnail": "data/images/birds/thumbnails/12.webp",
+              "alt": "炫"
+            },
+            {
+              "src": "data/images/birds/13.jpg",
+              "thumbnail": "data/images/birds/thumbnails/13.webp",
+              "alt": "抹茶团子"
+            }
+          ]
+        }
+      },
+      {
+        "title": "Bass",
+        "description": "I play bass. Below is my performance of 'Finger' by Elephant Gym, they are the GOAT.",
+        "module": {
+          "type": "youtube",
+          "url": "https://www.youtube.com/embed/hT4ijQZ1ziQ"
+        }
+      },
+      {
+        "title": "Traveling",
+        "description": "I enjoy traveling, drinking local beer, and reading while sitting on the streets of different cities.",
+        "module": {
+          "type": "map",
+          "places": [
+            {
+              "name": "Vancouver, Canada",
+              "lat": 49.2827,
+              "lon": -123.1207
+            },
+            {
+              "name": "Toronto, Canada",
+              "lat": 43.651,
+              "lon": -79.347
+            },
+            {
+              "name": "Chicago, United States",
+              "lat": 41.8781,
+              "lon": -87.6298
+            },
+            {
+              "name": "Los Angeles, United States",
+              "lat": 34.0522,
+              "lon": -118.2437
+            },
+            {
+              "name": "New York City, United States",
+              "lat": 40.7128,
+              "lon": -74.006
+            },
+            {
+              "name": "Washington, D.C., United States",
+              "lat": 38.9072,
+              "lon": -77.0369
+            },
+            {
+              "name": "Oslo, Norway",
+              "lat": 59.9139,
+              "lon": 10.7522
+            },
+            {
+              "name": "Leknes, Lofoten, Norway",
+              "lat": 68.1469,
+              "lon": 13.6113
+            },
+            {
+              "name": "Tromsø, Norway",
+              "lat": 69.6492,
+              "lon": 18.9553
+            },
+            {
+              "name": "Istanbul, Türkiye",
+              "lat": 41.0082,
+              "lon": 28.9784
+            },
+            {
+              "name": "Shanghai, China",
+              "lat": 31.2304,
+              "lon": 121.4737
+            },
+            {
+              "name": "Chengdu, Sichuan, China",
+              "lat": 30.66667,
+              "lon": 104.06667
+            },
+            {
+              "name": "Beijing, China",
+              "lat": 39.9042,
+              "lon": 116.4074
+            },
+            {
+              "name": "Guangzhou, Guangdong, China",
+              "lat": 23.1291,
+              "lon": 113.2644
+            },
+            {
+              "name": "Shenzhen, Guangdong, China",
+              "lat": 22.5431,
+              "lon": 114.0579
+            },
+            {
+              "name": "Hangzhou, Zhejiang, China",
+              "lat": 30.2741,
+              "lon": 120.1551
+            },
+            {
+              "name": "Chongqing, China",
+              "lat": 29.563,
+              "lon": 106.5516
+            },
+            {
+              "name": "Kunming, Yunnan, China",
+              "lat": 25.0389,
+              "lon": 102.7183
+            },
+            {
+              "name": "Haikou, Hainan, China",
+              "lat": 20.03421,
+              "lon": 110.34651
+            },
+            {
+              "name": "Hong Kong, China",
+              "lat": 22.3193,
+              "lon": 114.1694
+            },
+            {
+              "name": "Nanjing, Jiangsu, China",
+              "lat": 32.0603,
+              "lon": 118.7969
+            },
+            {
+              "name": "Guiyang, Guizhou, China",
+              "lat": 26.58333,
+              "lon": 106.71667
+            },
+            {
+              "name": "Xining, Qinghai, China",
+              "lat": 36.6171,
+              "lon": 101.7782
+            },
+            {
+              "name": "Hohhot, Inner Mongolia, China",
+              "lat": 40.8426,
+              "lon": 111.7492
+            },
+            {
+              "name": "Nanning, Guangxi, China",
+              "lat": 22.817,
+              "lon": 108.3669
+            },
+            {
+              "name": "Ürümqi, Xinjiang, China",
+              "lat": 43.8256,
+              "lon": 87.6168
+            },
+            {
+              "name": "Zhengzhou, Henan, China",
+              "lat": 34.7473,
+              "lon": 113.6249
+            },
+            {
+              "name": "Singapore",
+              "lat": 1.3521,
+              "lon": 103.8198
+            },
+            {
+              "name": "Bangkok, Thailand",
+              "lat": 13.7563,
+              "lon": 100.5018
+            },
+            {
+              "name": "Pattaya, Thailand",
+              "lat": 12.9236,
+              "lon": 100.8825
+            },
+            {
+              "name": "Kuala Lumpur, Malaysia",
+              "lat": 3.139,
+              "lon": 101.6869
+            },
+            {
+              "name": "Sepilok, Sabah, Malaysia",
+              "lat": 5.87734,
+              "lon": 117.95051
+            },
+            {
+              "name": "Ho Chi Minh City, Vietnam",
+              "lat": 10.8231,
+              "lon": 106.6297
+            },
+            {
+              "name": "Nha Trang, Vietnam",
+              "lat": 12.2388,
+              "lon": 109.1967
+            },
+            {
+              "name": "Phnom Penh, Cambodia",
+              "lat": 11.5564,
+              "lon": 104.9282
+            },
+            {
+              "name": "Melbourne, Australia",
+              "lat": -37.8136,
+              "lon": 144.9631
+            },
+            {
+              "name": "Tasmania, Australia",
+              "lat": -42.0214,
+              "lon": 146.5933
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Just a mini technical blog.",
+    "posts_per_page": 5,
+    "content": [
+      {
+        "title": "How to measure Isotropic",
+        "cover": "posts/introducing isotropic level/cover.jpg",
+        "intro": "A practical metric for measuring anisotropy distance of elasticity tensors, with derivation and C++ implementation notes.",
+        "html": "posts/introducing%20isotropic%20level/Introducing%20Isotropic%20Level.md.html"
+      }
+    ]
+  }
+}
