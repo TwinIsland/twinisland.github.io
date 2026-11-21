@@ -7,7 +7,6 @@
     "language": "en",
     "themes": [
       "yuru",
-      "werk",
       "pixel"
     ],
     "favicon": "",
@@ -453,6 +452,7 @@
     "content": [
       {
         "title": "From Differential Geometry to Black Holes",
+        "slug": "black-hole-ray-tracing",
         "cover": "posts/black-hole-ray-tracing/cover.jpg",
         "cover_credit": "M87* · <a href=\"https://www.eso.org/public/images/eso1907a/\">EHT Collaboration</a> · <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC BY 4.0</a>",
         "intro": "An interview question about differential geometry and black holes. Follow null geodesics to render a shadow and an accretion disk.",
@@ -460,6 +460,7 @@
       },
       {
         "title": "How to measure Isotropic",
+        "slug": "introducing-isotropic-level",
         "cover": "posts/introducing isotropic level/cover.jpg",
         "intro": "A practical metric for measuring anisotropy distance of elasticity tensors, with derivation and C++ implementation notes.",
         "html": "posts/introducing%20isotropic%20level/Introducing%20Isotropic%20Level.md.html"
