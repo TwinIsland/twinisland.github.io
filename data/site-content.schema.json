@@ -35,7 +35,7 @@
           "type": "array",
           "uniqueItems": true,
           "default": [],
-          "items": { "enum": ["yuru", "werk", "pixel"] },
+          "items": { "enum": ["yuru", "pixel"] },
           "description": "Enabled themes in switch order. The first is the default. An empty list uses Yuru."
         },
         "favicon": { "type": "string", "description": "Site-relative or absolute HTTP(S) icon URL. Leave empty to omit the favicon." },
@@ -357,6 +357,7 @@
       "oneOf": [{ "required": ["markdown"] }, { "required": ["html"] }],
       "properties": {
         "title": { "type": "string" },
+        "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$", "description": "Optional unique post URL name. Defaults to the post file path." },
         "cover": { "type": "string", "description": "Site-relative path to the post cover image (e.g. posts/my-post/cover.jpg)." },
         "cover_credit": { "type": "string", "description": "Optional visible image credit. Supports a link to the source." },
         "intro": { "type": "string" },

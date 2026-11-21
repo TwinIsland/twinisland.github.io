@@ -5,7 +5,7 @@
   "site": {
     "name": "Tianyi Huang",
     "language": "en",
-    "themes": ["yuru", "werk", "pixel"],
+    "themes": ["yuru", "pixel"],
     "favicon": "",
     "source_url": "https://github.com/TwinIsland/twinisland.github.io",
     "seo": {
@@ -441,6 +441,7 @@
     "content": [
       {
         "title": "From Differential Geometry to Black Holes",
+        "slug": "black-hole-ray-tracing",
         "cover": "posts/black-hole-ray-tracing/cover.jpg",
         "cover_credit": "M87* · <a href=\"https://www.eso.org/public/images/eso1907a/\">EHT Collaboration</a> · <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC BY 4.0</a>",
         "intro": "An interview question about differential geometry and black holes. Follow null geodesics to render a shadow and an accretion disk.",
@@ -448,6 +449,7 @@
       },
       {
         "title": "How to measure Isotropic",
+        "slug": "introducing-isotropic-level",
         "cover": "posts/introducing isotropic level/cover.jpg",
         "intro": "A practical metric for measuring anisotropy distance of elasticity tensors, with derivation and C++ implementation notes.",
         "markdown": "posts/introducing isotropic level/Introducing Isotropic Level.md"

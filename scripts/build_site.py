@@ -403,6 +403,27 @@ def rename_build_directory(source, destination):
             sleep(0.2 * (attempt + 1))
 
 
+def build_license_notices(stage):
+    notices = [
+        ("Poppins", "Yuru theme font", "SIL OFL 1.1", "assets/fonts/poppins/OFL.txt"),
+        ("Silkscreen", "8-Bit theme font", "SIL OFL 1.1", "assets/fonts/silkscreen/OFL.txt"),
+        ("Lucide", "Interface icons, including Feather-derived icons", "ISC / MIT", "assets/icons/lucide/LICENSE"),
+        ("GLightbox", "Image viewer", "MIT", "https://github.com/biati-digital/glightbox/blob/master/LICENSE.md"),
+        ("KaTeX", "Math rendering", "MIT", "https://github.com/KaTeX/KaTeX/blob/v0.16.11/LICENSE"),
+        ("markdown-it", "Markdown rendering", "MIT", "https://github.com/markdown-it/markdown-it/blob/14.1.0/LICENSE"),
+    ]
+    if (stage / "projects/octave/index.html").is_file():
+        notices.append(("Monaco Editor", "Octave demo editor", "MIT", "https://cdn.jsdelivr.net/npm/monaco-editor@0.29.1/LICENSE"))
+    if (stage / "projects/qsynth/index.html").is_file():
+        notices.append(("FileSaver.js", "Qsynth demo downloads", "MIT", "https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md"))
+    return "\n".join(
+        f'          <li><strong>{escape(name)}</strong> · {escape(use)} · '
+        f'<a href="{escape(url)}" aria-label="{escape(name)} license, {escape(license_name)}">'
+        f'{escape(license_name)}</a></li>'
+        for name, use, license_name, url in notices
+    )
+
+
 def write_build_info(stage, started, template_archive):
     index = stage / "index.html"
     homepage = index.read_bytes()
@@ -447,12 +468,20 @@ def write_build_info(stage, started, template_archive):
         <span>Download site template</span>
         <small>ZIP · {template_size:.0f} KiB</small>
       </a>
+      <section class="build-licenses" aria-labelledby="build-licenses-title">
+        <h2 id="build-licenses-title">Open-source credits</h2>
+        <ul>
+{license_notices}
+        </ul>
+      </section>
       <p><a href="./">Back to home</a></p>
     </main>
   </body>
 </html>
 """
+    license_notices = build_license_notices(stage)
     digest.update(details.encode("utf-8"))
+    digest.update(license_notices.encode("utf-8"))
     full_version = digest.hexdigest()
     version = full_version[:12]
     index.write_bytes(preview.sub(link.format(version=version).encode("utf-8"), homepage))
@@ -466,6 +495,7 @@ def write_build_info(stage, started, template_archive):
         file_count=len(outputs) + 1,
         template_name=template_archive.name,
         template_size=template_archive.stat().st_size / 1024,
+        license_notices=license_notices,
     ).encode("utf-8"))
 
 

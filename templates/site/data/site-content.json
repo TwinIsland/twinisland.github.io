@@ -4,7 +4,7 @@
   "site": {
     "name": "Your Name",
     "language": "en",
-    "themes": ["yuru", "werk", "pixel"],
+    "themes": ["yuru", "pixel"],
     "favicon": "",
     "source_url": "",
     "seo": {
@@ -138,12 +138,14 @@
     "content": [
       {
         "title": "Welcome to the Blog",
+        "slug": "welcome",
         "intro": "An example post written in Markdown.",
         "cover": "data/images/placeholders/wide.svg",
         "markdown": "posts/welcome/index.md"
       },
       {
         "title": "A Post Written in HTML",
+        "slug": "html-example",
         "intro": "An example of a hand-written article fragment.",
         "cover": "data/images/placeholders/landscape.svg",
         "html": "posts/html-example/index.html"

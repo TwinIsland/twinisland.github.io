@@ -3,7 +3,7 @@ const state = {
   miscGalleryLightbox: null,
   publicationPosterLightbox: null,
   blogLightbox: null,
-  blogViewingPost: false,
+  blogPostIndex: -1,
   blogPage: 0,
   projectsPage: 0,
   lazyMediaObserver: null,
@@ -120,12 +120,8 @@ async function initPage() {
     const badgeReady = renderAll(state.data);
     syncHeaderOffset();
 
-    const initialTab = location.hash.replace('#', '');
-    if (tabs.includes(initialTab)) {
-      activateTab(initialTab);
-    } else {
-      activateTab('about');
-    }
+    restoreSiteLocation();
+    window.addEventListener('popstate', restoreSiteLocation);
 
     await revealSiteWhenReady(
       document.querySelector('.profile-photo'),
@@ -145,12 +141,15 @@ async function initPage() {
 }
 
 async function revealSiteWhenReady(criticalImage, badgeReady) {
-  const fontFamily = getComputedStyle(document.body).fontFamily;
+  const themeFonts = new Set(['Poppins', 'Silkscreen']);
   const fontPromise = document.fonts
-    ? Promise.all([
-        document.fonts.load(`400 1rem ${fontFamily}`),
-        document.fonts.load(`700 1rem ${fontFamily}`),
-      ])
+    ? Promise.allSettled(
+        [...document.fonts]
+          .filter((face) =>
+            themeFonts.has(face.family.replace(/^["']|["']$/g, ''))
+          )
+          .map((face) => face.load())
+      )
     : Promise.resolve();
 
   const imagePromise = criticalImage?.decode
@@ -193,7 +192,10 @@ function renderMaintenancePage(image) {
 
 function bindTabEvents() {
   document.querySelectorAll('.tab-button').forEach((button) => {
-    button.addEventListener('click', () => activateTab(button.dataset.tab));
+    button.addEventListener('click', () => {
+      activateTab(button.dataset.tab);
+      window.scrollTo(0, 0);
+    });
   });
   document.querySelectorAll('.site-home-link').forEach((link) => {
     link.addEventListener('click', (event) => {
@@ -249,7 +251,52 @@ function syncHeaderOffset() {
   root.classList.remove('is-syncing-header');
 }
 
-function activateTab(tabId) {
+function blogPostSlug(post) {
+  if (post.slug) return post.slug;
+  let path = String(post.html || post.markdown || '')
+    .trim()
+    .split(/[?#]/, 1)[0];
+  try {
+    path = decodeURIComponent(path);
+  } catch {
+    // Keep the original path when it contains an unescaped percent sign.
+  }
+  return path
+    .replace(/^\.?\/?posts\//, '')
+    .replace(/(\.md|\.markdown)\.html$/i, '$1');
+}
+
+function siteLocation(tabId, post) {
+  const url = new URL(location.href);
+  url.hash = tabId;
+  if (post) {
+    url.searchParams.set('post', blogPostSlug(post));
+  } else {
+    url.searchParams.delete('post');
+  }
+  return url;
+}
+
+function restoreSiteLocation() {
+  const url = new URL(location.href);
+  const slug = url.searchParams.get('post');
+  if (slug !== null) {
+    const posts = state.data.blog?.content;
+    const index = Array.isArray(posts)
+      ? posts.findIndex((post) => blogPostSlug(post) === slug)
+      : -1;
+    activateTab('blog', index, index >= 0 ? null : 'replaceState');
+    return;
+  }
+  const tab = url.hash.slice(1);
+  if (tabs.includes(tab)) {
+    activateTab(tab, -1, null);
+  } else {
+    activateTab('about', -1, 'replaceState');
+  }
+}
+
+function activateTab(tabId, postIndex = -1, historyMethod = 'pushState') {
   if (!tabs.includes(tabId)) {
     return;
   }
@@ -269,10 +316,18 @@ function activateTab(tabId) {
     panel.classList.toggle('active', panel.id === `tab-${tabId}`);
   });
 
-  history.replaceState(null, '', `#${tabId}`);
+  if (historyMethod) {
+    const post = postIndex >= 0 ? state.data?.blog?.content?.[postIndex] : null;
+    const url = siteLocation(tabId, post);
+    if (url.href !== location.href) history[historyMethod](null, '', url);
+  }
 
-  if (tabId === 'blog' && state.blogViewingPost) {
-    renderBlog(state.data?.blog || {});
+  if (tabId === 'blog' && postIndex !== state.blogPostIndex) {
+    if (postIndex >= 0) {
+      openBlogPost(postIndex);
+    } else {
+      renderBlog(state.data?.blog || {});
+    }
   }
   requestAnimationFrame(() => {
     if (activePanel?.classList.contains('active')) {
@@ -829,7 +884,7 @@ function renderBlog(blog = {}) {
   if (!panel) {
     return;
   }
-  state.blogViewingPost = false;
+  state.blogPostIndex = -1;
 
   const posts = Array.isArray(blog.content) ? blog.content : [];
   const { page, pageCount, pageSize, start } = getPagination(
@@ -847,7 +902,7 @@ function renderBlog(blog = {}) {
             <article class="blog-list-item card">
                 <div class="blog-item-content">
                     <h3 class="blog-item-title">
-                        <button class="blog-title-button" type="button" data-post-index="${start + index}">${escapeHtml(post.title || `Post ${start + index + 1}`)}</button>
+                        <a class="blog-title-button" href="${escapeHtml(siteLocation('blog', post).href)}" data-post-index="${start + index}">${escapeHtml(post.title || `Post ${start + index + 1}`)}</a>
                     </h3>
                     <p class="blog-item-intro">${renderConfigText(post.intro || '')}</p>
                 </div>
@@ -864,10 +919,13 @@ function renderBlog(blog = {}) {
     `<div class="blog-list">${listHtml}</div>${renderPagination('Blog', page, pageCount)}`
   );
 
-  panel.querySelectorAll('.blog-title-button').forEach((button) => {
-    button.addEventListener('click', () => {
-      const index = Number(button.dataset.postIndex);
-      openBlogPost(index);
+  panel.querySelectorAll('.blog-title-button').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+        return;
+      event.preventDefault();
+      activateTab('blog', Number(link.dataset.postIndex));
+      window.scrollTo(0, 0);
     });
   });
   bindPagination(panel, page, (nextPage) => {
@@ -894,7 +952,7 @@ async function openBlogPost(postIndex) {
   const intro = String(post.intro || '');
   const htmlPath = String(post.html || '').trim();
   const postPath = htmlPath || String(post.markdown || '').trim();
-  state.blogViewingPost = true;
+  state.blogPostIndex = postIndex;
   panel.innerHTML = `
         <div class="blog-post-view">
             <section class="section-card card blog-article-shell">
@@ -916,7 +974,7 @@ async function openBlogPost(postIndex) {
   const content = panel.querySelector('.blog-article-content');
   panel
     .querySelector('[data-blog-action="back"]')
-    .addEventListener('click', () => renderBlog(blogData));
+    .addEventListener('click', () => activateTab('blog'));
   panel
     .querySelector('[data-blog-action="top"]')
     .addEventListener('click', scrollToTop);

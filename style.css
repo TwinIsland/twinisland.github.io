@@ -1,5 +1,4 @@
 @import url('themes/yuru.css');
-@import url('themes/werk.css');
 @import url('themes/pixel.css');
 
 /* Theme and layout values */
@@ -181,18 +180,14 @@ a[href]:where(
     visibility 0s linear 0.2s;
 }
 
-:is(.site-loading, .theme-loading) .site-loader {
+.site-loading .site-loader {
   opacity: 1;
   visibility: visible;
   transition-delay: 0s;
 }
 
-.theme-loading .site-loader {
-  pointer-events: auto;
-}
-
 .site-loader-message {
-  font-family: Poppins, Helvetica, Arial, sans-serif;
+  font-family: system-ui, sans-serif;
 }
 
 .site-loader-mark {
@@ -1544,6 +1539,24 @@ figcaption a {
 
 .build-info .template-download:is(:hover, :focus-visible) {
   border-color: currentColor;
+}
+
+.build-licenses {
+  margin-block: 1.5rem;
+  padding-block-start: 1rem;
+  border-top: 1px solid var(--border-default);
+  font-size: var(--text-body-small);
+  line-height: var(--leading-body);
+}
+
+.build-licenses h2 {
+  margin: 0 0 0.5rem;
+  font-size: var(--text-title);
+}
+
+.build-licenses ul {
+  margin: 0;
+  padding-inline-start: 1.25em;
 }
 
 .maintenance-shell {

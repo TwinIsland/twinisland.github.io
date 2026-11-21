@@ -12,6 +12,8 @@ To add a blog post, put its files in `posts/<slug>/` and add an entry to `blog.c
 
 To add a runnable demo, put it in `projects/<slug>/` and point the project's `run_url` at its entry page.
 
+Give a post an optional unique `slug` to set its shareable URL, such as `?post=welcome#blog`. Keep the slug if you move or rename the post file.
+
 ## Markdown extensions
 
 The blog extends Markdown with a few features for writing posts.

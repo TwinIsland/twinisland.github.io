@@ -18,9 +18,6 @@ assets/fonts/poppins/Poppins-Bold.woff2
 assets/fonts/poppins/Poppins-Regular.woff2
 assets/fonts/silkscreen/OFL.txt
 assets/fonts/silkscreen/Silkscreen-Regular.woff2
-assets/fonts/barlow-semi-condensed/BarlowSemiCondensed-Bold.woff2
-assets/fonts/barlow-semi-condensed/BarlowSemiCondensed-Regular.woff2
-assets/fonts/barlow-semi-condensed/OFL.txt
 assets/icons/github.svg
 assets/icons/mail.svg
 assets/icons/orcid.svg
@@ -53,7 +50,6 @@ scripts/package_template.py
 scripts/publish_site.py
 scripts/render_posts.cjs
 themes/yuru.css
-themes/werk.css
 themes/pixel.css
 """.split()
 
