@@ -5,6 +5,11 @@
   "site": {
     "name": "Tianyi Huang",
     "language": "en",
+    "themes": [
+      "yuru",
+      "werk",
+      "pixel"
+    ],
     "favicon": "",
     "source_url": "https://github.com/TwinIsland/twinisland.github.io",
     "seo": {
@@ -22,10 +27,6 @@
         "https://www.linkedin.com/in/tianyih5",
         "https://cirno.me/"
       ]
-    },
-    "name_mark": {
-      "src": "data/images/profile/name-mark.svg",
-      "alt": "黄天毅"
     }
   },
   "profile": {
@@ -450,6 +451,13 @@
     "description": "Just a mini technical blog.",
     "posts_per_page": 5,
     "content": [
+      {
+        "title": "From Differential Geometry to Black Holes",
+        "cover": "posts/black-hole-ray-tracing/cover.jpg",
+        "cover_credit": "M87* · <a href=\"https://www.eso.org/public/images/eso1907a/\">EHT Collaboration</a> · <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC BY 4.0</a>",
+        "intro": "An interview question about differential geometry and black holes. Follow null geodesics to render a shadow and an accretion disk.",
+        "html": "posts/black-hole-ray-tracing/article.html"
+      },
       {
         "title": "How to measure Isotropic",
         "cover": "posts/introducing isotropic level/cover.jpg",

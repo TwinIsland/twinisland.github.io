@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Black Hole Ray Tracing · WebGL</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        background: #10141d;
+        color: #e6ecf8;
+        font:
+          14px/1.55 system-ui,
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        max-width: 1050px;
+        margin: 0 auto;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 2.15;
+        min-height: 180px;
+        max-height: 440px;
+        background: #070910;
+      }
+      canvas[data-orbit-camera] {
+        cursor: grab;
+        touch-action: pan-y;
+      }
+      canvas[data-orbit-camera]:active {
+        cursor: grabbing;
+      }
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 6px 14px;
+        flex-wrap: wrap;
+        padding: 8px 12px;
+        border-block-start: 1px solid #384254;
+      }
+      .controls[hidden],
+      [hidden] {
+        display: none;
+      }
+      label {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      input {
+        accent-color: #f8b977;
+      }
+      input[type='range'] {
+        width: 84px;
+      }
+      output {
+        min-width: 3.5ch;
+        font-variant-numeric: tabular-nums;
+      }
+      button {
+        border: 1px solid #535e71;
+        border-radius: 6px;
+        padding: 4px 10px;
+        background: #222b39;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid #f8b977;
+        outline-offset: 3px;
+      }
+      #status {
+        margin: 0;
+        padding: 8px 12px;
+        color: #b8c3d7;
+      }
+    </style>
+    <script src="demo.js" type="module"></script>
+  </head>
+  <body>
+    <canvas
+      id="viewport"
+      role="img"
+      aria-label="Black hole ray tracing"
+    ></canvas>
+    <div id="orbit-controls" class="controls" hidden>
+      <label
+        >Impact parameter b/M
+        <input
+          id="impact"
+          type="range"
+          min="3.5"
+          max="10"
+          step="0.01"
+          value="5.6" /><output id="impact-value" for="impact"></output
+      ></label>
+      <button id="critical" type="button">Near critical</button>
+      <output id="orbit-outcome" for="impact"></output>
+    </div>
+    <div id="camera-controls" class="controls" hidden>
+      <label
+        >Elevation
+        <input id="elevation" type="range" min="5" max="80" value="17" /><output
+          id="elevation-value"
+          for="elevation"
+        ></output
+      ></label>
+      <label
+        >Zoom <input id="zoom" type="range" min="65" max="210" value="100"
+      /></label>
+      <label><input id="gravity" type="checkbox" checked /> Curvature</label>
+      <label><input id="disk" type="checkbox" checked /> Accretion disk</label>
+      <label id="motion-control" hidden
+        ><input id="motion" type="checkbox" /> Animate disk</label
+      >
+      <button id="reset" type="button">Reset</button>
+    </div>
+    <p id="status" role="status">Starting WebGL 2…</p>
+    <noscript>Enable JavaScript to run this WebGL experiment.</noscript>
+  </body>
+</html>
