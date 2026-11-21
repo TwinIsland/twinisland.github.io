@@ -153,9 +153,7 @@
 
 .sample-paper header p {
   margin: 0 0 0.3rem;
-  font:
-    0.7rem/1.4 Poppins,
-    sans-serif;
+  font: 0.7rem/1.4 var(--theme-font, sans-serif);
 }
 
 .sample-paper h3 {
@@ -174,9 +172,7 @@
 }
 .sample-paper svg text {
   fill: currentColor;
-  font:
-    9px Poppins,
-    sans-serif;
+  font: 9px var(--theme-font, sans-serif);
 }
 .sample-paper figcaption {
   font-size: 0.82rem;
@@ -196,9 +192,7 @@
   margin: 0 0 0.45rem;
   padding: 0;
   list-style: none;
-  font:
-    0.7rem/1.4 Poppins,
-    sans-serif;
+  font: 0.7rem/1.4 var(--theme-font, sans-serif);
 }
 
 .chart-legend span {

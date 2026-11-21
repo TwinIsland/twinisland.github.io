@@ -1,0 +1,518 @@
+<div lang="en">
+  <p
+    >A friend once told me about an interview question that caught him off
+    guard.
+    <strong
+      >What does differential geometry have to do with black holes?</strong
+    >
+    He wished he had had an answer. I kept thinking about it from a computer
+    graphics perspective. If a camera ray no longer follows
+    <code>origin + t * direction</code>, how do we render what it sees?</p
+  >
+  <p
+    >We can answer that with three ideas: metrics, light cones, and geodesics.
+    We'll turn them into code and use the same ray integrator to draw an
+    interactive black hole.</p
+  >
+
+  <section>
+    <h2>What is differential geometry?</h2>
+    <p
+      >Imagine an ant walking on a globe. From up close, the ground looks like a
+      flat patch, and two numbers are enough to record the ant's position.
+      That's the idea of a two-dimensional <strong>manifold</strong>. Each patch
+      has a coordinate chart, and overlapping charts can describe the same
+      point. Longitude and latitude work for most of the globe, but longitude
+      loses its meaning at the poles. The pole is an ordinary point on the
+      sphere, and a chart centered there works just fine.</p
+    >
+    <p>
+      Now ask the ant to move east by ten degrees of longitude. At the equator
+      it walks along a circle with the full radius of the globe. At 60 degrees
+      latitude the circle has half that radius, so the ant walks half as far for
+      the same ten-degree change <a href="#fig-1">(Fig. 1)</a>. A
+      <strong>metric</strong> supplies the conversion from changes in chart
+      coordinates to distances and angles measured on the surface.
+    </p>
+    <figure id="fig-1" style="margin: 1.25em 0">
+      <img
+        src="sphere-uv-metric.svg"
+        alt="Two equal longitude steps in a UV chart map to different arc lengths on a sphere. The arc at 60 degrees latitude is half as long as the equator arc."
+        width="960"
+        height="390"
+        style="width: 100%"
+      />
+      <figcaption>
+        <strong>Same step in UV, different lengths on the sphere.</strong>
+        For a unit sphere, a longitude step
+        <span data-katex-inline>\Delta u</span> at fixed latitude
+        <span data-katex-inline>v</span> traces an arc of length
+        <span data-katex-inline>\cos(v)\,|\Delta u|</span>. At
+        <span data-katex-inline>60^\circ</span>, that arc has half the length of
+        the corresponding arc on the equator.
+      </figcaption>
+    </figure>
+    <p
+      >For a surface in 3D, let <span data-katex-inline>X(u,v)</span> map UV
+      coordinates to world space and let <span data-katex-inline>J</span> be its
+      Jacobian. A small coordinate displacement
+      <span data-katex-inline>\mathrm{d}q</span> maps to
+      <span data-katex-inline>J\,\mathrm{d}q</span> in the tangent plane. Taking
+      its Euclidean squared length gives the surface metric
+      <span data-katex-inline>g=J^{\mathsf T}J</span>.</p
+    >
+    <math
+      display="block"
+      aria-label="ds squared equals dq transpose times g times dq"
+    >
+      <msup><mi>ds</mi><mn>2</mn></msup
+      ><mo>=</mo><msup><mi>dq</mi><mi mathvariant="normal">T</mi></msup
+      ><mi>g</mi><mi>dq</mi>
+    </math>
+    <p>
+      On the unit sphere, this matrix gives longitude steps a squared weight of
+      <span data-katex-inline>\cos^2 v</span> and latitude steps a squared
+      weight of <span data-katex-inline>1</span>. The two coordinate directions
+      are perpendicular, so there is no cross term. You can read the metric as
+      the local rule for turning UV movement into ruler movement.
+    </p>
+    <p
+      >Once we know how to measure lengths and angles, we can ask what it means
+      to keep going straight along a surface. A great circle on a sphere is a
+      <strong>geodesic</strong>. More generally, a geodesic carries its own
+      tangent direction by parallel transport. Two meridians start out parallel
+      at the equator and meet at a pole. That convergence gives a useful
+      intuition for what curved spacetime can do to a bundle of light rays.
+      Compare the three surfaces below <a href="#fig-2">(Fig. 2)</a>.</p
+    >
+    <figure id="fig-2" style="margin: 1.25em 0">
+      <img
+        src="curvature.svg"
+        alt="A gridded hyperboloid, cylinder, and sphere illustrating negative, zero, and positive Gaussian curvature"
+        width="600"
+        height="600"
+        style="
+          display: block;
+          width: min(100%, 440px);
+          margin-inline: auto;
+          background: #fff;
+        "
+      />
+      <figcaption
+        ><strong
+          >Negative, zero, and positive Gaussian curvature, from left to
+          right.</strong
+        >
+        A cylinder can be unrolled into a plane without stretching. Image by
+        <a href="https://commons.wikimedia.org/wiki/File:Gaussian_curvature.svg"
+          >Nicoguaro / Wikimedia Commons</a
+        >
+        (<a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a
+        >).</figcaption
+      >
+    </figure>
+    <p>
+      For the ant, the metric answers how far a step goes and which path keeps
+      going straight. To trace light near a black hole, we ask the same
+      questions about spacetime. The difference is that a step now has a time
+      component, and its length rule also tells us which directions light can
+      take.
+    </p>
+  </section>
+
+  <section>
+    <h2>Black holes, relativity, and light</h2>
+    <p
+      >In <strong>special relativity</strong>, all inertial observers measure
+      the same speed of light in a vacuum. For an event, its light cone
+      describes where light could have come from and where it can go. On a
+      spacetime diagram with one spatial axis and
+      <span data-katex-inline>ct</span> on the vertical axis, its boundary
+      consists of straight lines with slopes of
+      <span data-katex-inline>\pm 1</span> <a href="#fig-3">(Fig. 3)</a>.</p
+    >
+    <figure id="fig-3" style="margin: 1.25em 0">
+      <img
+        src="light-cone.svg"
+        alt="A light cone centered at event A. Orange arrows show the horizontal and vertical coordinate changes to event B, which lies in the future cone."
+        width="860"
+        height="400"
+        style="width: 100%"
+      />
+      <figcaption>
+        <strong>Light sets the boundary of cause and effect.</strong> Light
+        travels along the diagonal edges. Event B lies in the future cone of A.
+        The orange arrows show its coordinate offsets from A.
+      </figcaption>
+    </figure>
+    <p
+      >In <strong>general relativity</strong>, the spacetime metric can vary
+      from place to place. A small, freely falling lab can still use special
+      relativity as a local approximation. Over a larger region, the metric
+      determines how those local light cones fit together. Light in a vacuum
+      follows <strong>null geodesics</strong>. Rays from the same distant source
+      can arrive at a camera from different directions, producing multiple
+      images or arcs through gravitational lensing
+      <a href="#fig-4">(Fig. 4)</a>.</p
+    >
+    <figure id="fig-4" style="margin: 1.25em 0">
+      <img
+        src="cosmic-horseshoe.webp"
+        alt="A Hubble image of a nearly closed blue arc around an orange foreground galaxy"
+        width="1800"
+        height="1431"
+        style="display: block; width: 100%"
+      />
+      <figcaption
+        ><strong>The Cosmic Horseshoe.</strong> A foreground galaxy bends light
+        from a background galaxy into a nearly complete blue ring. Image credit
+        <a href="https://esahubble.org/images/potw1151a/"
+          >ESA/Hubble &amp; NASA</a
+        >
+        (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>,
+        resized and converted to WebP).</figcaption
+      >
+    </figure>
+    <p
+      >A black hole's <strong>event horizon</strong> is a causal boundary. Once
+      inside, light and matter cannot send a signal to a distant outside
+      observer. For a spherical, non-rotating, uncharged black hole, the horizon
+      has an areal radius of <span data-katex-inline>r_s=2GM/c^2</span>. The
+      coordinate <span data-katex-inline>r</span> is defined so that a sphere at
+      that radius has surface area <span data-katex-inline>4\pi r^2</span>.</p
+    >
+    <p
+      >The cover shows M87*, reconstructed by the Event Horizon Telescope from
+      millimeter-wave observations. The bright ring is shaped by emission from
+      nearby material and by lensing. The appearance of the central dark region
+      depends on both. In the spherical model below, the horizon, the photon
+      sphere, and the critical curve seen by a distant camera have three
+      different radii.</p
+    >
+    <p>
+      Back at the renderer, a pixel gives us a direction at the camera. We need
+      the metric to tell us how to follow that direction through spacetime, then
+      decide whether the ray reaches a light source or falls through the
+      horizon. The next section turns those two decisions into code.
+    </p>
+  </section>
+
+  <section>
+    <h2>Rendering a black hole with Lorentzian geometry</h2>
+    <h3>Change the dot product</h3>
+    <p
+      >Spacetime in relativity is a <strong>Lorentzian manifold</strong>. Each
+      event has an inner product on its tangent space, and a nonzero vector can
+      have zero squared norm. With signature
+      <span data-katex-inline>(-,+,+,+)</span>, flat Minkowski spacetime has the
+      following line element.</p
+    >
+    <math
+      display="block"
+      aria-label="ds squared equals minus c squared dt squared plus dx squared plus dy squared plus dz squared"
+    >
+      <msup><mi>ds</mi><mn>2</mn></msup
+      ><mo>=</mo><mo>−</mo><msup><mi>c</mi><mn>2</mn></msup
+      ><msup><mi>dt</mi><mn>2</mn></msup> <mo>+</mo
+      ><msup><mi>dx</mi><mn>2</mn></msup
+      ><mo>+</mo><msup><mi>dy</mi><mn>2</mn></msup
+      ><mo>+</mo><msup><mi>dz</mi><mn>2</mn></msup>
+    </math>
+    <p>
+      In the spacetime diagram <a href="#fig-3">(Fig. 3)</a>, the orange
+      horizontal arrow from A measures
+      <span data-katex-inline>\mathrm{d}x</span>, the change in position along
+      the plotted spatial axis. The vertical arrow measures
+      <span data-katex-inline>c\,\mathrm{d}t</span>, the elapsed coordinate time
+      multiplied by the speed of light so both axes use length units. We take a
+      slice at fixed <span data-katex-inline>y</span> and
+      <span data-katex-inline>z</span>, so
+      <span data-katex-inline>\mathrm{d}y=\mathrm{d}z=0</span>. The squared
+      spacetime interval is therefore
+      <span data-katex-inline
+        >\mathrm{d}s^2=\mathrm{d}x^2-(c\,\mathrm{d}t)^2</span
+      >. This is a signed quantity computed from the metric. The diagonal drawn
+      between the events shows their displacement, and its Euclidean length on
+      the page carries no spacetime meaning.
+    </p>
+    <p
+      >For light, <span data-katex-inline>\mathrm{d}s^2=0</span>. This gives the
+      allowed directions at a point. The geodesic equation says how the
+      direction changes as we follow the ray. Let
+      <span data-katex-inline>\lambda</span> be an affine parameter and
+      <span data-katex-inline>k=\mathrm{d}x/\mathrm{d}\lambda</span> the ray
+      tangent.</p
+    >
+    <math
+      display="block"
+      aria-label="The derivative of k mu with respect to lambda equals minus the contraction of the Christoffel symbols with two components of k"
+    >
+      <mfrac
+        ><mrow
+          ><mi>d</mi><msup><mi>k</mi><mi>μ</mi></msup></mrow
+        ><mrow><mi>d</mi><mi>λ</mi></mrow></mfrac
+      >
+      <mo>=</mo><mo>−</mo
+      ><msubsup
+        ><mi>Γ</mi><mrow><mi>α</mi><mi>β</mi></mrow
+        ><mi>μ</mi></msubsup
+      ><msup><mi>k</mi><mi>α</mi></msup
+      ><msup><mi>k</mi><mi>β</mi></msup>
+    </math>
+    <p
+      >The Christoffel symbols <span data-katex-inline>\Gamma</span>, computed
+      from the metric and its first derivatives, express parallel transport in
+      our chosen coordinates. In inertial Cartesian coordinates on flat
+      spacetime, they vanish, and the equation reduces to the straight ray we
+      started with.</p
+    >
+    <p>
+      The full geodesic equation evolves all four coordinates. For our image, we
+      only need the spatial path and the places it intersects. The symmetry of a
+      non-rotating black hole lets us reduce that calculation to a small system
+      we can integrate per pixel.
+    </p>
+    <h3>Integrate one ray</h3>
+    <p
+      >Outside a non-rotating, uncharged black hole, we can use the
+      Schwarzschild metric. Set <span data-katex-inline>G=c=1</span>, so the
+      mass parameter <span data-katex-inline>M</span> has units of length.
+      Spherical symmetry confines each non-radial ray to a plane through the
+      center, which we can choose as the equatorial plane. Write
+      <span data-katex-inline>f(r)=1-2M/r</span>.</p
+    >
+    <div style="overflow: auto hidden; padding-block: 0.2em">
+      <math
+        display="block"
+        aria-label="ds squared equals minus f dt squared plus dr squared over f plus r squared d phi squared"
+      >
+        <msup><mi>ds</mi><mn>2</mn></msup
+        ><mo>=</mo><mo>−</mo><mi>f</mi><msup><mi>dt</mi><mn>2</mn></msup>
+        <mo>+</mo
+        ><mfrac
+          ><msup><mi>dr</mi><mn>2</mn></msup
+          ><mi>f</mi></mfrac
+        ><mo>+</mo><msup><mi>r</mi><mn>2</mn></msup
+        ><msup><mi>dφ</mi><mn>2</mn></msup>
+      </math>
+    </div>
+    <p
+      >Time translation and rotational symmetry give two conserved quantities,
+      <span data-katex-inline>E=f\,\mathrm{d}t/\mathrm{d}\lambda</span> and
+      <span data-katex-inline>L=r^2\,\mathrm{d}\phi/\mathrm{d}\lambda</span>.
+      Substitute them into <span data-katex-inline>\mathrm{d}s^2=0</span>, write
+      <span data-katex-inline>u=1/r</span> and
+      <span data-katex-inline>b=|L/E|</span>, and use the angle
+      <span data-katex-inline>\phi</span> as the integration parameter. The
+      primes below denote derivatives with respect to
+      <span data-katex-inline>\phi</span>.</p
+    >
+    <div style="overflow: auto hidden; padding-block: 0.2em">
+      <math
+        display="block"
+        aria-label="u prime squared equals one over b squared minus u squared plus two M u cubed. u double prime equals three M u squared minus u"
+      >
+        <msup
+          ><mrow
+            ><mo>(</mo><msup><mi>u</mi><mo>′</mo></msup
+            ><mo>)</mo></mrow
+          ><mn>2</mn></msup
+        ><mo>=</mo
+        ><mfrac
+          ><mn>1</mn><msup><mi>b</mi><mn>2</mn></msup></mfrac
+        >
+        <mo>−</mo><msup><mi>u</mi><mn>2</mn></msup
+        ><mo>+</mo><mn>2</mn><mi>M</mi><msup><mi>u</mi><mn>3</mn></msup
+        ><mo>,</mo><mspace width="1em" /> <msup><mi>u</mi><mo>″</mo></msup
+        ><mo>=</mo><mn>3</mn><mi>M</mi><msup><mi>u</mi><mn>2</mn></msup
+        ><mo>−</mo><mi>u</mi>
+      </math>
+    </div>
+    <p
+      >The state is just <span data-katex-inline>(u,u')</span>. Apply one
+      fourth-order Runge–Kutta (RK4) update per angular step, then plot each
+      position as <span data-katex-inline>(r\cos\phi,r\sin\phi)</span>. The demo
+      draws a straight reference ray at the same
+      <span data-katex-inline>b</span> by setting the mass term to zero.</p
+    >
+    <pre><code>vec2 derivative(vec2 state) {
+    float u = state.x;
+    return vec2(state.y, 3.0 * mass * u * u - u);
+}
+// Advance state using RK4, then plot (cos(phi), sin(phi)) / state.x.</code></pre>
+    <figure style="margin: 1.25em 0">
+      <iframe
+        src="demo.html?view=orbit"
+        title="WebGL experiment comparing flat and curved ray paths"
+        loading="lazy"
+        style="display: block; width: 100%; height: 365px; border: 0"
+      ></iframe>
+      <figcaption>
+        Rays start on the right. Lavender shows the flat path and orange shows
+        the Schwarzschild path. The solid circle marks the horizon and the
+        dashed circle marks the photon sphere.
+      </figcaption>
+    </figure>
+    <p
+      >Try moving <span data-katex-inline>b/M</span> from
+      <span data-katex-inline>5.21</span> to
+      <span data-katex-inline>5.18</span>. The first ray bends around the black
+      hole and escapes. The second crosses the horizon. Setting
+      <span data-katex-inline>u'=u''=0</span> gives the unstable circular photon
+      orbit at <span data-katex-inline>r=3M</span>. Substituting that radius
+      into the first radial equation gives the critical impact parameter
+      <span data-katex-inline
+        >b_{\mathrm{crit}}=3\sqrt{3}\,M\approx5.196\,M</span
+      >. The event horizon is at <span data-katex-inline>2M</span>
+      <a href="#fig-5">(Fig. 5)</a>.</p
+    >
+
+    <figure id="fig-5" style="margin: 1.25em 0">
+      <img
+        src="black-hole-radii.svg"
+        alt="A physical slice marks the event horizon and photon sphere. On a separate distant camera screen, a larger circle bounds the starting directions of captured rays."
+        width="960"
+        height="400"
+        style="width: 100%"
+      />
+      <figcaption>
+        <strong>Two radii in space, one radius on the screen.</strong> The event
+        horizon and photon sphere are located at specific values of
+        <span data-katex-inline>r</span>. The critical curve separates camera
+        directions by their impact parameter <span data-katex-inline>b</span>.
+      </figcaption>
+    </figure>
+
+    <h3>Trace backward from the camera</h3>
+    <p>
+      The orbit plot follows a single ray chosen by its impact parameter.
+      Rendering repeats the same integration for every pixel. This time the
+      starting point is the camera and the pixel determines the initial ray
+      direction.
+    </p>
+    <p
+      >In the fragment shader, generate one ray per pixel in the camera's local
+      orthonormal frame. The outward radial direction <code>radial0</code> and
+      the ray's tangential component <code>angular0</code> span its orbital
+      plane. The camera is static at <span data-katex-inline>r_0=30M</span>. If
+      the ray makes an angle <span data-katex-inline>\alpha</span> with the
+      inward radial direction, then
+      <span data-katex-inline>b=r_0\sin\alpha/\sqrt{f(r_0)}</span>. This relates
+      the direction we choose in the camera frame to the conserved quantity in
+      the orbit equation.</p
+    >
+    <pre><code>vec3 planeTangent = ray + cosAlpha * radial0;
+vec3 angular0 = normalize(planeTangent);
+vec2 state = vec2(u0, u0 * sqrt(cameraF) * cosAlpha / length(planeTangent));
+
+// RK4 marches along phi. At u = 0 the ray escapes toward the sky.
+vec3 escapeDirection = cos(phi) * radial0 + sin(phi) * angular0;</code></pre>
+    <p
+      >Escaping rays sample a procedural star field. Rays that reach the horizon
+      stop and contribute no background light. Exactly radial rays are handled
+      separately because <span data-katex-inline>L=0</span> and
+      <span data-katex-inline>\phi</span> cannot parameterize their path. Toggle
+      <strong>Curvature</strong> to compare the star field and central
+      shadow.</p
+    >
+    <figure style="margin: 1.25em 0">
+      <iframe
+        src="demo.html?view=shadow"
+        title="WebGL experiment with black hole shadows and lensing"
+        loading="lazy"
+        style="display: block; width: 100%; height: 365px; border: 0"
+      ></iframe>
+      <figcaption>
+        Turn curvature off to compare the shadow and lensed star field with a
+        flat-spacetime view.
+      </figcaption>
+    </figure>
+
+    <h3>Sample an accretion disk</h3>
+    <p>
+      So far, a ray either finds the distant sky or reaches the horizon. An
+      accretion disk gives it a third place to pick up light along the way. We
+      keep the same integrator and add an intersection test inside its loop.
+    </p>
+    <p
+      >Add a thin disk in the plane <span data-katex-inline>y=0</span>, with
+      material emitting between <span data-katex-inline>6M</span> and
+      <span data-katex-inline>19M</span>. The innermost stable circular orbit in
+      Schwarzschild spacetime is at <span data-katex-inline>6M</span>, which we
+      use as the inner edge of this model disk. A ray crosses the disk when
+      <span data-katex-inline
+        >\texttt{radial0.y}\cos\phi+\texttt{angular0.y}\sin\phi=0</span
+      >. At each crossing, interpolate the integrated state to find the radius
+      and sample the disk if the crossing falls in the emitting region. A ray
+      can pass through the disk more than once, bringing the far side of the
+      disk into view above or below the shadow.</p
+    >
+    <pre><code>float planeHit = mod(atan(-radial0.y, angular0.y), PI);
+// Each step that brackets planeHit samples the thin disk:
+vec2 hit = mix(state, next, clamp((planeHit - phi) / STEP, 0.0, 1.0));
+if (hit.x &gt;= 1.0 / 19.0 &amp;&amp; hit.x &lt;= 1.0 / 6.0) {
+    // Sample emissivity and add it, weighted by the remaining transmission.
+}
+planeHit += PI;</code></pre>
+    <p
+      >The disk uses procedural color and texture. Its brightness is weighted by
+      the cube of a frequency-shift factor to illustrate gravitational redshift
+      and Doppler brightening from orbiting material. The light paths follow the
+      Schwarzschild metric, and the emission and opacity are modeled with simple
+      shading rules. Near the critical curve, the numerical step size and
+      iteration limit constrain how many fine rings we can resolve. Real images
+      of M87* also depend on plasma, magnetic fields, observing frequency, and
+      spin.</p
+    >
+    <figure style="margin: 1.25em 0">
+      <iframe
+        src="demo.html"
+        title="Interactive WebGL Schwarzschild black hole and accretion disk"
+        loading="lazy"
+        style="display: block; width: 100%; height: 365px; border: 0"
+      ></iframe>
+      <figcaption>
+        Drag horizontally to orbit, or focus the image and use the arrow keys.
+        Adjust elevation to see the disk from a different angle. Use Animate
+        disk to pause or resume the slowly rotating disk texture.
+      </figcaption>
+    </figure>
+    <p
+      >Move the elevation slider to see the disk go from a narrow band to a
+      nearly face-on ring. Turn off the disk to see the lensed stars, or turn
+      off curvature to see the disk rendered with straight rays.
+      <a href="demo.html">Open the interactive demo</a> ·
+      <a href="ray.frag">Read the full GLSL shader</a></p
+    >
+    <p>Here is how I would answer the interview question now. </p
+    ><p
+      >Differential geometry gives us the metric and the equations for
+      geodesics. A black hole gives us a particular metric. Trace null geodesics
+      in that metric and you can determine which pixels see the background,
+      which see glowing material, and which stay dark.</p
+    >
+    <h3>Further reading</h3>
+    <ul>
+      <li
+        ><a href="https://is.muni.cz/el/sci/jaro2019/F9145/um/luminet_1979.pdf"
+          >Jean-Pierre Luminet,
+          <cite>Image of a Spherical Black Hole with Thin Accretion Disk</cite>
+          (1979)</a
+        >. A calculation of how a thin disk looks in a spherical spacetime.</li
+      >
+      <li
+        ><a href="https://arxiv.org/abs/1906.00873"
+          >Gralla, Holz, and Wald,
+          <cite>Black Hole Shadows, Photon Rings, and Lensing Rings</cite>
+          (2019)</a
+        >. What distinguishes the shadow, photon ring, and lensing ring.</li
+      >
+      <li
+        ><a href="https://arxiv.org/abs/1906.11238"
+          >Event Horizon Telescope Collaboration,
+          <cite>First M87 Event Horizon Telescope Results. I.</cite> (2019)</a
+        >. The M87* observations and their physical interpretation.</li
+      >
+    </ul>
+  </section>
+</div>

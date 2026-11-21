@@ -1,0 +1,46 @@
+@font-face {
+  font-family: 'Barlow Semi Condensed';
+  src: url('../assets/fonts/barlow-semi-condensed/BarlowSemiCondensed-Regular.woff2')
+    format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow Semi Condensed';
+  src: url('../assets/fonts/barlow-semi-condensed/BarlowSemiCondensed-Bold.woff2')
+    format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* Steel gray, signal yellow, and square edges. */
+:root[data-theme='werk'] {
+  color-scheme: light;
+  --surface: #fff;
+  --cp-ink: #202a31;
+  --cp-accent: #e8ba23;
+  --map-dot: #586972;
+  --map-dot-outline: var(--surface);
+  --map-dot-selected: #8d5800;
+  --card-background-filter: grayscale(1);
+  --theme-font: 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif;
+  --theme-name-colors: var(--cp-ink), #5c6870, #95701d, var(--cp-ink);
+  --radius-control: 0px;
+  --radius-panel: 0px;
+  --radius-pill: 0px;
+}
+
+:root[data-theme='werk'][data-color-mode='dark'] {
+  color-scheme: dark;
+  --surface: #181e23;
+  --cp-ink: #e9eef1;
+  --cp-accent: #f3c739;
+  --map-dot: #a9b7be;
+  --map-dot-selected: var(--cp-accent);
+  --brand-image-filter: brightness(2.05) saturate(0.85);
+  --monochrome-icon-filter: brightness(2.4) saturate(0.7);
+  --card-background-filter: grayscale(1) invert(1);
+}

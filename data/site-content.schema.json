@@ -31,6 +31,13 @@
       "properties": {
         "name": { "type": "string" },
         "language": { "type": "string", "default": "en", "description": "Homepage language tag." },
+        "themes": {
+          "type": "array",
+          "uniqueItems": true,
+          "default": [],
+          "items": { "enum": ["yuru", "werk", "pixel"] },
+          "description": "Enabled themes in switch order. The first is the default. An empty list uses Yuru."
+        },
         "favicon": { "type": "string", "description": "Site-relative or absolute HTTP(S) icon URL. Leave empty to omit the favicon." },
         "source_url": { "type": "string", "description": "Optional GitHub repository URL for the footer." },
         "seo": {
@@ -44,15 +51,6 @@
             "robots": { "type": "string" },
             "alternate_names": { "type": "array", "items": { "type": "string" } },
             "same_as": { "type": "array", "items": { "type": "string" } }
-          }
-        },
-        "name_mark": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["src", "alt"],
-          "properties": {
-            "src": { "type": "string", "minLength": 1, "description": "Site-relative path to an SVG wordmark with a transparent background." },
-            "alt": { "type": "string", "minLength": 1, "description": "The name or text shown in the wordmark." }
           }
         }
       }
@@ -76,7 +74,7 @@
                   "minItems": 1,
                   "uniqueItems": true,
                   "items": { "type": "string", "minLength": 1 },
-                  "description": "Site-relative badge modules in switch order. Each exports mount(canvas)."
+                  "description": "Site-relative badge modules available when the page loads. Each exports mount(canvas)."
                 },
                 "default": { "type": "string", "minLength": 1, "description": "Initial module from the list. Defaults to the first entry." },
                 "mode": {
@@ -360,6 +358,7 @@
       "properties": {
         "title": { "type": "string" },
         "cover": { "type": "string", "description": "Site-relative path to the post cover image (e.g. posts/my-post/cover.jpg)." },
+        "cover_credit": { "type": "string", "description": "Optional visible image credit. Supports a link to the source." },
         "intro": { "type": "string" },
         "markdown": { "type": "string", "minLength": 1, "description": "Site-relative path to the post Markdown file." },
         "html": { "type": "string", "minLength": 1, "description": "Site-relative path to a trusted HTML fragment containing the post body." }

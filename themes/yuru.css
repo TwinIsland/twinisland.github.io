@@ -1,0 +1,42 @@
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/poppins/Poppins-Regular.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/poppins/Poppins-Bold.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root:is([data-theme='yuru'], :not([data-theme])) {
+  color-scheme: light;
+  --surface: #fff;
+  --cp-ink: #712f3e;
+  --cp-accent: #88d4cc;
+  --theme-font: 'Poppins', Helvetica, Arial, sans-serif;
+  --theme-name-colors: var(--cp-ink), #465ca6, #287c84, #7655a4;
+  --radius-control: 10px;
+  --radius-panel: 12px;
+  --radius-pill: 999px;
+  --map-dot: #865465;
+  --map-dot-outline: var(--surface);
+  --map-dot-selected: #397e76;
+}
+
+:root[data-theme='yuru'][data-color-mode='dark'] {
+  color-scheme: dark;
+  --surface: #18171d;
+  --cp-ink: #eedce2;
+  --cp-accent: #83c8c1;
+  --map-dot: #d3a0b0;
+  --map-dot-selected: var(--cp-accent);
+  --brand-image-filter: brightness(2.05) saturate(0.85);
+  --monochrome-icon-filter: brightness(2.4) saturate(0.7);
+  --card-background-filter: grayscale(1) invert(1);
+}

@@ -4,6 +4,7 @@
   "site": {
     "name": "Your Name",
     "language": "en",
+    "themes": ["yuru", "werk", "pixel"],
     "favicon": "",
     "source_url": "",
     "seo": {

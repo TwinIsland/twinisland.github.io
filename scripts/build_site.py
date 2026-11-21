@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from decimal import Decimal
 from hashlib import sha256
-from html import escape
+from html import escape, unescape
 from io import BytesIO
 import json
 import os
@@ -28,10 +28,11 @@ DIST = ROOT / "dist"
 PRETTIER_VERSION = "3.6.2"
 ESBUILD_VERSION = "0.25.12"
 SITE_FILES = {"index.html", "404.html", "style.css", "CNAME"}
-SITE_DIRECTORIES = {"assets", "badge", "css", "data", "js", "posts", "projects"}
+SITE_DIRECTORIES = {"assets", "badge", "css", "data", "js", "posts", "projects", "themes"}
 SITE_CONFIG = Path("data/site-content.json")
 DEPLOY_CONFIG = ROOT / "deploy.config.json"
-MARKDOWN_BRIDGE = Path("js/markdown-it-katex-bridge.js")
+MARKDOWN_SCRIPTS = (Path("js/markdown-it-katex-bridge.js"), Path("js/blog-markdown.js"))
+INLINE_KATEX = re.compile(r"<span\s+data-katex-inline\s*>([^<]*)</span\s*>")
 RUNTIME_MARKDOWN_BLOCK = re.compile(
     r"(?m)^([ \t]*)<!-- Runtime Markdown start -->\s*(.*?)\s*<!-- Runtime Markdown end -->\r?\n",
     re.DOTALL,
@@ -223,6 +224,7 @@ def prerender_posts(stage, work, config):
 
     config_path = stage / SITE_CONFIG
     sources = {}
+    html_sources = {}
     for post in (config.get("blog") or {}).get("content", []):
         markdown = post.get("markdown", "").strip()
         html = post.get("html", "").strip()
@@ -233,6 +235,9 @@ def prerender_posts(stage, work, config):
         if url.scheme or url.netloc or not source.resolve().is_relative_to(stage) or not source.is_file():
             raise SystemExit(f"Post file is missing or outside the build: {markdown or html}")
         if not markdown:
+            markup = source.read_bytes().decode("utf-8")
+            if INLINE_KATEX.search(markup):
+                html_sources[source] = markup
             continue
         output = source.with_name(f"{source.name}.html")
         if output.exists():
@@ -241,19 +246,29 @@ def prerender_posts(stage, work, config):
         post["html"] = quote(output.relative_to(stage).as_posix())
         del post["markdown"]
 
-    if sources:
+    if sources or html_sources:
+        formulas = [
+            unescape(match[1]).strip()
+            for markup in html_sources.values()
+            for match in INLINE_KATEX.finditer(markup)
+        ]
         libraries = [work / "markdown-it.js", work / "katex.js"]
         with ThreadPoolExecutor() as pool:
             for path, content in zip(libraries, pool.map(download, script_urls), strict=True):
                 path.write_bytes(content)
         result = subprocess.run(
             ["node", str(ROOT / "scripts/render_posts.cjs"), *map(str, libraries),
-             str(ROOT / MARKDOWN_BRIDGE)],
-            input=json.dumps(list(map(str, sources))).encode("utf-8"),
+             *(str(ROOT / path) for path in MARKDOWN_SCRIPTS)],
+            input=json.dumps({"markdown": list(map(str, sources)), "inline": formulas}).encode("utf-8"),
             stdout=subprocess.PIPE, check=True,
         )
-        for output, html in zip(sources.values(), json.loads(result.stdout), strict=True):
+        rendered = json.loads(result.stdout)
+        for output, html in zip(sources.values(), rendered["markdown"], strict=True):
             output.write_bytes(html.encode("utf-8"))
+        inline = iter(rendered["inline"])
+        for source, markup in html_sources.items():
+            source.write_bytes(INLINE_KATEX.sub(lambda match: next(inline), markup).encode("utf-8"))
+    if sources:
         config_path.write_bytes((json.dumps(config, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
 
     # SSR formulas use the same KaTeX CSS and fonts, loaded only on articles that contain math.
@@ -468,7 +483,7 @@ def build(work, files, formatter, esbuild, args, started):
     stage = work / "site"
     count = original_bytes = minified_bytes = 0
     for path in files:
-        if path == MARKDOWN_BRIDGE and not args.runtime_markdown:
+        if path in MARKDOWN_SCRIPTS and not args.runtime_markdown:
             continue
         content = formatted[path] if path in formatted else (ROOT / path).read_bytes()
         if path in formatted and path.suffix in {".css", ".js"}:

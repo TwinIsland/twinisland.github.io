@@ -16,6 +16,11 @@ style.css
 assets/fonts/poppins/OFL.txt
 assets/fonts/poppins/Poppins-Bold.woff2
 assets/fonts/poppins/Poppins-Regular.woff2
+assets/fonts/silkscreen/OFL.txt
+assets/fonts/silkscreen/Silkscreen-Regular.woff2
+assets/fonts/barlow-semi-condensed/BarlowSemiCondensed-Bold.woff2
+assets/fonts/barlow-semi-condensed/BarlowSemiCondensed-Regular.woff2
+assets/fonts/barlow-semi-condensed/OFL.txt
 assets/icons/github.svg
 assets/icons/mail.svg
 assets/icons/orcid.svg
@@ -38,6 +43,7 @@ badge/soap-film/index.js
 badge/webgl.js
 css/travel-map.css
 data/site-content.schema.json
+js/blog-markdown.js
 js/markdown-it-katex-bridge.js
 js/site.js
 js/theme.js
@@ -46,6 +52,9 @@ scripts/build_site.py
 scripts/package_template.py
 scripts/publish_site.py
 scripts/render_posts.cjs
+themes/yuru.css
+themes/werk.css
+themes/pixel.css
 """.split()
 
 

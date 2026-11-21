@@ -2,8 +2,6 @@
 
 A static personal website for your profile, publications, projects, and blog.
 
-If you downloaded the template ZIP, extract it and run `git init` from the extracted folder before building. The example content and SVG placeholders are ready to preview.
-
 ## Make it yours
 
 1. **Replace the sample content** in [`data/site-content.json`](data/site-content.json).
@@ -13,6 +11,26 @@ If you downloaded the template ZIP, extract it and run `git init` from the extra
 To add a blog post, put its files in `posts/<slug>/` and add an entry to `blog.content` with either a `markdown` or an `html` path. For HTML, write a trusted body fragment such as `<h2>Introduction</h2><p>...</p>`. Use URLs relative to the article for images and links.
 
 To add a runnable demo, put it in `projects/<slug>/` and point the project's `run_url` at its entry page.
+
+## Markdown extensions
+
+The blog extends Markdown with a few features for writing posts.
+
+### Image captions
+
+Put the image on its own line, with a blank line before and after.
+
+```markdown
+![Mountains at sunset](landscape.svg "The view from the summit.")
+```
+
+The text in brackets is the image's alt text. The quoted text appears below the image as a plain-text caption. Leave out the quoted text for a regular image.
+
+### Figure references
+
+Use `[(Fig. 1)](#fig-1)` to reference the first captioned Markdown image. Figures are numbered in article order. Hover over a reference for a thumbnail, or click it to open the image.
+
+In HTML posts, you can give a figure an explicit ID such as `<figure id="fig-camera">` and refer to it with `<a href="#fig-camera">(Fig. 1)</a>`.
 
 ## Preview locally
 
@@ -42,5 +60,3 @@ After building, open [localhost:8000/dist/](http://localhost:8000/dist/) to prev
 2. **Set up Pages once.** In **Settings → Pages**, set the publishing source to `gh-pages` → `/ (root)`. [GitHub Pages publishing guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 
 After editing your site, rerun `python scripts/publish_site.py`. To preview a local build, run `python -m http.server 8000 --directory dist`.
-
-The published footer links to a build information page with the version, time, duration, and a downloadable template ZIP.

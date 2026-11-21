@@ -18,7 +18,7 @@ const tabRenderers = {
   misc: (section) => renderMisc(section),
   blog: (section) => renderBlog(section),
 };
-const markdownRenderer = createMarkdownRenderer();
+const markdownRenderer = window.createBlogMarkdownRenderer?.();
 
 const PAGE_REVEAL_TIMEOUT_MS = 1500;
 const CONTENT_LOAD_TIMEOUT_MS = 5000;
@@ -26,6 +26,7 @@ const CONTENT_LOAD_TIMEOUT_MS = 5000;
 document.addEventListener('DOMContentLoaded', () => {
   initLazyMedia();
   bindTabEvents();
+  document.addEventListener('site-theme-change', syncHeaderOffset);
   syncHeaderOffset();
   let lastLayoutWidth = window.innerWidth;
   window.addEventListener('resize', () => {
@@ -36,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   let lastScrollY = window.scrollY;
   const root = document.documentElement;
-  const badgeSwitch = document.querySelector('.badge-switch');
+  const brandControls = document.querySelector('.brand-controls');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let switchMove;
   window.addEventListener(
@@ -53,16 +54,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const compact = scrollY > threshold && delta > 0;
         if (root.classList.contains('is-badge-compact') !== compact) {
           const animate =
-            badgeSwitch &&
-            !badgeSwitch.hidden &&
+            brandControls &&
+            brandControls
+              .closest('.brand-wrap')
+              ?.querySelector('.brand-badge') &&
             !root.classList.contains('is-mobile-layout') &&
             !reducedMotion.matches;
-          const start = animate ? badgeSwitch.getBoundingClientRect() : null;
+          const start = animate ? brandControls.getBoundingClientRect() : null;
           switchMove?.cancel();
           root.classList.toggle('is-badge-compact', compact);
           if (start) {
-            const end = badgeSwitch.getBoundingClientRect();
-            switchMove = badgeSwitch.animate(
+            const end = brandControls.getBoundingClientRect();
+            switchMove = brandControls.animate(
               [
                 {
                   translate: `${start.left - end.left}px ${start.top - end.top}px`,
@@ -79,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { passive: true }
   );
   if (document.fonts?.ready) {
+    document.fonts.addEventListener('loadingdone', syncHeaderOffset);
     document.fonts.ready
       .then(() => {
         syncHeaderOffset();
@@ -104,6 +108,7 @@ async function initPage() {
       throw new Error(`Failed to load content: ${response.status}`);
     }
     state.data = await response.json();
+    window.configureSiteThemes(state.data.site?.themes);
     applySiteIdentity(state.data.site);
 
     if (state.data?.maitnaiance === true || state.data?.maintenance === true) {
@@ -140,10 +145,11 @@ async function initPage() {
 }
 
 async function revealSiteWhenReady(criticalImage, badgeReady) {
+  const fontFamily = getComputedStyle(document.body).fontFamily;
   const fontPromise = document.fonts
     ? Promise.all([
-        document.fonts.load('400 1rem Poppins'),
-        document.fonts.load('700 1rem Poppins'),
+        document.fonts.load(`400 1rem ${fontFamily}`),
+        document.fonts.load(`700 1rem ${fontFamily}`),
       ])
     : Promise.resolve();
 
@@ -343,20 +349,6 @@ function renderHeader(site, badgeConfig) {
     site?.name || 'Personal Website';
   document.querySelector('.mobile-site-name').textContent = name.textContent;
   const brandName = name.closest('.brand-name');
-  const nameMark = brandName.querySelector('.site-name-mark');
-  const mark = site?.name_mark;
-  if (mark?.src && mark.alt) {
-    const image = nameMark.querySelector('img');
-    image.src = mark.src;
-    image.alt = mark.alt;
-    nameMark
-      .querySelector('.name-mark-art')
-      .style.setProperty(
-        '--name-mark-image',
-        `url(${JSON.stringify(image.src)})`
-      );
-    nameMark.hidden = false;
-  }
 
   const sources = Array.isArray(badgeConfig?.list)
     ? badgeConfig.list
@@ -370,20 +362,13 @@ function renderHeader(site, badgeConfig) {
     return;
   }
 
-  const button = brandName.querySelector('.badge-switch');
-  const icon = button.querySelector('span');
   const width = badgeConfig?.width;
-  let current =
+  const index =
     badgeConfig?.mode === 'random'
       ? Math.floor(Math.random() * paths.length)
       : Math.max(0, paths.indexOf(badgeConfig?.default));
-  let badge;
-  let dispose;
-  let switching = false;
-  let spin;
 
-  async function showBadge(index) {
-    switching = true;
+  async function showBadge() {
     try {
       const { mount } = await import(
         new URL(paths[index], document.baseURI).href
@@ -398,7 +383,7 @@ function renderHeader(site, badgeConfig) {
       let previousPosition;
       const release = mount(next, {
         onHighlight(colors, phase) {
-          if (badge !== next) return;
+          if (!next.isConnected) return;
           const position = Math.round(50 - 50 * Math.cos(phase));
           if (position !== previousPosition) {
             badgeTheme.style.setProperty('--badge-name-colors', colors);
@@ -410,41 +395,15 @@ function renderHeader(site, badgeConfig) {
           }
         },
       });
-      if (badge) {
-        badge.replaceWith(next);
-        dispose?.();
-      } else {
-        brandName.before(next);
-      }
-      badge = next;
-      badgeTheme.style.removeProperty('--badge-name-colors');
-      badgeTheme.style.removeProperty('--badge-name-position');
-      dispose = typeof release === 'function' ? release : undefined;
-      current = index;
-      button.hidden = paths.length < 2;
+      brandName.before(next);
       syncHeaderOffset();
       return release?.ready;
     } catch (error) {
       console.warn('Header badge could not load:', error);
-    } finally {
-      switching = false;
     }
   }
 
-  button.addEventListener('click', () => {
-    if (switching) {
-      return;
-    }
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      spin?.cancel();
-      spin = icon.animate(
-        [{ transform: 'rotate(0turn)' }, { transform: 'rotate(1turn)' }],
-        { duration: 420, easing: 'cubic-bezier(0.25, 0.8, 0.25, 1)' }
-      );
-    }
-    showBadge((current + 1) % paths.length);
-  });
-  return showBadge(current);
+  return showBadge();
 }
 
 function renderSectionDescription(description, plain = false) {
@@ -986,7 +945,10 @@ async function openBlogPost(postIndex) {
     const coverMarkup = post.cover
       ? `
                 <figure class="blog-article-cover-wrap">
-                    <img class="blog-article-cover" data-src="${escapeHtml(post.cover)}" alt="${escapeHtml(title)} cover" width="2" height="1" loading="lazy" decoding="async">
+                    <a class="glightbox" href="${escapeHtml(post.cover)}" data-gallery="blog-article-images" data-type="image">
+                        <img class="blog-article-cover" data-src="${escapeHtml(post.cover)}" alt="${escapeHtml(title)} cover" width="2" height="1" loading="lazy" decoding="async">
+                    </a>
+                    ${post.cover_credit ? `<figcaption>${renderConfigText(post.cover_credit)}</figcaption>` : ''}
                 </figure>
             `
       : '';
@@ -998,6 +960,7 @@ async function openBlogPost(postIndex) {
             </article>
         `;
     initBlogLightbox('#tab-blog .glightbox');
+    bindBlogFigureReferences(content.querySelector('.markdown-body'));
   } catch (error) {
     if (content.isConnected) {
       const message = document.createElement('p');
@@ -1012,6 +975,16 @@ function hydrateBlogHtml(html, postPath, title) {
   const template = document.createElement('template');
   template.innerHTML = html;
   const base = new URL(postPath, window.location.href);
+
+  if (window.katex) {
+    template.content
+      .querySelectorAll('span[data-katex-inline]')
+      .forEach((math) => {
+        window.katex.render(math.textContent.trim(), math, {
+          throwOnError: false,
+        });
+      });
+  }
 
   const mathStyles = document.getElementById('blog-math-styles');
   if (mathStyles && template.content.querySelector('.katex, .katex-display')) {
@@ -1049,6 +1022,7 @@ function hydrateBlogHtml(html, postPath, title) {
       parentAnchor.setAttribute('href', new URL(href, base).href);
       parentAnchor.classList.add('glightbox');
       parentAnchor.setAttribute('data-gallery', 'blog-article-images');
+      parentAnchor.setAttribute('data-type', 'image');
       parentAnchor.setAttribute('data-title', title);
       return;
     }
@@ -1057,6 +1031,7 @@ function hydrateBlogHtml(html, postPath, title) {
     link.href = resolvedSrc;
     link.className = 'glightbox';
     link.setAttribute('data-gallery', 'blog-article-images');
+    link.setAttribute('data-type', 'image');
     link.setAttribute('data-title', title);
     const picture = image.closest('picture') || image;
     picture.replaceWith(link);
@@ -1088,6 +1063,85 @@ function hydrateBlogHtml(html, postPath, title) {
   return template.innerHTML;
 }
 
+function bindBlogFigureReferences(article) {
+  const figures = new Map();
+  let number = 0;
+  article.querySelectorAll('figure').forEach((figure) => {
+    const trigger = figure.querySelector('a.glightbox:has(img)');
+    if (!trigger) return;
+    number += 1;
+    figure.id ||= `fig-${number}`;
+    figures.set(figure.id, { figure, trigger, number });
+  });
+
+  let preview;
+  const hidePreview = () => preview?.remove();
+  article.querySelectorAll('a[href^="#"]').forEach((reference) => {
+    const target = figures.get(reference.getAttribute('href').slice(1));
+    if (!target) return;
+    const { figure, trigger } = target;
+    const caption = figure.querySelector(':scope > figcaption');
+    if (caption && !target.labelled) {
+      const label = document.createElement('strong');
+      label.textContent = `Fig. ${target.number}. `;
+      caption.prepend(label);
+      target.labelled = true;
+    }
+
+    reference.classList.add('blog-figure-ref');
+    if (state.blogLightbox) reference.setAttribute('aria-haspopup', 'dialog');
+    const showPreview = () => {
+      hidePreview();
+      preview = document.createElement('img');
+      preview.className = 'blog-figure-preview';
+      preview.alt = '';
+      preview.setAttribute('aria-hidden', 'true');
+      const image = trigger.querySelector('img');
+      preview.src = image.dataset.src || image.currentSrc || trigger.href;
+      reference.append(preview);
+      const bounds = reference.getBoundingClientRect();
+      const width = preview.offsetWidth;
+      const viewportWidth = document.documentElement.clientWidth;
+      const centered = bounds.left + (bounds.width - width) / 2;
+      const left = Math.max(8, Math.min(centered, viewportWidth - width - 8));
+      preview.style.left = `${left - bounds.left}px`;
+      const remaining = window.innerHeight - bounds.bottom;
+      preview.classList.toggle(
+        'is-above',
+        remaining < preview.offsetHeight + 8 && bounds.top > remaining
+      );
+    };
+
+    reference.addEventListener('pointerenter', (event) => {
+      if (event.pointerType !== 'touch') showPreview();
+    });
+    reference.addEventListener('pointerleave', hidePreview);
+    reference.addEventListener('focus', () => {
+      if (reference.matches(':focus-visible')) showPreview();
+    });
+    reference.addEventListener('blur', hidePreview);
+    reference.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && preview?.isConnected) {
+        event.stopPropagation();
+        hidePreview();
+      }
+    });
+    reference.addEventListener('click', (event) => {
+      hidePreview();
+      if (
+        !state.blogLightbox ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return;
+      event.preventDefault();
+      trigger.click();
+    });
+  });
+}
+
 function initBlogLightbox(selector) {
   if (!window.GLightbox) {
     return;
@@ -1100,24 +1154,6 @@ function initBlogLightbox(selector) {
     touchNavigation: true,
     loop: true,
   });
-}
-
-function createMarkdownRenderer() {
-  if (!window.markdownit) {
-    return;
-  }
-
-  const md = window.markdownit({
-    html: false,
-    linkify: true,
-    breaks: false,
-  });
-
-  if (typeof window.markdownitKatexBridge === 'function') {
-    md.use(window.markdownitKatexBridge);
-  }
-
-  return md;
 }
 
 function scrollToTop() {

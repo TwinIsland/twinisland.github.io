@@ -31,23 +31,14 @@
 }
 
 .travel-map-dot {
-  fill: #865465;
-  stroke: #fff;
+  fill: var(--map-dot);
+  stroke: var(--map-dot-outline);
   stroke-width: 1;
 }
 
 .travel-map-dot.is-selected {
   r: 4.5;
-  fill: #397e76;
-}
-
-:root[data-theme='dark'] .travel-map-dot {
-  fill: #d3a0b0;
-  stroke: var(--surface);
-}
-
-:root[data-theme='dark'] .travel-map-dot.is-selected {
-  fill: var(--cp-accent);
+  fill: var(--map-dot-selected);
 }
 
 :where(.is-mobile-layout) .travel-map-dot {

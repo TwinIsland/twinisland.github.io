@@ -10,4 +10,6 @@ $$
 E = mc^2
 $$
 
-![Landscape placeholder](../../data/images/placeholders/landscape.svg)
+You can link to a figure from the text [(Fig. 1)](#fig-1).
+
+![Illustration of mountains at sunset](../../data/images/placeholders/landscape.svg "An example caption. Replace it with a description or image credit.")
