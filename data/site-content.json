@@ -136,7 +136,7 @@
       {
         "title": "Demolition Front: A Roguelite 3D Bomb-Arena Game",
         "date": "Nov 2026",
-        "description": "A first-person, roguelite take on the classic bomb-arena game, inspired by Crazy Arcade. Plant charges, blow open cover, and trap up to three AI opponents in the cross-shaped blast while drafting perks and skills that make every match play differently. <a href=\"https://twinisland.github.io/Demolition/wiki/\">Wiki</a> · <a href=\"https://github.com/TwinIsland/Demolition\">Source</a>",
+        "description": "A first-person, roguelite take on the classic bomb-arena game, inspired by Crazy Arcade.",
         "run_url": "https://twinisland.github.io/Demolition/",
         "background_image": "data/images/projects/demolition-topdown.webp"
       },
